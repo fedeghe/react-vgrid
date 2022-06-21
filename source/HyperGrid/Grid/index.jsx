@@ -22,7 +22,6 @@ export default () => {
             width, height,
             itemHeight, itemWidth
         });
-    console.log(state)
 
     return <div className={classes.GridContainer}>
         {data.map( item =>
