@@ -1,0 +1,84 @@
+body {
+    font-family: verdana;
+    background-color: #aaa;
+}
+
+.Wrapper {
+    border-radius: 10px;
+}
+
+.TableCrossHighlight {
+    background-color: rgb(239, 252, 254) !important;
+}
+
+.TableRowHighlight {
+    background-color: #ddd !important;
+}
+
+.TableColumnHighlight {
+    background-color: #dd6 !important;
+}
+
+.TableCellHighlight {
+    background-color: rgb(214, 247, 255) !important;
+}
+
+.TableHeader {
+    background-color: whitesmoke !important
+}
+
+.TableFooter {
+    background-color: whitesmoke !important
+}
+
+.TableLeftMost {
+    background-color: whitesmoke !important;
+}
+
+.TableRightMost {
+    background-color: whitesmoke !important
+}
+
+.TableContent {
+    padding: 5px;
+}
+
+.TableRow {
+    outline: 1px solid #ddd
+}
+
+.TableCell {
+    border: 1px solid lightgray;
+    border-collapse: collapse;
+}
+
+@keyframes panFontSize {
+    from {
+        font-size: 1.3em;
+        color: white;
+    }
+    to {
+        font-size: 1.5em;
+        color: black;
+    }
+}
+
+.Loading {
+    /* position: absolute;
+    top: 0;
+    left: 0;*/
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: black;
+    letter-spacing: 2;
+    pointer-events: none;
+    z-index: 1000;
+    text-transform: uppercase;
+    /* animation-name: panFontSize; */
+    animation-duration: 0.1s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}

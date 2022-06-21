@@ -1,0 +1,52 @@
+{
+    "rules": {
+        "react-hooks/rules-of-hooks": "error",
+        "react-hooks/exhaustive-deps": "warn",
+        "react/prop-types": 0,
+        "react/display-name": 0,
+        "import/no-unresolved": 0,
+        "semi": "error",
+        "one-var": "error",
+        "no-multiple-empty-lines": ["error", { "max": 2 }]
+        // "import/no-cycle": [
+        //     "error",
+        //     {
+        //       "maxDepth": 10,
+        //       "ignoreExternal": true
+        //     }
+        // ]
+    },
+    "plugins": [
+        "react-hooks",
+        "react"
+    ],
+    "extends": [
+        "eslint:recommended",
+        // "esnext",
+        "plugin:react/recommended",
+        "plugin:react-hooks/recommended"
+    ],
+    
+    "settings": {
+        "react": {
+            "version": "detect"
+        }
+    },
+    "env": {
+        "browser": true,
+        "node": true,
+        "es2020": true,
+        "es2021": true
+    },
+    "parserOptions": {
+        "ecmaVersion": 2020,
+        "sourceType": "module",
+        "ecmaFeatures": {
+          "jsx": true
+        }
+    },
+    "globals": {
+        "WebPageMonitor": true
+    },
+    "ignorePatterns": ["tests/*", "*.md", "dist/index.js"]
+}
