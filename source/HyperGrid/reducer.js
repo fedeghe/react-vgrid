@@ -13,6 +13,7 @@ const prefix = 'HYG_',
         const {height, itemHeight} = dimensions,
             carpetHeight = lines * itemHeight,
             trigger = scrollTop > lineGap * itemHeight,
+
             topLinesSkipped = Math.max(0, Math.floor(scrollTop / itemHeight) - lineGap),
             topFillerHeight = topLinesSkipped * itemHeight,
             linesToRender = 2 * lineGap + Math.ceil(height / itemHeight),
@@ -22,6 +23,8 @@ const prefix = 'HYG_',
             fromItem = trigger
                 ? topLinesSkipped * rows
                 : 0;
+
+        
 
         return {
             fromItem,
@@ -51,10 +54,29 @@ const prefix = 'HYG_',
     reducer = (oldState, action) => {
         const { payload = {}, type } = action,
             {
-                data
+                data,
+                originalData,
+                dimensions,
+                virtual,
+                virtual: {
+                    lines, rows,
+                    lineGap
+                }
             } = oldState,
 
-            actions = {};
+            actions = {
+                scroll: () => {
+                    const scrollTop = parseInt(payload, 10),
+                        newVirtual = __getVirtual({dimensions, scrollTop, lines, rows, lineGap});
+
+                    return {
+                        virtual: {
+                            ...virtual,
+                            ...newVirtual
+                        }
+                    };
+                } 
+            };
 
         if (type in actions)
             return {
@@ -66,7 +88,7 @@ const prefix = 'HYG_',
     init = (cnf = {}) => {
         const {
                 data = [],
-                lineGap = 3,
+                lineGap = 2,
                 Loader = () => (<div>loading</div>),
                 dimensions: {
                     width = 1200,
@@ -82,20 +104,24 @@ const prefix = 'HYG_',
                 itemHeight, itemWidth
             },
             rows = Math.floor(width / itemWidth),
-            lines = Math.ceil((data.length * itemWidth) / width);
-        return {
-            ...cnf,
-            rhgID,
-            originalData : data,
-            data : data.map(item => ({ [rhgID]: `${uniqueID}`, ...item })),
-            Loader,
-            dimensions,
-            virtual: {
+            lines = Math.ceil((data.length * itemWidth) / width),
+            virtual = {
                 loading: false,
                 lines,
                 rows,
+                lineGap,
                 ...__getVirtual({dimensions, size: data.length, scrollTop: 0, lines, rows, lineGap}),
-            }
+            };
+            
+        
+        return {
+            ...cnf,
+            rhgID,
+            originalData : [...data],
+            data : data.map(item => ({ [rhgID]: `${uniqueID}`, ...item })),
+            Loader,
+            dimensions,
+            virtual
         };
     };
 

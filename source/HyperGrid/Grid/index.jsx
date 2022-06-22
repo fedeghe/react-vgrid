@@ -26,11 +26,20 @@ const Grid = () => {
         classes = useStyles({
             width, height,
             itemHeight, itemWidth
-        });
-    console.log(JSON.stringify(state.virtual, null, 2));
-    return <div className={classes.GridContainer}>
+        }),
+        onScroll = useCallback(e => {
+            const payload = e.target.scrollTop;
+            dispatch({
+                type: 'scroll',
+                payload: payload > 0 ? payload : 0
+            });
+        }, [dispatch]);
+    
+    
+
+    return <div className={classes.GridContainer} onScroll={onScroll}>
         <Filler width="100%" height={topFillerHeight}/>
-        {data.slice(fromItem, toItem - fromItem).map( item => 
+        {data.slice(fromItem, toItem + 1).map( item => 
             <div key={item[rhgID]} className={classes.Item}>
                 <Item {...item}/>
             </div>

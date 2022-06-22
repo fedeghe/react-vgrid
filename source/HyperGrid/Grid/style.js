@@ -17,7 +17,7 @@ export default createUseStyles({
         maxWidth: `${itemWidth}px`,
         width: `${itemWidth}px`,
         height: `${itemHeight}px`,
-        overflow: 'scroll',
+        // overflow: 'scroll',
         scrollBehavior: 'smooth',
         padding: 0,
         margin: 0,
