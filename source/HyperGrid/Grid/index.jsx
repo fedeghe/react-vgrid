@@ -19,7 +19,11 @@ const Grid = () => {
             virtual: {
                 topFillerHeight,
                 bottomFillerHeight,
-                fromItem, toItem
+                dataHeight,
+                scrollTop
+            },
+            debounceTimes: {
+                scrolling: scrollingDebounceTime
             },
             rhgID
         } = state,
@@ -27,19 +31,26 @@ const Grid = () => {
             width, height,
             itemHeight, itemWidth
         }),
-        onScroll = useCallback(e => {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        doOnScroll = useCallback(debounce(e => {
+            e.preventDefault();
+            e.stopPropagation();
             const payload = e.target.scrollTop;
             dispatch({
                 type: 'scroll',
                 payload: payload > 0 ? payload : 0
             });
-        }, [dispatch]);
-    
-    
+        }, scrollingDebounceTime), []),
+
+        onScroll = useCallback(e => {
+            Math.abs(e.target.scrollTop - scrollTop) > (dataHeight / 4)
+                && dispatch({ type: 'loading' });
+            doOnScroll(e);
+        }, [dataHeight, dispatch, doOnScroll, scrollTop]);
 
     return <div className={classes.GridContainer} onScroll={onScroll}>
         <Filler width="100%" height={topFillerHeight}/>
-        {data.slice(fromItem, toItem + 1).map( item => 
+        {data.map( item => 
             <div key={item[rhgID]} className={classes.Item}>
                 <Item {...item}/>
             </div>

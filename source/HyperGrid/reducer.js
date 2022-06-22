@@ -24,8 +24,6 @@ const prefix = 'HYG_',
                 ? topLinesSkipped * rows
                 : 0;
 
-        
-
         return {
             fromItem,
             toItem: trigger ? fromItem + itemsToRender: linesToRender * rows,
@@ -33,7 +31,8 @@ const prefix = 'HYG_',
             topFillerHeight,
             bottomFillerHeight,
             linesToRender,
-            dataHeight
+            dataHeight,
+            loading:false
         };
     },
 
@@ -41,22 +40,28 @@ const prefix = 'HYG_',
         const { payload = {}, type } = action,
             {
                 dimensions,
+                originalData,
                 virtual,
                 virtual: {
                     lines, rows,
                     lineGap
                 }
             } = oldState,
-
             actions = {
+                loading: () => ({
+                    ...virtual,
+                    loading: true
+                }),
                 scroll: () => {
                     const scrollTop = parseInt(payload, 10),
-                        newVirtual = __getVirtual({dimensions, scrollTop, lines, rows, lineGap});
+                        newVirtual = __getVirtual({dimensions, scrollTop, lines, rows, lineGap}),
+                        {fromItem, toItem} = newVirtual;
 
                     return {
+                        data: originalData.slice(fromItem, toItem),
                         virtual: {
                             ...virtual,
-                            ...newVirtual
+                            ...newVirtual,
                         }
                     };
                 } 
@@ -81,6 +86,9 @@ const prefix = 'HYG_',
                     itemWidth = 200
                 } = {},
                 rhgID = '_ID',
+                debounceTimes: {
+                    scrolling = 10
+                } = {}
             } = cnf,
             dimensions = {
                 width, height,
@@ -94,17 +102,21 @@ const prefix = 'HYG_',
                 rows,
                 lineGap,
                 ...__getVirtual({dimensions, size: data.length, scrollTop: 0, lines, rows, lineGap}),
-            };
+            },
+            originalData = data.map(item => ({ [rhgID]: `${uniqueID}`, ...item }));
             
         
         return {
             ...cnf,
             rhgID,
-            originalData : [...data],
-            data : data.map(item => ({ [rhgID]: `${uniqueID}`, ...item })),
+            originalData : originalData,
+            data : originalData,
             Loader,
             dimensions,
-            virtual
+            virtual,
+            debounceTimes: {
+                scrolling
+            }
         };
     };
 

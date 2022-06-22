@@ -35,5 +35,8 @@ export default {
         width:1000,
         height:600
     },
-    lineGap : 5
+    lineGap : 5,
+    // debounceTimes: {
+    //     scrolling: 500
+    // }
 };

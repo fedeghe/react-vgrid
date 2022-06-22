@@ -15,7 +15,7 @@ export default ({config}) => {
                 width, height
             },
             Loader,
-            loading
+            virtual: {loading}
         } = state,
         classes = useStyles({
             width, height,
