@@ -27,6 +27,5 @@ export default ({config}) => {
             <Grid/>
         </GridContext.Provider>
     </div>;
-
 };
 
