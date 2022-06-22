@@ -16,7 +16,7 @@ export default {
         { key: 'entityid3', type: 'int' },
         { key: 'name3', type: 'str' },
         { key: 'date3', type: 'date' },
-    ], 601),
+    ], 100),
     filters: {
         id: ({userValue, row}) => row.id.includes(userValue) 
     },
@@ -36,7 +36,7 @@ export default {
         height:600
     },
     lineGap : 5,
-    // debounceTimes: {
-    //     scrolling: 500
-    // }
+    debounceTimes: {
+        scrolling: 10
+    }
 };
