@@ -1,6 +1,6 @@
 
 # react-hypergrid
 
-## install
+## for the moment just start it and shut up
 
-`yarn add react-hypergrid`
+`yarn start`
