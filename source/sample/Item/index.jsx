@@ -2,7 +2,7 @@ import React from 'react';
 
 import useStyles from './style.js';
 
-export default data => {
+const Item = data => {
     const classes = useStyles();
     return <div className={classes.Item}>
         <div className={classes.Inner}>
@@ -10,3 +10,4 @@ export default data => {
         </div>
     </div>;
 };
+export default Item;

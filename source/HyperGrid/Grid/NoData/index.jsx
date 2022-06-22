@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import TableContext from '../../Context';
 
 import useStyles from './style.js';
-export default () => {
+const NoData = () => {
     const {
             state: {
                 NoFilterData,
@@ -18,3 +18,5 @@ export default () => {
 
     return <NoFilterData total={total} />;
 };
+
+export default NoData;

@@ -1,3 +1,4 @@
+import React from 'react'
 import generateRowData from './utils';
 import Item from './sample/Item';
 export default {
@@ -27,7 +28,9 @@ export default {
         }
     },
     Item,
+    Loader: () => (<div className="Loading">loading</div>),
     dimensions: {
-        itemWidth:80
+        itemWidth:200,
+        itemHeight:100
     }
 };
