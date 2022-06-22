@@ -36,26 +36,10 @@ const prefix = 'HYG_',
             dataHeight
         };
     },
-    // __getFillerHeights = ({
-    //     dimensions: {width, height, itemWidth, itemHeight},
-    //     size
-    // }) => {
-    //     const horizNum = Math.floor(width / itemWidth),
-    //         vertNum = Math.ceil(height / itemHeight),
-    //         carpetHeight = vertNum * itemHeight;
-    //     const topFillerHeight = 10,
-    //         bottomFillerHeight = 300
-    //     return {
-    //         topFillerHeight,
-    //         bottomFillerHeight
-    //     };
-    // },
 
     reducer = (oldState, action) => {
         const { payload = {}, type } = action,
             {
-                data,
-                originalData,
                 dimensions,
                 virtual,
                 virtual: {
@@ -96,7 +80,6 @@ const prefix = 'HYG_',
                     itemHeight = 150,
                     itemWidth = 200
                 } = {},
-                Item,
                 rhgID = '_ID',
             } = cnf,
             dimensions = {
