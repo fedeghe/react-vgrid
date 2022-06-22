@@ -16,7 +16,7 @@ export default {
         { key: 'entityid3', type: 'int' },
         { key: 'name3', type: 'str' },
         { key: 'date3', type: 'date' },
-    ], 100),
+    ], 1e3),
     filters: {
         id: ({userValue, row}) => row.id.includes(userValue) 
     },

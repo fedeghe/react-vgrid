@@ -45,7 +45,6 @@ const prefix = 'HYG_',
             {
                 dimensions,
                 originalData,
-                data,
                 virtual,
                 virtual: {
                     lineGap
@@ -79,6 +78,7 @@ const prefix = 'HYG_',
         return oldState;
     },
     init = (cnf = {}) => {
+        console.log('init')
         const {
                 data = [],
                 lineGap = 2,
