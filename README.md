@@ -1,5 +1,5 @@
 
-# react-hypergrid
+# react-vgrid
 
 ## for the moment just start it and shut up
 

@@ -1,10 +1,10 @@
 import React from 'react';
-import HyperGrid from './HyperGrid';
+import VGrid from './VGrid';
 
 
 import config from './configSmall';
 
 import './sample/user.css';
 
-const Pg = () => <HyperGrid config={config} />;
+const Pg = () => <VGrid config={config} />;
 export default Pg;

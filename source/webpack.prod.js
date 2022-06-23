@@ -4,16 +4,11 @@ const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = {
     entry: {
-        index: path.resolve(__dirname, './HyperGrid/index.jsx'),
+        index: path.resolve(__dirname, './VGrid/index.jsx'),
     },
     output: {
         path: path.resolve(__dirname, '../dist'),
         filename: '[name].js',
-        // library: {
-        //     name: 'react-hypertable',
-        //     type: 'umd',
-        // }
-
         libraryTarget: "umd"
     },
     devtool: 'inline-source-map',
