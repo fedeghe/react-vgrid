@@ -16,7 +16,7 @@ export default {
         { key: 'entityid3', type: 'int' },
         { key: 'name3', type: 'str' },
         { key: 'date3', type: 'date' },
-    ], 1e3),
+    ], 1e5),
     filters: {
         id: ({userValue, row}) => row.id.includes(userValue) 
     },
@@ -30,13 +30,13 @@ export default {
     Item,
     Loader: () => (<div className="Loading">loading</div>),
     dimensions: {
-        itemWidth:200,
-        itemHeight:300,
-        width:1000,
-        height:600
+        itemWidth: 250,
+        itemHeight: 80,
+        width: 1000,
+        height: 500
     },
     lineGap : 5,
-    debounceTimes: {
-        scrolling: 100
-    }
+    // debounceTimes: {
+    //     scrolling: 20
+    // }
 };
