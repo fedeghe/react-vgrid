@@ -92,7 +92,7 @@ const prefix = 'HYG_',
                 } = {},
                 rhgID = '_ID',
                 debounceTimes: {
-                    scrolling = 10
+                    scrolling = 50
                 } = {}
             } = cnf,
             dimensions = {
