@@ -8,27 +8,26 @@ const prefix = 'HYG_',
             return prefix + count;
         }
     },
-    __getVirtual = ({dimensions, size, scrollTop, lineGap}) => {
-        
+    __getVirtual = ({scrollTop, dimensions, size, lineGap}) => {
         const {height, itemHeight, width, itemWidth} = dimensions,
-            rows = Math.floor(width / itemWidth),
-            lines = Math.ceil((size * itemWidth) / width),
+            columns = Math.floor(width / itemWidth),
+            lines = Math.ceil(size / columns),
             carpetHeight = lines * itemHeight,
-            trigger = scrollTop > lineGap * itemHeight,
+            trigger = scrollTop > (lineGap+1) * itemHeight,
 
             topLinesSkipped = Math.max(0, Math.floor(scrollTop / itemHeight) - lineGap),
             topFillerHeight = topLinesSkipped * itemHeight,
             linesToRender = 2 * lineGap + Math.ceil(height / itemHeight),
             dataHeight = linesToRender * itemHeight,
-            itemsToRender = rows * linesToRender,
-            bottomFillerHeight = carpetHeight - topFillerHeight - dataHeight,
+            itemsToRender = columns * linesToRender,
+            bottomFillerHeight = Math.max(carpetHeight - topFillerHeight - dataHeight, 0), 
             fromItem = trigger
-                ? topLinesSkipped * rows
-                : 0;
-
+                ? topLinesSkipped * columns
+                : 0,
+            toItem = trigger ? fromItem + itemsToRender: linesToRender * columns;
         return {
             fromItem,
-            toItem: trigger ? fromItem + itemsToRender: linesToRender * rows,
+            toItem,
             carpetHeight,
             topFillerHeight,
             bottomFillerHeight,
@@ -36,7 +35,7 @@ const prefix = 'HYG_',
             dataHeight,
             loading:false,
             lines,
-            rows,
+            columns,
             scrollTop
         };
     },
@@ -81,7 +80,6 @@ const prefix = 'HYG_',
         return oldState;
     },
     init = (cnf = {}) => {
-        console.log('init')
         const {
                 data = [],
                 lineGap = 2,
