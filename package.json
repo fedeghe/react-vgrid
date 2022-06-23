@@ -1,5 +1,5 @@
 {
-    "name": "react-hypergrid",
+    "name": "@fedeghe/react-hypergrid",
     "version": "0.0.0",
     "description": "react table on steroids",
     "main": "./dist/index.js",
