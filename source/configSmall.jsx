@@ -37,6 +37,6 @@ export default {
     },
     lineGap : 5,
     debounceTimes: {
-        scrolling: 10
+        scrolling: 100
     }
 };

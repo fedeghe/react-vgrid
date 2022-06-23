@@ -36,7 +36,8 @@ const prefix = 'HYG_',
             dataHeight,
             loading:false,
             lines,
-            rows
+            rows,
+            scrollTop
         };
     },
 
@@ -52,8 +53,10 @@ const prefix = 'HYG_',
             } = oldState,
             actions = {
                 loading: () => ({
-                    ...virtual,
-                    loading: true
+                    virtual : {
+                        ...virtual,
+                        loading: true
+                    }
                 }),
                 scroll: () => {
                     const scrollTop = parseInt(payload, 10),
