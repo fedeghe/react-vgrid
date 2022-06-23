@@ -31,11 +31,11 @@ export default {
     Loader: () => (<div className="Loading">loading</div>),
     dimensions: {
         itemWidth: 250,
-        itemHeight: 80,
+        itemHeight: 230,
         width: 1000,
         height: 500
     },
-    lineGap : 5,
+    lineGap : 2,
     // debounceTimes: {
     //     scrolling: 20
     // }
