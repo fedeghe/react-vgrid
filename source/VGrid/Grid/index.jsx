@@ -43,8 +43,10 @@ const Grid = () => {
         }, scrollingDebounceTime), []),
 
         onScroll = useCallback(e => {
-            Math.abs(e.target.scrollTop - scrollTop) > (dataHeight / 4)
-                && dispatch({ type: 'loading' });
+            if (Math.abs(e.target.scrollTop - scrollTop) > (dataHeight / 4)){
+                
+                dispatch({ type: 'loading' });
+            }
             doOnScroll(e);
         }, [dataHeight, dispatch, doOnScroll, scrollTop]);
 
