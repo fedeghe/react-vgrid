@@ -32,11 +32,20 @@ export default {
     dimensions: {
         itemWidth: 250,
         itemHeight: 230,
-        width: 1000,
-        height: 500
+        width: 1250,
+        height: 800
     },
     lineGap : 2,
     // debounceTimes: {
     //     scrolling: 20
     // }
+    headerCaption: {
+        Component: () => (<div>hello</div>),
+        height: 45
+    },
+
+    footerCaption: {
+        Component: () => (<div>footer caption</div>),
+        height: 25
+    },
 };

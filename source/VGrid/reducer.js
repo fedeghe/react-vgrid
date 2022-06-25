@@ -93,10 +93,19 @@ const prefix = 'HYG_',
                 rhgID = '_ID',
                 debounceTimes: {
                     scrolling = 50
+                } = {},
+                headerCaption: {
+                    Component: HeaderCaptionComponent = null,
+                    height: headerCaptionHeight = 0
+                } = {},
+                footerCaption: {
+                    Component: FooterCaptionComponent = null,
+                    height: footerCaptionHeight = 0
                 } = {}
             } = cnf,
             dimensions = {
-                width, height,
+                width,
+                height,
                 itemHeight, itemWidth
             },
             
@@ -117,6 +126,14 @@ const prefix = 'HYG_',
             originalData : originalData,
             data : originalData.slice(fromItem, toItem),
             Loader,
+            header : {
+                HeaderCaptionComponent,
+                headerCaptionHeight
+            },
+            footer : {
+                FooterCaptionComponent,
+                footerCaptionHeight
+            },
             dimensions,
             virtual,
             debounceTimes: {
