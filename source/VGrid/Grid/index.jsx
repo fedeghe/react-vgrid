@@ -25,11 +25,21 @@ const Grid = () => {
             debounceTimes: {
                 scrolling: scrollingDebounceTime
             },
+            header: {
+                HeaderCaptionComponent,
+                headerCaptionHeight
+            },
+            footer: {
+                FooterCaptionComponent,
+                footerCaptionHeight
+            },
             rhgID
         } = state,
         classes = useStyles({
             width, height,
-            itemHeight, itemWidth
+            itemHeight, itemWidth,
+            headerCaptionHeight,
+            footerCaptionHeight,
         }),
         // eslint-disable-next-line react-hooks/exhaustive-deps
         doOnScroll = useCallback(debounce(e => {
@@ -43,23 +53,35 @@ const Grid = () => {
         }, scrollingDebounceTime), []),
 
         onScroll = useCallback(e => {
-            if (Math.abs(e.target.scrollTop - scrollTop) > (dataHeight / 4)){
-                
+            if (Math.abs(e.target.scrollTop - scrollTop) > (dataHeight / 4)) {
+
                 dispatch({ type: 'loading' });
             }
             doOnScroll(e);
         }, [dataHeight, dispatch, doOnScroll, scrollTop]);
 
-    return <div className={classes.GridContainer} onScroll={onScroll}>
-        <Filler width="100%" height={topFillerHeight}/>
-        {data.map( item => 
-            <div key={item[rhgID]} className={classes.Item}>
-                <Item {...item}/>
+    return <div>
+        {headerCaptionHeight && (
+            <div className={classes.HeaderCaption}>
+                <HeaderCaptionComponent/>
             </div>
         )}
-        <Filler width="100%" height={bottomFillerHeight}/>
+        <div className={classes.GridContainer} onScroll={onScroll}>
+            <Filler width="100%" height={topFillerHeight} />
+            {data.map(item =>
+                <div key={item[rhgID]} className={classes.Item}>
+                    <Item {...item} />
+                </div>
+            )}
+            <Filler width="100%" height={bottomFillerHeight} />
+        </div>
+        {footerCaptionHeight && (
+            <div className={classes.FooterCaption}>
+                <FooterCaptionComponent/>
+            </div>
+        )}
     </div>;
-        
+
 };
 
 export default Grid;

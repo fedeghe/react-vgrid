@@ -5,7 +5,7 @@ export default createUseStyles({
         backgroundColor: '#fede76',
         overflow:'scroll',
         height:'inherit',
-        border:'5px solid lightGray'
+        border:'5px solid white'
     },
     Inner:{
         padding:'10px',
