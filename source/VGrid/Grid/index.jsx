@@ -59,9 +59,10 @@ const Grid = () => {
             }
             doOnScroll(e);
         }, [dataHeight, dispatch, doOnScroll, scrollTop]);
-
+        console.log(headerCaptionHeight,
+            footerCaptionHeight)
     return <div>
-        {headerCaptionHeight && (
+        {Boolean(headerCaptionHeight) && (
             <div className={classes.HeaderCaption}>
                 <HeaderCaptionComponent/>
             </div>
@@ -75,7 +76,7 @@ const Grid = () => {
             )}
             <Filler width="100%" height={bottomFillerHeight} />
         </div>
-        {footerCaptionHeight && (
+        {Boolean(footerCaptionHeight) && (
             <div className={classes.FooterCaption}>
                 <FooterCaptionComponent/>
             </div>
