@@ -49,9 +49,9 @@ export default {
         height: 25
     },
 
-    events: {
-        onItemEnter: (e, {item}) => {console.log('enter Item ', item);},
-        onItemLeave: (e, {item}) => {console.log('leave Item ', item);},
-        onItemClick: (e, {item}) => {console.log('click Item ', item);},
-    }
+    // events: {
+    //     onItemEnter: (e, {item}) => {console.log('enter Item ', item);},
+    //     onItemLeave: (e, {item}) => {console.log('leave Item ', item);},
+    //     onItemClick: (e, {item}) => {console.log('click Item ', item);},
+    // }
 };

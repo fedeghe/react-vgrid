@@ -57,6 +57,9 @@ const prefix = 'HYG_',
                         loading: true
                     }
                 }),
+                filter : () => {
+
+                },
                 scroll: () => {
                     const scrollTop = parseInt(payload, 10),
                         newVirtual = __getVirtual({dimensions, size: originalData.length, scrollTop, lineGap}),
@@ -148,7 +151,9 @@ const prefix = 'HYG_',
                 onItemEnter,
                 onItemLeave,
                 onItemClick,
-            }
+            },
+            // filters: [],
+            // globalFilter: ''
         };
     };
 

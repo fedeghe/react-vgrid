@@ -63,7 +63,33 @@ const Grid = () => {
                 dispatch({ type: 'loading' });
             }
             doOnScroll(e);
-        }, [dataHeight, dispatch, doOnScroll, scrollTop]);
+        }, [dataHeight, dispatch, doOnScroll, scrollTop]),
+        getHandlers = useCallback(item => {
+            const handlers = {};
+            if(onItemEnter) {
+                handlers.onMouseEnter = e => {
+                    onItemEnter.call(e, e, {item});
+                    dispatch({
+                        type: 'itemEnter',
+                        payload: {item}
+                    });
+                };
+            }
+            if (onItemLeave){
+                handlers.onMouseLeave = e => {
+                    onItemLeave.call(e, e, {item});
+                    dispatch({
+                        type: 'itemLeave',
+                        payload: {item}
+                    });
+                };
+            }
+            if (onItemClick) {
+                handlers.onClick = e => onItemClick.call(e, e, {item});
+            }
+            return handlers;
+        }, [dispatch, onItemClick, onItemEnter, onItemLeave]);
+
         
     return <div>
         {Boolean(headerCaptionHeight) && (
@@ -75,18 +101,7 @@ const Grid = () => {
             <Filler width="100%" height={topFillerHeight} />
             {data.map(item =>
                 <div key={item[rhgID]} className={classes.Item}
-                    onMouseEnter={e => {
-                        onItemEnter && onItemEnter.call(e, e, { item });
-                        dispatch({
-                            type: 'itemEnter',
-                            payload: {item}
-                        });
-                    }}
-                    onMouseLeave={e => {
-                        onItemLeave && onItemLeave.call(e, e, { item });
-                        dispatch({ type: 'itemLeave' });
-                    }}
-                    onClick={e => onItemClick && onItemClick.call(e, e, { item })}
+                    {...getHandlers(item)}
                 >
                     <Item {...item}/>
                 </div>
