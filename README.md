@@ -7,9 +7,10 @@
 
 #### TODO
 - [x] basic captions
+- [x] fix the loader
+- [x] add the hover, out click events handlers
 - [ ] filters (in captions)
 - [ ] sorters (in captions)
+- [ ] groups (config and captions)
 - [ ] but even before try to think a flexible way to allow those to be headless
-- [ ] add a virtualisation cutoff value setting
-- [ ] add the hover, out click events handlers
-- [x] fix the loader
+- [ ] add a virtualisation cutoff value setting (after filters)

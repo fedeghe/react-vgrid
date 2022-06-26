@@ -33,7 +33,12 @@ const Grid = () => {
                 FooterCaptionComponent,
                 footerCaptionHeight
             },
-            rhgID
+            rhgID,
+            events: {
+                onItemEnter,
+                onItemLeave,
+                onItemClick,
+            }
         } = state,
         classes = useStyles({
             width, height,
@@ -59,8 +64,7 @@ const Grid = () => {
             }
             doOnScroll(e);
         }, [dataHeight, dispatch, doOnScroll, scrollTop]);
-        console.log(headerCaptionHeight,
-            footerCaptionHeight)
+        
     return <div>
         {Boolean(headerCaptionHeight) && (
             <div className={classes.HeaderCaption}>
@@ -70,8 +74,21 @@ const Grid = () => {
         <div className={classes.GridContainer} onScroll={onScroll}>
             <Filler width="100%" height={topFillerHeight} />
             {data.map(item =>
-                <div key={item[rhgID]} className={classes.Item}>
-                    <Item {...item} />
+                <div key={item[rhgID]} className={classes.Item}
+                    onMouseEnter={e => {
+                        onItemEnter && onItemEnter.call(e, e, { item });
+                        dispatch({
+                            type: 'itemEnter',
+                            payload: {item}
+                        });
+                    }}
+                    onMouseLeave={e => {
+                        onItemLeave && onItemLeave.call(e, e, { item });
+                        dispatch({ type: 'itemLeave' });
+                    }}
+                    onClick={e => onItemClick && onItemClick.call(e, e, { item })}
+                >
+                    <Item {...item}/>
                 </div>
             )}
             <Filler width="100%" height={bottomFillerHeight} />

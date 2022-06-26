@@ -101,6 +101,11 @@ const prefix = 'HYG_',
                 footerCaption: {
                     Component: FooterCaptionComponent = null,
                     height: footerCaptionHeight = 0
+                } = {},
+                events: {
+                    onItemEnter,
+                    onItemLeave,
+                    onItemClick,
                 } = {}
             } = cnf,
             dimensions = {
@@ -138,6 +143,11 @@ const prefix = 'HYG_',
             virtual,
             debounceTimes: {
                 scrolling
+            },
+            events: {
+                onItemEnter,
+                onItemLeave,
+                onItemClick,
             }
         };
     };
