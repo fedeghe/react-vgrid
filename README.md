@@ -8,7 +8,7 @@
 #### TODO
 - [x] basic captions
 - [x] fix the loader
-- [x] add the hover, out click events handlers
+- [x] add the hover, out and click event handlers
 - [ ] filters (in captions)
 - [ ] sorters (in captions)
 - [ ] groups (config and captions)
