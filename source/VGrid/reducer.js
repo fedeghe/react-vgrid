@@ -45,10 +45,15 @@ const prefix = 'HYG_',
             {
                 dimensions,
                 originalData,
+                filteredData,
                 virtual,
                 virtual: {
-                    lineGap
-                }
+                    lineGap,
+                    scrollTop
+                },
+                filters,
+                fields,
+                // globalFilterValue
             } = oldState,
             actions = {
                 loading: () => ({
@@ -58,15 +63,65 @@ const prefix = 'HYG_',
                     }
                 }),
                 filter : () => {
+                    const {value, field} = payload;
+                    
+                    // filtering for a specific field value ? 
+                    if (field && field in filters){
+                        return {
+                            filters: {
+                                ...filters,
+                                [field] : {
+                                    filter: filters[field].filter,
+                                    value
+                                }
+                            },
+                            data: originalData.filter(row => filters[field].filter({
+                                userValue: value,
+                                row
+                            }))
+                        };
+                    }
+                    
+                    // unfielded filter,
+                    // use field filter if exists, or the raw value
+                    else {
+                        const _filteredData = originalData.filter(row => row.key in filters
+                                ? filters[row.key]({userValue: value, row})
+                                : fields.some(field => `${row[field]}`.includes(value))
+                            ),
+                            newVirtual = __getVirtual({dimensions, size: _filteredData.length, scrollTop, lineGap}),
+                            {fromItem, toItem} = newVirtual;
+                        return {
+                            filteredData: _filteredData,
+                            data: _filteredData.slice(fromItem, toItem),
+                            globalFilterValue: value,
+                            virtual: {
+                                ...virtual,
+                                ...newVirtual
+                            }
+                        };
+                    }
 
+                },
+                unfilter: () => {
+                    const newVirtual = __getVirtual({dimensions, size: originalData.length, scrollTop, lineGap}),
+                    {fromItem, toItem} = newVirtual;
+                    return {
+                        filteredData: originalData,
+                        data: originalData.slice(fromItem, toItem),
+                        virtual: {
+                            ...virtual,
+                            ...newVirtual
+                        }
+                    };
                 },
                 scroll: () => {
                     const scrollTop = parseInt(payload, 10),
-                        newVirtual = __getVirtual({dimensions, size: originalData.length, scrollTop, lineGap}),
+                        newVirtual = __getVirtual({dimensions, size: filteredData.length, scrollTop, lineGap}),
                         {fromItem, toItem} = newVirtual;
 
                     return {
-                        data: originalData.slice(fromItem, toItem),
+                        data: filteredData.slice(fromItem, toItem),
                         virtual: {
                             ...virtual,
                             ...newVirtual,
@@ -95,7 +150,8 @@ const prefix = 'HYG_',
                 } = {},
                 rhgID = '_ID',
                 debounceTimes: {
-                    scrolling = 50
+                    scrolling = 50,
+                    filtering = 50,
                 } = {},
                 headerCaption: {
                     Component: HeaderCaptionComponent = null,
@@ -109,7 +165,8 @@ const prefix = 'HYG_',
                     onItemEnter,
                     onItemLeave,
                     onItemClick,
-                } = {}
+                } = {},
+                filters = {},
             } = cnf,
             dimensions = {
                 width,
@@ -125,14 +182,26 @@ const prefix = 'HYG_',
                 lineGap,
                 ...innerVirtual
             },
-            {fromItem, toItem} = innerVirtual;
+            {fromItem, toItem} = innerVirtual,
+            funcFilters = Object.keys(filters).reduce((acc, filterKey) => {
+                if (isFunction(filters[filterKey])) {
+                    acc[filterKey] = {
+                        filter: filters[filterKey],
+                        value: ''
+                    };
+                }
+                return acc;
+            }, {}),
+            fields = Object.keys(data[0]);
             
         
         return {
             ...cnf,
             rhgID,
             originalData : originalData,
+            filteredData : [...originalData],
             data : originalData.slice(fromItem, toItem),
+            fields,
             Loader,
             header : {
                 HeaderCaptionComponent,
@@ -145,13 +214,16 @@ const prefix = 'HYG_',
             dimensions,
             virtual,
             debounceTimes: {
-                scrolling
+                scrolling,
+                filtering,
             },
             events: {
                 onItemEnter,
                 onItemLeave,
                 onItemClick,
             },
+            filters: funcFilters,
+            globalFilterValue: '',
             // filters: [],
             // globalFilter: ''
         };

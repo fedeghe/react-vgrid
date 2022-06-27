@@ -40,7 +40,9 @@ export default {
     //     scrolling: 20
     // }
     headerCaption: {
-        Component: () => (<div>hello</div>),
+        Component: ({filter, value}) => (<div>
+            <p><span>hello</span><input value={value} type="text" onChange={e => filter({value: e.target.value})}/></p>
+        </div>),
         height: 45
     },
 
@@ -54,4 +56,5 @@ export default {
     //     onItemLeave: (e, {item}) => {console.log('leave Item ', item);},
     //     onItemClick: (e, {item}) => {console.log('click Item ', item);},
     // }
+
 };
