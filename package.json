@@ -1,27 +1,27 @@
 {
-    "name": "@fedeghe/react-hypergrid",
+    "name": "@fedeghe/react-vgrid",
     "version": "0.0.0",
     "description": "react table on steroids",
-    "main": "./dist/index.js",
+    "main": "dist/index.js",
     "scripts": {
         "start": "webpack serve --open --config source/webpack.dev.js",
         "build": "webpack --config source/webpack.prod.js",
         "test": "jest -u",
         "testwatch": "jest -u --watchAll",
         "cover": "jest --coverage --collectCoverageFrom='source/**/*.js'",
-        "lint": "eslint ./source/HyperGrid/*.*"
+        "lint": "eslint ./source/VGrid/*.*"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/fedeghe/react-hypergrid.git"
+        "url": "git+https://github.com/fedeghe/react-vgrid.git"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "bugs": {
-        "url": "https://github.com/fedeghe/react-hypergrid/issues"
+        "url": "https://github.com/fedeghe/react-vgrid/issues"
     },
-    "homepage": "https://github.com/fedeghe/react-hypergrid#readme",
+    "homepage": "https://github.com/fedeghe/react-vgrid#readme",
 
     "devDependencies": {
         "@babel/core": "^7.12.9",
