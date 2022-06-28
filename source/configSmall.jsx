@@ -6,16 +6,16 @@ export default {
         { key: 'id', type: 'int' },
         { key: 'entityid', type: 'id' },
         { key: 'name', type: 'str' },
-        { key: 'date', type: 'date' },
-        { key: 'actions', type: 'str' },
-        { key: 'id2', type: 'int' },
-        { key: 'entityid2', type: 'int' },
-        { key: 'name2', type: 'str' },
-        { key: 'date2', type: 'date' },
-        { key: 'id3', type: 'id' },
-        { key: 'entityid3', type: 'int' },
-        { key: 'name3', type: 'str' },
-        { key: 'date3', type: 'date' },
+        // { key: 'date', type: 'date' },
+        // { key: 'actions', type: 'str' },
+        // { key: 'id2', type: 'int' },
+        // { key: 'entityid2', type: 'int' },
+        // { key: 'name2', type: 'str' },
+        // { key: 'date2', type: 'date' },
+        // { key: 'id3', type: 'id' },
+        // { key: 'entityid3', type: 'int' },
+        // { key: 'name3', type: 'str' },
+        // { key: 'date3', type: 'date' },
     ], 1e5),
     filters: {
         id: ({userValue, row}) => row.id.includes(userValue) 
@@ -40,7 +40,9 @@ export default {
     //     scrolling: 20
     // }
     headerCaption: {
-        Component: () => (<div>hello</div>),
+        Component: ({filter, value}) => (<div>
+            <p><span>hello</span><input value={value} type="text" onChange={e => filter({value: e.target.value})}/></p>
+        </div>),
         height: 45
     },
 
@@ -54,4 +56,5 @@ export default {
     //     onItemLeave: (e, {item}) => {console.log('leave Item ', item);},
     //     onItemClick: (e, {item}) => {console.log('click Item ', item);},
     // }
+
 };
