@@ -6,7 +6,13 @@ const Item = data => {
     const classes = useStyles();
     return <div className={classes.Item}>
         <div className={classes.Inner}>
-            {data.id}
+            <ul>
+                {Object.keys(data).map((fk, i) => (
+                    <li key={`k_${i}`}>
+                        {fk} : {data[fk]}
+                    </li>
+                ))}
+            </ul>
         </div>
     </div>;
 };

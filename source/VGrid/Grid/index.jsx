@@ -23,7 +23,8 @@ const Grid = () => {
                 scrollTop
             },
             debounceTimes: {
-                scrolling: scrollingDebounceTime
+                scrolling: scrollingDebounceTime,
+                filtering: filteringDebounceTime,
             },
             header: {
                 HeaderCaptionComponent,
@@ -38,7 +39,8 @@ const Grid = () => {
                 onItemEnter,
                 onItemLeave,
                 onItemClick,
-            }
+            },
+            globalFilterValue
         } = state,
         classes = useStyles({
             width, height,
@@ -46,6 +48,15 @@ const Grid = () => {
             headerCaptionHeight,
             footerCaptionHeight,
         }),
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        filter = useCallback(debounce(({value, field}) => {
+            dispatch({
+                type: 'filter',
+                payload: {value, field}
+            });
+        }, filteringDebounceTime), []),
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
         doOnScroll = useCallback(debounce(e => {
             e.preventDefault();
@@ -94,7 +105,7 @@ const Grid = () => {
     return <div>
         {Boolean(headerCaptionHeight) && (
             <div className={classes.HeaderCaption}>
-                <HeaderCaptionComponent/>
+                <HeaderCaptionComponent filter={filter} value={globalFilterValue}/>
             </div>
         )}
         <div className={classes.GridContainer} onScroll={onScroll}>
@@ -110,7 +121,7 @@ const Grid = () => {
         </div>
         {Boolean(footerCaptionHeight) && (
             <div className={classes.FooterCaption}>
-                <FooterCaptionComponent/>
+                <FooterCaptionComponent filter={filter} value={globalFilterValue}/>
             </div>
         )}
     </div>;
