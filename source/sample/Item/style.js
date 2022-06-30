@@ -6,7 +6,8 @@ export default createUseStyles({
         overflow:'scroll',
         height:'inherit',
         border:'5px solid white',
-        outline: '1px solid gray'
+        outline: '1px solid gray',
+        borderRadius: 5
     },
     Inner:{
         padding:'10px',

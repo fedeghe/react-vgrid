@@ -24,7 +24,6 @@ export default ({config}) => {
     return <div className={[classes.Wrapper, 'Wrapper'].join(' ')}>
         <GridContext.Provider value={{state, dispatch}}>
             {loading && <div className={classes.LoaderContainer}><Loader/></div>}
-            {/* <div className={classes.LoaderContainer}><Loader/></div> */}
             <Grid/>
         </GridContext.Provider>
     </div>;

@@ -41,7 +41,11 @@ const Grid = () => {
                 onItemClick,
             },
             globalFilterValue,
-            filtered
+            filtered,
+            cls: {
+                HeaderCaptionCls,
+                FooterCaptionCls
+            }
         } = state,
         classes = useStyles({
             width, height,
@@ -51,7 +55,7 @@ const Grid = () => {
         }),
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        filter = useCallback(debounce(({value, field}) => {
+        globalFilter = useCallback(debounce(({value, field}) => {
             dispatch({
                 type: 'filter',
                 payload: {value, field}
@@ -100,13 +104,18 @@ const Grid = () => {
                 handlers.onClick = e => onItemClick.call(e, e, {item});
             }
             return handlers;
-        }, [dispatch, onItemClick, onItemEnter, onItemLeave]);
+        }, [dispatch, onItemClick, onItemEnter, onItemLeave]),
+        captionProps = {
+            globalFilter, 
+            globalFilterValue,
+            filtered
+        };
 
         
     return <div>
         {Boolean(headerCaptionHeight) && (
-            <div className={classes.HeaderCaption}>
-                <HeaderCaptionComponent filter={filter} value={globalFilterValue} filtered={filtered}/>
+            <div className={[classes.HeaderCaption, HeaderCaptionCls].join(' ')}>
+                <HeaderCaptionComponent {...captionProps}/>
             </div>
         )}
         <div className={classes.GridContainer} onScroll={onScroll}>
@@ -121,8 +130,8 @@ const Grid = () => {
             <Filler width="100%" height={bottomFillerHeight} />
         </div>
         {Boolean(footerCaptionHeight) && (
-            <div className={classes.FooterCaption}>
-                <FooterCaptionComponent filter={filter} value={globalFilterValue} filtered={filtered}/>
+            <div className={[classes.FooterCaption, FooterCaptionCls].join(' ')}>
+                <FooterCaptionComponent {...captionProps}/>
             </div>
         )}
     </div>;

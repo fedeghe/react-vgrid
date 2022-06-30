@@ -171,6 +171,10 @@ const prefix = 'HYG_',
                     onItemClick,
                 } = {},
                 filters = {},
+                cls: {
+                    HeaderCaption : HeaderCaptionCls= null,
+                    FooterCaption : FooterCaptionCls= null,
+                } = {}
             } = cnf,
             dimensions = {
                 width,
@@ -229,6 +233,10 @@ const prefix = 'HYG_',
             },
             filters: funcFilters,
             globalFilterValue: '',
+            cls:{
+                HeaderCaptionCls,
+                FooterCaptionCls
+            }
             // filters: [],
             // globalFilter: ''
         };

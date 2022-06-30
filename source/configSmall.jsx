@@ -40,21 +40,28 @@ export default {
     //     scrolling: 20
     // }
     headerCaption: {
-        Component: ({filter, value, filtered}) => (<div style={{padding:8}}>
-            <p><span>Search: </span><input value={value} type="text" onChange={e => filter({value: e.target.value})}/> showing {filtered} elements</p>
+        Component: ({globalFilter, globalFilterValue, filtered}) => (<div>
+            <p><span>Search: </span><input value={globalFilterValue} type="text" onChange={e => globalFilter({value: e.target.value})}/> showing {filtered} elements</p>
         </div>),
         height: 45
     },
 
     footerCaption: {
-        Component: ({filtered}) => (<div>footer caption {filtered}</div>),
+        Component: ({filtered}) => (<div className="FooterCaption">footer caption {filtered}</div>),
         height: 25
     },
+
+
 
     // events: {
     //     onItemEnter: (e, {item}) => {console.log('enter Item ', item);},
     //     onItemLeave: (e, {item}) => {console.log('leave Item ', item);},
     //     onItemClick: (e, {item}) => {console.log('click Item ', item);},
     // }
+
+    cls: {
+        HeaderCaption: 'HeaderCaption',
+        FooterCaption: 'FooterCaption',
+    }
 
 };

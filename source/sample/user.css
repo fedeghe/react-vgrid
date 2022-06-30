@@ -27,4 +27,21 @@ body {
 
 .Wrapper {
     background-color: white !important;
+    border-radius: 5px;
+}
+
+.HeaderCaption {
+    background-color: orange;
+    line-height: 45px;
+    padding-left: 10px;
+}
+
+.HeaderCaption input {
+    height: 25px;
+}
+
+.FooterCaption {
+    background-color: rgb(255, 232, 190);
+    padding-left: 2px;
+    line-height: 25px;
 }
