@@ -67,6 +67,10 @@ const prefix = 'HYG_',
                     
                     // filtering for a specific field value ? 
                     if (field && field in filters){
+                        const fData = originalData.filter(row => filters[field].filter({
+                            userValue: value,
+                            row
+                        }))
                         return {
                             filters: {
                                 ...filters,
@@ -75,10 +79,8 @@ const prefix = 'HYG_',
                                     value
                                 }
                             },
-                            data: originalData.filter(row => filters[field].filter({
-                                userValue: value,
-                                row
-                            }))
+                            data: fData,
+                            filtered: fData.length
                         };
                     }
                     
@@ -93,6 +95,7 @@ const prefix = 'HYG_',
                             {fromItem, toItem} = newVirtual;
                         return {
                             filteredData: _filteredData,
+                            filtered: _filteredData.length,
                             data: _filteredData.slice(fromItem, toItem),
                             globalFilterValue: value,
                             virtual: {
@@ -112,7 +115,8 @@ const prefix = 'HYG_',
                         virtual: {
                             ...virtual,
                             ...newVirtual
-                        }
+                        },
+                        filtered: originalData.length
                     };
                 },
                 scroll: () => {
@@ -200,6 +204,7 @@ const prefix = 'HYG_',
             rhgID,
             originalData : originalData,
             filteredData : [...originalData],
+            filtered: originalData.length,
             data : originalData.slice(fromItem, toItem),
             fields,
             Loader,

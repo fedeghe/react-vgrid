@@ -40,7 +40,8 @@ const Grid = () => {
                 onItemLeave,
                 onItemClick,
             },
-            globalFilterValue
+            globalFilterValue,
+            filtered
         } = state,
         classes = useStyles({
             width, height,
@@ -105,7 +106,7 @@ const Grid = () => {
     return <div>
         {Boolean(headerCaptionHeight) && (
             <div className={classes.HeaderCaption}>
-                <HeaderCaptionComponent filter={filter} value={globalFilterValue}/>
+                <HeaderCaptionComponent filter={filter} value={globalFilterValue} filtered={filtered}/>
             </div>
         )}
         <div className={classes.GridContainer} onScroll={onScroll}>
@@ -121,7 +122,7 @@ const Grid = () => {
         </div>
         {Boolean(footerCaptionHeight) && (
             <div className={classes.FooterCaption}>
-                <FooterCaptionComponent filter={filter} value={globalFilterValue}/>
+                <FooterCaptionComponent filter={filter} value={globalFilterValue} filtered={filtered}/>
             </div>
         )}
     </div>;
