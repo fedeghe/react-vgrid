@@ -40,8 +40,8 @@ export default {
     //     scrolling: 20
     // }
     headerCaption: {
-        Component: ({filter, value, filtered}) => (<div>
-            <p><span>hello</span><input value={value} type="text" onChange={e => filter({value: e.target.value})}/> {filtered}</p>
+        Component: ({filter, value, filtered}) => (<div style={{padding:8}}>
+            <p><span>Search: </span><input value={value} type="text" onChange={e => filter({value: e.target.value})}/> showing {filtered} elements</p>
         </div>),
         height: 45
     },
