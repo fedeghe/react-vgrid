@@ -11,5 +11,4 @@ export default createUseStyles({
         alignItems: 'center',
         justifyContent: 'center'
     },
-    Td: {padding: '0px'},
 });

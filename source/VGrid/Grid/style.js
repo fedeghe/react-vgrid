@@ -1,6 +1,9 @@
 import { createUseStyles } from "react-jss";
 
 export default createUseStyles({
+    VGrid: {
+        display:'block'
+    },
     GridContainer: ({ height, width, headerCaptionHeight, footerCaptionHeight}) => ({
         maxWidth: `${width}px`,
         width: `${width}px`,

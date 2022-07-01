@@ -6,17 +6,19 @@ const NoData = () => {
     const {
             state: {
                 NoFilterData,
-                dimensions: { width },
+                dimensions: { width, height },
                 total,
-                virtual: {
-                    colspan,
-                    contentHeight: height
+                header: {
+                    headerCaptionHeight
+                },
+                footer: {
+                    footerCaptionHeight
                 }
             }
         } = useContext(TableContext),
-        classes = useStyles({width, height});
+        classes = useStyles({width, height: height - headerCaptionHeight - footerCaptionHeight});
 
-    return <NoFilterData total={total} />;
+    return <div className={classes.NoData}><NoFilterData total={total} /></div>;
 };
 
 export default NoData;

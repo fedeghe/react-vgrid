@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import generateRowData from './utils';
 import Item from './sample/Item';
 export default {
@@ -17,9 +17,9 @@ export default {
         // { key: 'name3', type: 'str' },
         // { key: 'date3', type: 'date' },
     ], 1e5),
-    // filters: {
-    //     id: ({userValue, row}) => row.id.includes(userValue) 
-    // },
+    filters: {
+        id: ({userValue, row}) => row.id.includes(userValue) 
+    },
     // sorters: {
     //     nameMe: (itemA, itemB, direction) => {
     //         if (itemA.entityid === itemB.entityid) return 0;
@@ -36,6 +36,7 @@ export default {
         height: 800
     },
     lineGap : 2,
+    NoFilterData: ({total}) => <div>no data out of {total}</div>,
     // debounceTimes: {
     //     scrolling: 20
     // }
@@ -50,7 +51,6 @@ export default {
         Component: ({filtered}) => (<div className="FooterCaption">footer caption {filtered}</div>),
         height: 25
     },
-
 
 
     // events: {

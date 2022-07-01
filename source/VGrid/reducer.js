@@ -70,7 +70,7 @@ const prefix = 'HYG_',
                         const fData = originalData.filter(row => filters[field].filter({
                             userValue: value,
                             row
-                        }))
+                        }));
                         return {
                             filters: {
                                 ...filters,
@@ -171,6 +171,7 @@ const prefix = 'HYG_',
                     onItemClick,
                 } = {},
                 filters = {},
+                NoFilterData = () => 'no data',
                 cls: {
                     HeaderCaption : HeaderCaptionCls= null,
                     FooterCaption : FooterCaptionCls= null,
@@ -210,6 +211,7 @@ const prefix = 'HYG_',
             filteredData : [...originalData],
             filtered: originalData.length,
             data : originalData.slice(fromItem, toItem),
+            total: originalData.length,
             fields,
             Loader,
             header : {
@@ -236,7 +238,8 @@ const prefix = 'HYG_',
             cls:{
                 HeaderCaptionCls,
                 FooterCaptionCls
-            }
+            },
+            NoFilterData
             // filters: [],
             // globalFilter: ''
         };

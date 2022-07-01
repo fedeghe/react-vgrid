@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useRef, useEffect } from 'react';
+import React, { useCallback, useContext } from 'react';
 import NoData from './NoData';
 import Filler from './Filler';
 
@@ -20,7 +20,8 @@ const Grid = () => {
                 topFillerHeight,
                 bottomFillerHeight,
                 dataHeight,
-                scrollTop
+                scrollTop,
+                loading,
             },
             debounceTimes: {
                 scrolling: scrollingDebounceTime,
@@ -108,16 +109,17 @@ const Grid = () => {
         captionProps = {
             globalFilter, 
             globalFilterValue,
-            filtered
+            filtered,
+            loading
         };
 
-        
-    return <div>
+    return <div className={classes.VGrid}>
         {Boolean(headerCaptionHeight) && (
             <div className={[classes.HeaderCaption, HeaderCaptionCls].join(' ')}>
                 <HeaderCaptionComponent {...captionProps}/>
             </div>
         )}
+        {filtered ? (
         <div className={classes.GridContainer} onScroll={onScroll}>
             <Filler width="100%" height={topFillerHeight} />
             {data.map(item =>
@@ -128,7 +130,7 @@ const Grid = () => {
                 </div>
             )}
             <Filler width="100%" height={bottomFillerHeight} />
-        </div>
+        </div>) : <NoData/>}
         {Boolean(footerCaptionHeight) && (
             <div className={[classes.FooterCaption, FooterCaptionCls].join(' ')}>
                 <FooterCaptionComponent {...captionProps}/>
