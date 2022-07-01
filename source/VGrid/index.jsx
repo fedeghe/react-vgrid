@@ -8,7 +8,6 @@ import useStyles from './style.js';
 
 export default ({config}) => {
     const { reducer, init } = reducerFactory(),
-        // initialState = useMemo(() => init(config), [config, init]),
         [ state, dispatch ] = useReducer(reducer, config, init),
         {
             dimensions: {
