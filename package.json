@@ -22,7 +22,6 @@
         "url": "https://github.com/fedeghe/react-vgrid/issues"
     },
     "homepage": "https://github.com/fedeghe/react-vgrid#readme",
-
     "devDependencies": {
         "@babel/core": "^7.12.9",
         "@babel/plugin-transform-runtime": "^7.12.10",
@@ -51,6 +50,7 @@
         "jss-preset-default": "^10.5.1",
         "less": "^4.1.1",
         "less-loader": "^8.0.0",
+        "mini-css-extract-plugin": "^2.6.1",
         "react": "^18.0.0",
         "react-dom": "^18.0.0",
         "react-jss": "^10.9.0",

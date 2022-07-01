@@ -1,5 +1,6 @@
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = {
@@ -11,7 +12,7 @@ module.exports = {
         filename: '[name].js',
         libraryTarget: "umd"
     },
-    devtool: 'inline-source-map',
+    // devtool: 'inline-source-map',
     externalsType : 'umd',
 
     // optimization: {
@@ -32,6 +33,10 @@ module.exports = {
                 exclude: /node_modules/,
                 use: ['babel-loader'],
             },
+            {
+                test: /\.css$/,
+                use: [MiniCssExtractPlugin.loader, 'css-loader']
+            }
         ],
     },
     resolve: {

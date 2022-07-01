@@ -17,16 +17,16 @@ export default {
         // { key: 'name3', type: 'str' },
         // { key: 'date3', type: 'date' },
     ], 1e5),
-    filters: {
-        id: ({userValue, row}) => row.id.includes(userValue) 
-    },
-    sorters: {
-        nameMe: (itemA, itemB, direction) => {
-            if (itemA.entityid === itemB.entityid) return 0;
-            const v = itemA.entityid > itemB.entityid ? 1 : -1;
-            return direction === 'asc' ? v : -v;
-        }
-    },
+    // filters: {
+    //     id: ({userValue, row}) => row.id.includes(userValue) 
+    // },
+    // sorters: {
+    //     nameMe: (itemA, itemB, direction) => {
+    //         if (itemA.entityid === itemB.entityid) return 0;
+    //         const v = itemA.entityid > itemB.entityid ? 1 : -1;
+    //         return direction === 'asc' ? v : -v;
+    //     }
+    // },
     Item,
     Loader: () => (<div className="Loading">loading</div>),
     dimensions: {
