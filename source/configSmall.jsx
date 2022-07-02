@@ -18,7 +18,9 @@ export default {
         // { key: 'date3', type: 'date' },
     ], 1e5),
     filters: {
-        id: ({userValue, row}) => row.id.includes(userValue) 
+        id: ({userValue, row}) => 
+            userValue.length === 0
+            || `${row.id}` === userValue
     },
     // sorters: {
     //     nameMe: (itemA, itemB, direction) => {
@@ -42,8 +44,15 @@ export default {
         // filtering: 200,
     },
     headerCaption: {
-        Component: ({globalFilter, globalFilterValue, filtered, maxRenderedItems, rendered}) => (<div>
-            <p><span>Search: </span><input value={globalFilterValue} type="text" onChange={e => globalFilter({value: e.target.value})}/> listing {filtered} elements ({maxRenderedItems} max rendered, {rendered} rendered)</p>
+        Component: ({globalFilter, globalFilterValue, filtered, maxRenderedItems, rendered, filters}) => (<div>
+            <p>
+                Search: <input value={globalFilterValue} type="text" onChange={
+                    e => globalFilter({value: e.target.value})}
+                /> 
+                 -
+                Search id only: <input value={filters.id.value} type="text" onChange={
+                    e => globalFilter({value: e.target.value, field: 'id'})
+                }/> listing {filtered} elements ({maxRenderedItems} max rendered, {rendered} rendered)</p>
         </div>),
         height: 45
     },

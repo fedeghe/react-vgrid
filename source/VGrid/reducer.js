@@ -66,26 +66,31 @@ const prefix = 'HYG_',
                 }),
                 filter : () => {
                     const {value, field} = payload;
-                    
                     // filtering for a specific field value ? 
                     if (field && field in filters){
+                        
                         const fData = originalData.filter(row => filters[field].filter({
-                            userValue: value,
-                            row
-                        }));
+                                userValue: `${value}`,
+                                row
+                            })),
+                            newVirtual = __getVirtual({dimensions, size: fData.length, scrollTop, lineGap}),
+                            {fromItem, toItem} = newVirtual;
                         return {
                             filters: {
                                 ...filters,
                                 [field] : {
-                                    filter: filters[field].filter,
+                                    ...filters[field],
                                     value
                                 }
                             },
-                            data: fData,
+                            data: fData.slice(fromItem, toItem),
+                            filteredData: fData,
                             filtered: fData.length,
+                            // globalFilterValue: value,
                             virtual: {
                                 ...virtual,
-                                rendered: Math.min(virtual.toItem - virtual.fromItem, fData.length),
+                                ...newVirtual,
+                                rendered: Math.min(toItem - fromItem, fData.length),
                                 scrollTop: 0
                             }
                         };
@@ -211,7 +216,7 @@ const prefix = 'HYG_',
                 return acc;
             }, {}),
             fields = Object.keys(data[0]);
-            
+        console.log(funcFilters)
         
         return {
             ...cnf,

@@ -46,6 +46,7 @@ const Grid = () => {
             },
             globalFilterValue,
             filtered,
+            filters,
             cls: {
                 HeaderCaptionCls,
                 FooterCaptionCls
@@ -115,7 +116,8 @@ const Grid = () => {
             filtered,
             loading,
             maxRenderedItems,
-            rendered
+            rendered,
+            filters
         };
 
     useEffect(() => {
