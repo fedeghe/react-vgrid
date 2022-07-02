@@ -7,7 +7,7 @@ const Item = data => {
     return <div className={classes.Item}>
         <div className={classes.Inner}>
             <ul>
-                {Object.keys(data).map((fk, i) => (
+                {Object.keys(data).filter(k => k !=='_ID').map((fk, i) => (
                     <li key={`k_${i}`}>
                         {fk} : {data[fk]}
                     </li>

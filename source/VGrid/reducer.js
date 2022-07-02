@@ -19,12 +19,12 @@ const prefix = 'HYG_',
             topFillerHeight = topLinesSkipped * itemHeight,
             linesToRender = 2 * lineGap + Math.ceil(height / itemHeight),
             dataHeight = linesToRender * itemHeight,
-            itemsToRender = columns * linesToRender,
+            maxRenderedItems = columns * linesToRender,
             bottomFillerHeight = Math.max(carpetHeight - topFillerHeight - dataHeight, 0), 
             fromItem = trigger
                 ? topLinesSkipped * columns
                 : 0,
-            toItem = trigger ? fromItem + itemsToRender: linesToRender * columns;
+            toItem = trigger ? fromItem + maxRenderedItems: linesToRender * columns;
         return {
             fromItem,
             toItem,
@@ -33,6 +33,7 @@ const prefix = 'HYG_',
             bottomFillerHeight,
             linesToRender,
             dataHeight,
+            maxRenderedItems,
             loading:false,
             lines,
             columns,

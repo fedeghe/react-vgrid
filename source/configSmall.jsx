@@ -37,12 +37,13 @@ export default {
     },
     lineGap : 2,
     NoFilterData: ({total}) => <div>no data out of {total}</div>,
-    // debounceTimes: {
-    //     scrolling: 20
-    // }
+    debounceTimes: {
+        scrolling: 10,
+        // filtering: 200,
+    },
     headerCaption: {
-        Component: ({globalFilter, globalFilterValue, filtered}) => (<div>
-            <p><span>Search: </span><input value={globalFilterValue} type="text" onChange={e => globalFilter({value: e.target.value})}/> showing {filtered} elements</p>
+        Component: ({globalFilter, globalFilterValue, filtered, maxRenderedItems}) => (<div>
+            <p><span>Search: </span><input value={globalFilterValue} type="text" onChange={e => globalFilter({value: e.target.value})}/> listing {filtered} elements ({maxRenderedItems} max rendered)</p>
         </div>),
         height: 45
     },
