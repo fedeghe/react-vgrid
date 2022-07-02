@@ -113,7 +113,7 @@ const Grid = () => {
             loading
         };
 
-    return <div className={classes.VGrid}>
+    return <div>
         {Boolean(headerCaptionHeight) && (
             <div className={[classes.HeaderCaption, HeaderCaptionCls].join(' ')}>
                 <HeaderCaptionComponent {...captionProps}/>

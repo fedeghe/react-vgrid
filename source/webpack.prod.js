@@ -18,10 +18,10 @@ module.exports = {
     // optimization: {
     //     minimizer: [new UglifyJsPlugin()],
     // },
-    optimization: {
-        minimize: true,
-        minimizer: [new TerserPlugin()],
-      },
+    // optimization: {
+    //     minimize: true,
+    //     minimizer: [new TerserPlugin()],
+    //   },
     plugins: [
         new CleanWebpackPlugin({ cleanStaleWebpackAssets: false }),
     ],
