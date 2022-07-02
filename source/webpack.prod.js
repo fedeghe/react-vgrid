@@ -15,13 +15,10 @@ module.exports = {
     // devtool: 'inline-source-map',
     externalsType : 'umd',
 
-    // optimization: {
-    //     minimizer: [new UglifyJsPlugin()],
-    // },
-    // optimization: {
-    //     minimize: true,
-    //     minimizer: [new TerserPlugin()],
-    //   },
+    optimization: {
+        minimize: true,
+        minimizer: [new TerserPlugin()],
+      },
     plugins: [
         new CleanWebpackPlugin({ cleanStaleWebpackAssets: false }),
     ],

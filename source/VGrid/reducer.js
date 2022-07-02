@@ -80,7 +80,11 @@ const prefix = 'HYG_',
                                 }
                             },
                             data: fData,
-                            filtered: fData.length
+                            filtered: fData.length,
+                            virtual: {
+                                ...virtual,
+                                scrollTop: 0
+                            }
                         };
                     }
                     
@@ -100,7 +104,8 @@ const prefix = 'HYG_',
                             globalFilterValue: value,
                             virtual: {
                                 ...virtual,
-                                ...newVirtual
+                                ...newVirtual,
+                                scrollTop: 0
                             }
                         };
                     }

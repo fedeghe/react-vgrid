@@ -1,4 +1,4 @@
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback, useContext, useEffect, useRef } from 'react';
 import NoData from './NoData';
 import Filler from './Filler';
 
@@ -8,7 +8,8 @@ import { debounce } from './../utils';
 import useStyles from './style.js';
 
 const Grid = () => {
-    const { state, dispatch } = useContext(GridContext),
+    const ref = useRef(),
+        { state, dispatch } = useContext(GridContext),
         {
             data,
             dimensions: {
@@ -113,6 +114,13 @@ const Grid = () => {
             loading
         };
 
+    useEffect(() => {
+        if (scrollTop === 0) {
+            // ref.current.scrollTo(ref.current.scrollLeft, 0);
+            ref.current.scrollTop = 0;
+        }
+    }, [scrollTop, ref]);    
+
     return <div>
         {Boolean(headerCaptionHeight) && (
             <div className={[classes.HeaderCaption, HeaderCaptionCls].join(' ')}>
@@ -120,7 +128,7 @@ const Grid = () => {
             </div>
         )}
         {filtered ? (
-        <div className={classes.GridContainer} onScroll={onScroll}>
+        <div className={classes.GridContainer} ref={ref} onScroll={onScroll}>
             <Filler width="100%" height={topFillerHeight} />
             {data.map(item =>
                 <div key={item[rhgID]} className={classes.Item}
