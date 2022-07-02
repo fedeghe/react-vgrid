@@ -23,7 +23,8 @@ const Grid = () => {
                 dataHeight,
                 scrollTop,
                 loading,
-                maxRenderedItems
+                maxRenderedItems,
+                rendered
             },
             debounceTimes: {
                 scrolling: scrollingDebounceTime,
@@ -113,7 +114,8 @@ const Grid = () => {
             globalFilterValue,
             filtered,
             loading,
-            maxRenderedItems
+            maxRenderedItems,
+            rendered
         };
 
     useEffect(() => {

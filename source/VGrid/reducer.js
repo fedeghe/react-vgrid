@@ -37,7 +37,8 @@ const prefix = 'HYG_',
             loading:false,
             lines,
             columns,
-            scrollTop
+            scrollTop,
+            rendered: toItem - fromItem
         };
     },
 
@@ -84,6 +85,7 @@ const prefix = 'HYG_',
                             filtered: fData.length,
                             virtual: {
                                 ...virtual,
+                                rendered: Math.min(virtual.toItem - virtual.fromItem, fData.length),
                                 scrollTop: 0
                             }
                         };
@@ -106,6 +108,7 @@ const prefix = 'HYG_',
                             virtual: {
                                 ...virtual,
                                 ...newVirtual,
+                                rendered: Math.min(newVirtual.toItem - newVirtual.fromItem, _filteredData.length),
                                 scrollTop: 0
                             }
                         };
@@ -120,7 +123,8 @@ const prefix = 'HYG_',
                         data: originalData.slice(fromItem, toItem),
                         virtual: {
                             ...virtual,
-                            ...newVirtual
+                            ...newVirtual,
+                            rendered: Math.min(toItem - fromItem +1, originalData.length)
                         },
                         filtered: originalData.length
                     };
@@ -193,7 +197,6 @@ const prefix = 'HYG_',
             innerVirtual = __getVirtual({dimensions, size: originalData.length, scrollTop: 0, lineGap}),
             virtual = {
                 loading: false,
-                
                 lineGap,
                 ...innerVirtual
             },

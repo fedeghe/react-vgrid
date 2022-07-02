@@ -42,14 +42,14 @@ export default {
         // filtering: 200,
     },
     headerCaption: {
-        Component: ({globalFilter, globalFilterValue, filtered, maxRenderedItems}) => (<div>
-            <p><span>Search: </span><input value={globalFilterValue} type="text" onChange={e => globalFilter({value: e.target.value})}/> listing {filtered} elements ({maxRenderedItems} max rendered)</p>
+        Component: ({globalFilter, globalFilterValue, filtered, maxRenderedItems, rendered}) => (<div>
+            <p><span>Search: </span><input value={globalFilterValue} type="text" onChange={e => globalFilter({value: e.target.value})}/> listing {filtered} elements ({maxRenderedItems} max rendered, {rendered} rendered)</p>
         </div>),
         height: 45
     },
 
     footerCaption: {
-        Component: ({filtered}) => (<div className="FooterCaption">footer caption {filtered}</div>),
+        Component: ({filtered}) => (<div className="FooterCaption">footer caption ({filtered} filtered)</div>),
         height: 25
     },
 
