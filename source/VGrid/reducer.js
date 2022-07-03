@@ -66,6 +66,7 @@ const prefix = 'HYG_',
                 }),
                 filter : () => {
                     const {value, field} = payload;
+                    
                     // filtering for a specific field value ? 
                     if (field && field in filters){
                         
@@ -75,6 +76,7 @@ const prefix = 'HYG_',
                             })),
                             newVirtual = __getVirtual({dimensions, size: fData.length, scrollTop, lineGap}),
                             {fromItem, toItem} = newVirtual;
+
                         return {
                             filters: {
                                 ...filters,
@@ -86,7 +88,6 @@ const prefix = 'HYG_',
                             data: fData.slice(fromItem, toItem),
                             filteredData: fData,
                             filtered: fData.length,
-                            // globalFilterValue: value,
                             virtual: {
                                 ...virtual,
                                 ...newVirtual,
@@ -118,14 +119,19 @@ const prefix = 'HYG_',
                             }
                         };
                     }
-
                 },
+
                 unfilter: () => {
-                    const newVirtual = __getVirtual({dimensions, size: originalData.length, scrollTop, lineGap}),
+                    const newVirtual = __getVirtual({
+                        dimensions,
+                        size: originalData.length,
+                        scrollTop, lineGap
+                    }),
                     {fromItem, toItem} = newVirtual;
                     return {
                         filteredData: originalData,
                         data: originalData.slice(fromItem, toItem),
+                        globalFilterValue: '',
                         virtual: {
                             ...virtual,
                             ...newVirtual,
