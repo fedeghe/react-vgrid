@@ -38,7 +38,6 @@ const prefix = 'HYG_',
             lines,
             columns,
             scrollTop,
-            rendered: toItem - fromItem
         };
     },
 
@@ -125,7 +124,6 @@ const prefix = 'HYG_',
                         virtual: {
                             ...virtual,
                             ...newVirtual,
-                            rendered: Math.min(toItem - fromItem, _newData.length),
                             scrollTop: 0
                         }
                     }
@@ -158,7 +156,6 @@ const prefix = 'HYG_',
                             virtual: {
                                 ...virtual,
                                 ...newVirtual,
-                                rendered: Math.min(toItem - fromItem, fData.length),
                                 scrollTop: 0
                             }
                         };
@@ -181,7 +178,6 @@ const prefix = 'HYG_',
                             virtual: {
                                 ...virtual,
                                 ...newVirtual,
-                                rendered: Math.min(newVirtual.toItem - newVirtual.fromItem, _filteredData.length),
                                 scrollTop: 0
                             }
                         };
@@ -202,7 +198,6 @@ const prefix = 'HYG_',
                         virtual: {
                             ...virtual,
                             ...newVirtual,
-                            rendered: Math.min(toItem - fromItem + 1, originalData.length)
                         },
                         filtered: originalData.length
                     };

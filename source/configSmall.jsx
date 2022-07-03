@@ -19,7 +19,7 @@ export default {
     ], 1e5),
     filters: {
         id: ({userValue, row}) => 
-            `${row.id}`.includes(userValue)
+            `${row.id}`.startsWith(userValue)
     },
     // sorters: {
     //     nameMe: (itemA, itemB, direction) => {
@@ -43,7 +43,7 @@ export default {
         // filtering: 200,
     },
     headerCaption: {
-        Component: ({globalFilter, globalFilterValue, filtered, maxRenderedItems, rendered, filters}) => (<div>
+        Component: ({globalFilter, globalFilterValue, filtered, maxRenderedItems, filters}) => (<div>
             <p>
                 Search: <input value={globalFilterValue} type="text" onChange={
                     e => globalFilter({value: e.target.value})}
@@ -51,7 +51,7 @@ export default {
                  -
                 Search id only: <input value={filters.id.value} type="text" onChange={
                     e => globalFilter({value: e.target.value, field: 'id'})
-                }/> listing {filtered} elements ({maxRenderedItems} max rendered, {rendered} rendered)</p>
+                }/> listing {filtered} elements ({maxRenderedItems} max rendered)</p>
         </div>),
         height: 45
     },

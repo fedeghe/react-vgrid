@@ -24,7 +24,6 @@ const Grid = () => {
                 scrollTop,
                 loading,
                 maxRenderedItems,
-                rendered
             },
             debounceTimes: {
                 scrolling: scrollingDebounceTime,
@@ -116,7 +115,6 @@ const Grid = () => {
             filtered,
             loading,
             maxRenderedItems,
-            rendered,
             filters
         };
 
