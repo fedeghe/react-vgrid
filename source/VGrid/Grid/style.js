@@ -8,6 +8,7 @@ export default createUseStyles({
         display:'flex',
         flexDirection:'row',
         flexWrap: 'wrap',
+        alignContent: 'flex-start',
         overflow: 'scroll',
         scrollBehavior: 'smooth',
         padding: 0,

@@ -19,8 +19,7 @@ export default {
     ], 1e5),
     filters: {
         id: ({userValue, row}) => 
-            userValue.length === 0
-            || `${row.id}` === userValue
+            `${row.id}`.includes(userValue)
     },
     // sorters: {
     //     nameMe: (itemA, itemB, direction) => {

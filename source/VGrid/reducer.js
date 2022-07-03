@@ -8,23 +8,23 @@ const prefix = 'HYG_',
             return prefix + count;
         }
     },
-    __getVirtual = ({scrollTop, dimensions, size, lineGap}) => {
-        const {height, itemHeight, width, itemWidth} = dimensions,
+    __getVirtual = ({ scrollTop, dimensions, size, lineGap }) => {
+        const { height, itemHeight, width, itemWidth } = dimensions,
             columns = Math.floor(width / itemWidth),
             lines = Math.ceil(size / columns),
             carpetHeight = lines * itemHeight,
-            trigger = scrollTop > (lineGap+1) * itemHeight,
+            trigger = scrollTop > (lineGap + 1) * itemHeight,
 
             topLinesSkipped = Math.max(0, Math.floor(scrollTop / itemHeight) - lineGap),
             topFillerHeight = topLinesSkipped * itemHeight,
             linesToRender = 2 * lineGap + Math.ceil(height / itemHeight),
             dataHeight = linesToRender * itemHeight,
             maxRenderedItems = columns * linesToRender,
-            bottomFillerHeight = Math.max(carpetHeight - topFillerHeight - dataHeight, 0), 
+            bottomFillerHeight = Math.max(carpetHeight - topFillerHeight - dataHeight, 0),
             fromItem = trigger
                 ? topLinesSkipped * columns
                 : 0,
-            toItem = trigger ? fromItem + maxRenderedItems: linesToRender * columns;
+            toItem = trigger ? fromItem + maxRenderedItems : linesToRender * columns;
         return {
             fromItem,
             toItem,
@@ -34,7 +34,7 @@ const prefix = 'HYG_',
             linesToRender,
             dataHeight,
             maxRenderedItems,
-            loading:false,
+            loading: false,
             lines,
             columns,
             scrollTop,
@@ -53,34 +53,101 @@ const prefix = 'HYG_',
                     lineGap,
                     scrollTop
                 },
+                globalFilterValue,
                 filters,
                 fields,
                 // globalFilterValue
             } = oldState,
             actions = {
                 loading: () => ({
-                    virtual : {
+                    virtual: {
                         ...virtual,
                         loading: true
                     }
                 }),
-                filter : () => {
-                    const {value, field} = payload;
-                    
-                    // filtering for a specific field value ? 
-                    if (field && field in filters){
+
+                filter: () => {
+                    const { value, field } = payload,
+                        // must start from everything
+                        base = [...originalData],
+                        isGlobalSearch = !field,
+                        ret = {};
+                    let _newData = base,
+                        _globalFilterValue = globalFilterValue,
+                        _newFilters = {...filters};
+
+                    // first maybe update filter value
+                    if (!isGlobalSearch && field in _newFilters) {
+                        _newFilters = {
+                            ..._newFilters,
+                            [field]: {
+                                ..._newFilters[field],
+                                value
+                            }
+                        };
+                    }
+                    // eslint-disable-next-line one-var
+                    const {funcFilteredFields, valueFilteredFields} = fields.reduce((acc, f) => {
+                            acc[(f in _newFilters)? 'funcFilteredFields' : 'valueFilteredFields'].push(f);
+                            return acc;
+                        }, {funcFilteredFields: [], valueFilteredFields: []}),
+                        doFilter = v => row => 
+                            funcFilteredFields.every(fk => 
+                                _newFilters[fk].filter({
+                                    userValue: v || _newFilters[fk].value,
+                                    row
+                                })
+                            )
+                            ||
+                            valueFilteredFields.some(f => `${row[f]}`.includes(v));
                         
+                    // global ? 
+                    if (isGlobalSearch || _globalFilterValue) {
+                        if(isGlobalSearch) {
+                            ret.globalFilterValue = value;
+                            _globalFilterValue = value;
+                        }
+                        
+                        _newData = _newData.filter(doFilter(_globalFilterValue));
+                    }
+                    //then use all available filters on their value (that is updated)
+                    _newData = _newData.filter(doFilter());
+                    
+                    // eslint-disable-next-line one-var
+                    const newVirtual = __getVirtual({ dimensions, size: _newData.length, scrollTop, lineGap }),
+                        { fromItem, toItem } = newVirtual;
+                    return {
+                        ...ret,
+                        data: _newData.slice(fromItem, toItem),
+                        filters: _newFilters,
+                        filteredData: _newData,
+                        filtered: _newData.length,
+                        virtual: {
+                            ...virtual,
+                            ...newVirtual,
+                            rendered: Math.min(toItem - fromItem, _newData.length),
+                            scrollTop: 0
+                        }
+                    }
+                },
+
+                filterOld: () => {
+                    const { value, field } = payload;
+
+                    // filtering for a specific field value ? 
+                    if (field && field in filters) {
+
                         const fData = originalData.filter(row => filters[field].filter({
-                                userValue: `${value}`,
-                                row
-                            })),
-                            newVirtual = __getVirtual({dimensions, size: fData.length, scrollTop, lineGap}),
-                            {fromItem, toItem} = newVirtual;
+                            userValue: `${value}`,
+                            row
+                        })),
+                            newVirtual = __getVirtual({ dimensions, size: fData.length, scrollTop, lineGap }),
+                            { fromItem, toItem } = newVirtual;
 
                         return {
                             filters: {
                                 ...filters,
-                                [field] : {
+                                [field]: {
                                     ...filters[field],
                                     value
                                 }
@@ -96,16 +163,16 @@ const prefix = 'HYG_',
                             }
                         };
                     }
-                    
+
                     // unfielded filter,
                     // use field filter if exists, or the raw value
                     else {
                         const _filteredData = originalData.filter(row => row.key in filters
-                                ? filters[row.key]({userValue: value, row})
-                                : fields.some(field => `${row[field]}`.includes(value))
-                            ),
-                            newVirtual = __getVirtual({dimensions, size: _filteredData.length, scrollTop, lineGap}),
-                            {fromItem, toItem} = newVirtual;
+                            ? filters[row.key].filter({ userValue: value, row })
+                            : fields.some(field => `${row[field]}`.includes(value))
+                        ),
+                            newVirtual = __getVirtual({ dimensions, size: _filteredData.length, scrollTop, lineGap }),
+                            { fromItem, toItem } = newVirtual;
                         return {
                             filteredData: _filteredData,
                             filtered: _filteredData.length,
@@ -127,7 +194,7 @@ const prefix = 'HYG_',
                         size: originalData.length,
                         scrollTop, lineGap
                     }),
-                    {fromItem, toItem} = newVirtual;
+                        { fromItem, toItem } = newVirtual;
                     return {
                         filteredData: originalData,
                         data: originalData.slice(fromItem, toItem),
@@ -135,15 +202,15 @@ const prefix = 'HYG_',
                         virtual: {
                             ...virtual,
                             ...newVirtual,
-                            rendered: Math.min(toItem - fromItem +1, originalData.length)
+                            rendered: Math.min(toItem - fromItem + 1, originalData.length)
                         },
                         filtered: originalData.length
                     };
                 },
                 scroll: () => {
                     const scrollTop = parseInt(payload, 10),
-                        newVirtual = __getVirtual({dimensions, size: filteredData.length, scrollTop, lineGap}),
-                        {fromItem, toItem} = newVirtual;
+                        newVirtual = __getVirtual({ dimensions, size: filteredData.length, scrollTop, lineGap }),
+                        { fromItem, toItem } = newVirtual;
 
                     return {
                         data: filteredData.slice(fromItem, toItem),
@@ -152,7 +219,7 @@ const prefix = 'HYG_',
                             ...newVirtual,
                         }
                     };
-                } 
+                }
             };
 
         if (type in actions)
@@ -164,54 +231,54 @@ const prefix = 'HYG_',
     },
     init = (cnf = {}) => {
         const {
-                data = [],
-                lineGap = 2,
-                Loader = () => (<div>loading</div>),
-                dimensions: {
-                    width = 1200,
-                    height = 800,
-                    itemHeight = 150,
-                    itemWidth = 200
-                } = {},
-                rhgID = '_ID',
-                debounceTimes: {
-                    scrolling = 50,
-                    filtering = 50,
-                } = {},
-                headerCaption: {
-                    Component: HeaderCaptionComponent = null,
-                    height: headerCaptionHeight = 0
-                } = {},
-                footerCaption: {
-                    Component: FooterCaptionComponent = null,
-                    height: footerCaptionHeight = 0
-                } = {},
-                events: {
-                    onItemEnter,
-                    onItemLeave,
-                    onItemClick,
-                } = {},
-                filters = {},
-                NoFilterData = () => 'no data',
-                cls: {
-                    HeaderCaption : HeaderCaptionCls= null,
-                    FooterCaption : FooterCaptionCls= null,
-                } = {}
-            } = cnf,
+            data = [],
+            lineGap = 2,
+            Loader = () => (<div>loading</div>),
+            dimensions: {
+                width = 1200,
+                height = 800,
+                itemHeight = 150,
+                itemWidth = 200
+            } = {},
+            rhgID = '_ID',
+            debounceTimes: {
+                scrolling = 50,
+                filtering = 50,
+            } = {},
+            headerCaption: {
+                Component: HeaderCaptionComponent = null,
+                height: headerCaptionHeight = 0
+            } = {},
+            footerCaption: {
+                Component: FooterCaptionComponent = null,
+                height: footerCaptionHeight = 0
+            } = {},
+            events: {
+                onItemEnter,
+                onItemLeave,
+                onItemClick,
+            } = {},
+            filters = {},
+            NoFilterData = () => 'no data',
+            cls: {
+                HeaderCaption: HeaderCaptionCls = null,
+                FooterCaption: FooterCaptionCls = null,
+            } = {}
+        } = cnf,
             dimensions = {
                 width,
                 height,
                 itemHeight, itemWidth
             },
-            
+
             originalData = data.map(item => ({ [rhgID]: `${uniqueID}`, ...item })),
-            innerVirtual = __getVirtual({dimensions, size: originalData.length, scrollTop: 0, lineGap}),
+            innerVirtual = __getVirtual({ dimensions, size: originalData.length, scrollTop: 0, lineGap }),
             virtual = {
                 loading: false,
                 lineGap,
                 ...innerVirtual
             },
-            {fromItem, toItem} = innerVirtual,
+            { fromItem, toItem } = innerVirtual,
             funcFilters = Object.keys(filters).reduce((acc, filterKey) => {
                 if (isFunction(filters[filterKey])) {
                     acc[filterKey] = {
@@ -223,22 +290,22 @@ const prefix = 'HYG_',
             }, {}),
             fields = Object.keys(data[0]);
         console.log(funcFilters)
-        
+
         return {
             ...cnf,
             rhgID,
-            originalData : originalData,
-            filteredData : [...originalData],
+            originalData: originalData,
+            filteredData: [...originalData],
             filtered: originalData.length,
-            data : originalData.slice(fromItem, toItem),
+            data: originalData.slice(fromItem, toItem),
             total: originalData.length,
             fields,
             Loader,
-            header : {
+            header: {
                 HeaderCaptionComponent,
                 headerCaptionHeight
             },
-            footer : {
+            footer: {
                 FooterCaptionComponent,
                 footerCaptionHeight
             },
@@ -255,7 +322,7 @@ const prefix = 'HYG_',
             },
             filters: funcFilters,
             globalFilterValue: '',
-            cls:{
+            cls: {
                 HeaderCaptionCls,
                 FooterCaptionCls
             },
