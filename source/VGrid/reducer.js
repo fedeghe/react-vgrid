@@ -129,61 +129,6 @@ const prefix = 'HYG_',
                     };
                 },
 
-                filterOld: () => {
-                    const { value, field } = payload;
-
-                    // filtering for a specific field value ? 
-                    if (field && field in filters) {
-
-                        const fData = originalData.filter(row => filters[field].filter({
-                            userValue: `${value}`,
-                            row
-                        })),
-                            newVirtual = __getVirtual({ dimensions, size: fData.length, scrollTop, lineGap }),
-                            { fromItem, toItem } = newVirtual;
-
-                        return {
-                            filters: {
-                                ...filters,
-                                [field]: {
-                                    ...filters[field],
-                                    value
-                                }
-                            },
-                            data: fData.slice(fromItem, toItem),
-                            filteredData: fData,
-                            filtered: fData.length,
-                            virtual: {
-                                ...virtual,
-                                ...newVirtual,
-                                scrollTop: 0
-                            }
-                        };
-                    }
-
-                    // unfielded filter,
-                    // use field filter if exists, or the raw value
-                    else {
-                        const _filteredData = originalData.filter(row => row.key in filters
-                            ? filters[row.key].filter({ userValue: value, row })
-                            : fields.some(field => `${row[field]}`.includes(value))
-                        ),
-                            newVirtual = __getVirtual({ dimensions, size: _filteredData.length, scrollTop, lineGap }),
-                            { fromItem, toItem } = newVirtual;
-                        return {
-                            filteredData: _filteredData,
-                            filtered: _filteredData.length,
-                            data: _filteredData.slice(fromItem, toItem),
-                            globalFilterValue: value,
-                            virtual: {
-                                ...virtual,
-                                ...newVirtual,
-                                scrollTop: 0
-                            }
-                        };
-                    }
-                },
-
                 unfilter: () => {
                     const newVirtual = __getVirtual({
                         dimensions,
