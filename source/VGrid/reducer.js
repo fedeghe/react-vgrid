@@ -126,7 +126,7 @@ const prefix = 'HYG_',
                             ...newVirtual,
                             scrollTop: 0
                         }
-                    }
+                    };
                 },
 
                 filterOld: () => {
@@ -284,7 +284,6 @@ const prefix = 'HYG_',
                 return acc;
             }, {}),
             fields = Object.keys(data[0]);
-        console.log(funcFilters)
 
         return {
             ...cnf,
