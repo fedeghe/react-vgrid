@@ -1,6 +1,8 @@
 import React from 'react';
 import generateRowData from './utils';
 import Item from './sample/Item';
+import HeaderCaption from './sample/HeaderCaption';
+import FooterCaption from './sample/FooterCaption';
 export default {
     data: generateRowData([
         { key: 'id', type: 'int' },
@@ -19,7 +21,11 @@ export default {
     ], 1e5),
     filters: {
         id: ({userValue, row}) => 
-            `${row.id}`.startsWith(userValue)
+            `${row.id}`.startsWith(userValue),
+        name: ({userValue, row}) => 
+            `${row.name}`.includes(userValue),
+        entityid: ({userValue, row}) => 
+            `${row.entityid}`.includes(userValue)
     },
     // sorters: {
     //     nameMe: (itemA, itemB, direction) => {
@@ -38,29 +44,21 @@ export default {
     },
     lineGap : 2,
     NoFilterData: ({total}) => <div>no data out of {total}</div>,
+
     debounceTimes: {
-        scrolling: 10,
+        // scrolling: 10,
         // filtering: 200,
     },
+
     headerCaption: {
-        Component: ({globalFilter, globalFilterValue, filtered, maxRenderedItems, filters}) => (<div>
-            <p>
-                Search: <input value={globalFilterValue} type="text" onChange={
-                    e => globalFilter({value: e.target.value})}
-                /> 
-                 -
-                Search id only: <input value={filters.id.value} type="text" onChange={
-                    e => globalFilter({value: e.target.value, field: 'id'})
-                }/> listing {filtered} elements ({maxRenderedItems} max rendered)</p>
-        </div>),
-        height: 45
+        Component: HeaderCaption,
+        height: 100
     },
 
     footerCaption: {
-        Component: ({filtered}) => (<div className="FooterCaption">footer caption ({filtered} filtered)</div>),
+        Component: FooterCaption ,
         height: 25
     },
-
 
     // events: {
     //     onItemEnter: (e, {item}) => {console.log('enter Item ', item);},
@@ -72,5 +70,4 @@ export default {
         HeaderCaption: 'HeaderCaption',
         FooterCaption: 'FooterCaption',
     }
-
 };

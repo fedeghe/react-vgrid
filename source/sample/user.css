@@ -35,7 +35,6 @@ body {
 .HeaderCaption {
     background-color: orange;
     line-height: 45px;
-    padding-left: 10px;
 }
 
 .HeaderCaption input {
