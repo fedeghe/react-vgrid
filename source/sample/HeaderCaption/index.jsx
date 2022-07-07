@@ -21,6 +21,10 @@ const HeaderCaption = ({
                     <button type="button" className="btn btn-secondary btn-sm" onClick={()=>resetFilters('_FIELDS_')}>&times; filters</button>
                     &nbsp;
                     <button type="button" className="btn btn-secondary btn-sm" onClick={()=>resetFilters('_ALL_')}>&times; all</button>
+                    &nbsp;
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={()=>resetFilters(['id','name'])}>&times; id, name</button>
+                    &nbsp;
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={()=>resetFilters(['id','entityid'])}>&times; id, entityid</button>
                 </div>
             </div>
             <div className={classes.Line}>

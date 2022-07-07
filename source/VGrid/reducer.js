@@ -136,6 +136,9 @@ const prefix = 'HYG_',
                     };
                 },
 
+                unFilterFields: () => {
+                    return {};
+                },
                 unFilter: () => {                    
                     let _globalFilterValue = globalFilterValue,
                         _newFilters = {...filters},
