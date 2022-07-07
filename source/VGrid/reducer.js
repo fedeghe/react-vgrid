@@ -137,8 +137,6 @@ const prefix = 'HYG_',
                 },
 
                 unFilterFields: () => {
-                    
-
                     // eslint-disable-next-line one-var
                     const filteringFields = payload.filter(f => fields.includes(f));
 
