@@ -8,6 +8,13 @@ const prefix = 'HYG_',
             return prefix + count;
         }
     },
+    __cleanFilters = _filters => Object.keys(_filters).reduce((acc, k) => {
+        acc[k] = {
+            filter: _filters[k].filter,
+            value: ''
+        };
+        return acc;
+    }, {}),
     __getVirtual = ({ scrollTop, dimensions, size, lineGap }) => {
         const { height, itemHeight, width, itemWidth } = dimensions,
             columns = Math.floor(width / itemWidth),
@@ -91,7 +98,7 @@ const prefix = 'HYG_',
                             return acc;
                         }, {funcFilteredFields: [], valueFilteredFields: []}),
                         doFilter = v => row => 
-                            funcFilteredFields.every(fk => 
+                            funcFilteredFields[v ? 'some' : 'every'](fk => 
                                 _newFilters[fk].filter({
                                     userValue: v || _newFilters[fk].value,
                                     row
@@ -129,23 +136,116 @@ const prefix = 'HYG_',
                     };
                 },
 
-                unfilter: () => {
+                unFilterFields: () => {
+                    // eslint-disable-next-line one-var
+                    const filteringFields = payload.filter(f => fields.includes(f));
+
+                    let _globalFilterValue = globalFilterValue,
+                        _newFilters = {...filters},
+                        _filteredData = [...originalData];
+                    
+                    filteringFields.forEach(f => {_newFilters[f].value = '';});
+                    
+                    // eslint-disable-next-line one-var
+                    const {funcFilteredFields, valueFilteredFields} = fields.reduce((acc, f) => {
+                            acc[(f in _newFilters)? 'funcFilteredFields' : 'valueFilteredFields'].push(f);
+                            return acc;
+                        }, {funcFilteredFields: [], valueFilteredFields: []}),
+                        doFilter = v => row => 
+                            funcFilteredFields[v ? 'some' : 'every'](fk => 
+                                _newFilters[fk].filter({
+                                    userValue: v || _newFilters[fk].value,
+                                    row
+                                })
+                            )
+                            ||
+                            valueFilteredFields.some(f => `${row[f]}`.includes(v));
+
+                    _filteredData = _filteredData.filter(doFilter());
+
+                    if (_globalFilterValue) {
+                        _filteredData = _filteredData.filter(doFilter(_globalFilterValue));
+                    }
+                    
+                    // eslint-disable-next-line one-var
                     const newVirtual = __getVirtual({
-                        dimensions,
-                        size: originalData.length,
-                        scrollTop, lineGap
-                    }),
+                            dimensions,
+                            size: _filteredData.length,
+                            scrollTop, lineGap
+                        }),
                         { fromItem, toItem } = newVirtual;
+                        
                     return {
-                        filteredData: originalData,
-                        data: originalData.slice(fromItem, toItem),
-                        globalFilterValue: '',
+                        filters: _newFilters,
+
+                        filteredData: _filteredData,
+                        data: _filteredData.slice(fromItem, toItem),
+                        globalFilterValue: _globalFilterValue,
                         virtual: {
                             ...virtual,
                             ...newVirtual,
                         },
-                        filtered: originalData.length
+                        filtered: _filteredData.length
                     };
+                },
+                unFilter: () => {                    
+                    let _globalFilterValue = globalFilterValue,
+                        _newFilters = {...filters},
+                        _filteredData = [...originalData];
+
+                        // eslint-disable-next-line one-var
+                        const {funcFilteredFields, valueFilteredFields} = fields.reduce((acc, f) => {
+                            acc[(f in _newFilters)? 'funcFilteredFields' : 'valueFilteredFields'].push(f);
+                            return acc;
+                        }, {funcFilteredFields: [], valueFilteredFields: []}),
+                        doFilter = v => row => 
+                            funcFilteredFields[v ? 'some' : 'every'](fk => 
+                                _newFilters[fk].filter({
+                                    userValue: v || _newFilters[fk].value,
+                                    row
+                                })
+                            )
+                            ||
+                            valueFilteredFields.some(f => `${row[f]}`.includes(v));
+
+                            
+                    switch (payload) {
+                        case '_ALL_':
+                            _globalFilterValue = '';
+                            _newFilters = __cleanFilters(filters);
+                            break;
+                        case '_GLOBAL_':
+                            _globalFilterValue = '';
+                            _filteredData = _filteredData.filter(doFilter());
+                            break;
+                        case '_FIELDS_':
+                            _newFilters = __cleanFilters(filters);
+                            _filteredData = _filteredData.filter(doFilter(_globalFilterValue));
+                            break;
+                    }
+                    
+
+                    // eslint-disable-next-line one-var
+                    const newVirtual = __getVirtual({
+                            dimensions,
+                            size: _filteredData.length,
+                            scrollTop, lineGap
+                        }),
+                        { fromItem, toItem } = newVirtual;
+                        
+                    return {
+                        filters: _newFilters,
+
+                        filteredData: _filteredData,
+                        data: _filteredData.slice(fromItem, toItem),
+                        globalFilterValue: _globalFilterValue,
+                        virtual: {
+                            ...virtual,
+                            ...newVirtual,
+                        },
+                        filtered: _filteredData.length
+                    };
+
                 },
                 scroll: () => {
                     const scrollTop = parseInt(payload, 10),

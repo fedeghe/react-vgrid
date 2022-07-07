@@ -11,7 +11,7 @@
 - [x] add the hover, out and click event handlers
 - [x] caption filters global
 - [x] caption filters multiple fields
-- [ ] filters smart set/reset
+- [x] filters smart set/reset
 - [ ] sorters (in captions)
 - [ ] groups (config and captions)
 - [ ] but even before try to think a flexible way to allow those to be headless

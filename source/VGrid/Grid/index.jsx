@@ -23,6 +23,7 @@ const Grid = () => {
                 dataHeight,
                 scrollTop,
                 loading,
+                fromItem, toItem,
                 maxRenderedItems,
             },
             debounceTimes: {
@@ -46,6 +47,7 @@ const Grid = () => {
             globalFilterValue,
             filtered,
             filters,
+            fields,
             cls: {
                 HeaderCaptionCls,
                 FooterCaptionCls
@@ -84,6 +86,7 @@ const Grid = () => {
             }
             doOnScroll(e);
         }, [dataHeight, dispatch, doOnScroll, scrollTop]),
+
         getHandlers = useCallback(item => {
             const handlers = {};
             if(onItemEnter) {
@@ -109,17 +112,33 @@ const Grid = () => {
             }
             return handlers;
         }, [dispatch, onItemClick, onItemEnter, onItemLeave]),
+
+        resetFilters = useCallback((what = '_ALL_') => {
+            let actionType = null;
+            if (Array.isArray(what) && what.every(w => fields.includes(w))) { // is array and all in fields
+                actionType = 'unFilterFields';
+            } else if (what.match(/_ALL_|_GLOBAL_|_FIELDS_/)) {
+                actionType = 'unFilter';
+            }
+            actionType && dispatch({
+                type: actionType,
+                payload: what
+            });
+        }, [dispatch, fields]),
+
         captionProps = {
             globalFilter, 
             globalFilterValue,
             filtered,
             loading,
             maxRenderedItems,
-            filters
+            filters,
+            resetFilters,
+            fromItem, toItem
         };
 
     useEffect(() => {
-        if (scrollTop === 0) {
+        if (ref && scrollTop === 0) {
             // ref.current.scrollTo(ref.current.scrollLeft, 0);
             ref.current.scrollTop = 0;
         }
