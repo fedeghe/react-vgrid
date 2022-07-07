@@ -48,6 +48,22 @@ const prefix = 'HYG_',
         };
     },
 
+    getDoFilter = ({fields, filters}) => {
+        const {funcFilteredFields, valueFilteredFields} = fields.reduce((acc, f) => {
+            acc[(f in filters)? 'funcFilteredFields' : 'valueFilteredFields'].push(f);
+            return acc;
+        }, {funcFilteredFields: [], valueFilteredFields: []});
+        return  v => row => 
+            funcFilteredFields[v ? 'some' : 'every'](fk => 
+                filters[fk].filter({
+                    userValue: v || filters[fk].value,
+                    row
+                })
+            )
+            ||
+            valueFilteredFields.some(f => `${row[f]}`.includes(v));
+    },
+
     reducer = (oldState, action) => {
         const { payload = {}, type } = action,
             {
@@ -93,19 +109,8 @@ const prefix = 'HYG_',
                         };
                     }
                     // eslint-disable-next-line one-var
-                    const {funcFilteredFields, valueFilteredFields} = fields.reduce((acc, f) => {
-                            acc[(f in _newFilters)? 'funcFilteredFields' : 'valueFilteredFields'].push(f);
-                            return acc;
-                        }, {funcFilteredFields: [], valueFilteredFields: []}),
-                        doFilter = v => row => 
-                            funcFilteredFields[v ? 'some' : 'every'](fk => 
-                                _newFilters[fk].filter({
-                                    userValue: v || _newFilters[fk].value,
-                                    row
-                                })
-                            )
-                            ||
-                            valueFilteredFields.some(f => `${row[f]}`.includes(v));
+                    const doFilter = getDoFilter({fields, filters: _newFilters});
+                    
                         
                     // global ? 
                     if (isGlobalSearch || _globalFilterValue) {
@@ -137,29 +142,19 @@ const prefix = 'HYG_',
                 },
 
                 unFilterFields: () => {
-                    // eslint-disable-next-line one-var
-                    const filteringFields = payload.filter(f => fields.includes(f));
-
                     let _globalFilterValue = globalFilterValue,
                         _newFilters = {...filters},
                         _filteredData = [...originalData];
+
+                    const filteringFields = payload.filter(f => fields.includes(f));
                     
                     filteringFields.forEach(f => {_newFilters[f].value = '';});
                     
                     // eslint-disable-next-line one-var
-                    const {funcFilteredFields, valueFilteredFields} = fields.reduce((acc, f) => {
-                            acc[(f in _newFilters)? 'funcFilteredFields' : 'valueFilteredFields'].push(f);
-                            return acc;
-                        }, {funcFilteredFields: [], valueFilteredFields: []}),
-                        doFilter = v => row => 
-                            funcFilteredFields[v ? 'some' : 'every'](fk => 
-                                _newFilters[fk].filter({
-                                    userValue: v || _newFilters[fk].value,
-                                    row
-                                })
-                            )
-                            ||
-                            valueFilteredFields.some(f => `${row[f]}`.includes(v));
+                    const doFilter = getDoFilter({
+                        fields,
+                        filters: _newFilters
+                    });
 
                     _filteredData = _filteredData.filter(doFilter());
 
@@ -193,21 +188,7 @@ const prefix = 'HYG_',
                         _newFilters = {...filters},
                         _filteredData = [...originalData];
 
-                        // eslint-disable-next-line one-var
-                        const {funcFilteredFields, valueFilteredFields} = fields.reduce((acc, f) => {
-                            acc[(f in _newFilters)? 'funcFilteredFields' : 'valueFilteredFields'].push(f);
-                            return acc;
-                        }, {funcFilteredFields: [], valueFilteredFields: []}),
-                        doFilter = v => row => 
-                            funcFilteredFields[v ? 'some' : 'every'](fk => 
-                                _newFilters[fk].filter({
-                                    userValue: v || _newFilters[fk].value,
-                                    row
-                                })
-                            )
-                            ||
-                            valueFilteredFields.some(f => `${row[f]}`.includes(v));
-
+                    const doFilter = getDoFilter ({fields, filters: _newFilters});
                             
                     switch (payload) {
                         case '_ALL_':
@@ -298,7 +279,8 @@ const prefix = 'HYG_',
                 onItemLeave,
                 onItemClick,
             } = {},
-            filters = {},
+            headers = {},
+            globalPreFilter = '',
             NoFilterData = () => 'no data',
             cls: {
                 HeaderCaption: HeaderCaptionCls = null,
@@ -319,24 +301,30 @@ const prefix = 'HYG_',
                 ...innerVirtual
             },
             { fromItem, toItem } = innerVirtual,
-            funcFilters = Object.keys(filters).reduce((acc, filterKey) => {
-                if (isFunction(filters[filterKey])) {
-                    acc[filterKey] = {
-                        filter: filters[filterKey],
-                        value: ''
+            funcFilters = headers.reduce((acc, header) => {
+                if (isFunction(header.filter)) {
+                    acc[header.key] = {
+                        filter: header.filter,
+                        value: header.preFiltered || ''
                     };
                 }
                 return acc;
             }, {}),
-            fields = Object.keys(data[0]);
-
+            fields = headers.map(h => h.key),
+            doFilter = getDoFilter({fields, filters: funcFilters}),
+            initialData = (
+                globalPreFilter
+                ? originalData.filter(doFilter(globalPreFilter))
+                : originalData
+            ).filter(doFilter());
+        
         return {
             ...cnf,
             rhgID,
             originalData: originalData,
-            filteredData: [...originalData],
-            filtered: originalData.length,
-            data: originalData.slice(fromItem, toItem),
+            filteredData: [...initialData],
+            filtered: initialData.length,
+            data: initialData.slice(fromItem, toItem),
             total: originalData.length,
             fields,
             Loader,
@@ -360,7 +348,7 @@ const prefix = 'HYG_',
                 onItemClick,
             },
             filters: funcFilters,
-            globalFilterValue: '',
+            globalFilterValue: globalPreFilter,
             cls: {
                 HeaderCaptionCls,
                 FooterCaptionCls

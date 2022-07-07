@@ -19,14 +19,23 @@ export default {
         // { key: 'name3', type: 'str' },
         // { key: 'date3', type: 'date' },
     ], 1e5),
-    filters: {
-        id: ({userValue, row}) => 
-            `${row.id}`.startsWith(userValue),
-        name: ({userValue, row}) => 
-            `${row.name}`.includes(userValue),
-        entityid: ({userValue, row}) => 
-            `${row.entityid}`.includes(userValue)
-    },
+
+    headers: [{
+        key: 'id',
+        filter: ({userValue, row}) => `${row.id}`.startsWith(userValue),
+        preFiltered: '',
+    },{
+        key: 'name',
+        filter: ({userValue, row}) => `${row.name}`.includes(userValue),
+        preFiltered: null,
+    },{
+        key: 'entityid',
+        filter: ({userValue, row}) => `${row.entityid}`.includes(userValue),
+        preFiltered: null,
+    }],
+    globalPreFilter: '2',
+
+
     // sorters: {
     //     nameMe: (itemA, itemB, direction) => {
     //         if (itemA.entityid === itemB.entityid) return 0;
