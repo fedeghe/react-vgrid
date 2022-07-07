@@ -137,7 +137,59 @@ const prefix = 'HYG_',
                 },
 
                 unFilterFields: () => {
-                    return {};
+                    
+
+                    // eslint-disable-next-line one-var
+                    const filteringFields = payload.filter(f => fields.includes(f));
+
+                    let _globalFilterValue = globalFilterValue,
+                        _newFilters = {...filters},
+                        _filteredData = [...originalData];
+                    
+                    filteringFields.forEach(f => {_newFilters[f].value = '';});
+                    
+                    // eslint-disable-next-line one-var
+                    const {funcFilteredFields, valueFilteredFields} = fields.reduce((acc, f) => {
+                            acc[(f in _newFilters)? 'funcFilteredFields' : 'valueFilteredFields'].push(f);
+                            return acc;
+                        }, {funcFilteredFields: [], valueFilteredFields: []}),
+                        doFilter = v => row => 
+                            funcFilteredFields[v ? 'some' : 'every'](fk => 
+                                _newFilters[fk].filter({
+                                    userValue: v || _newFilters[fk].value,
+                                    row
+                                })
+                            )
+                            ||
+                            valueFilteredFields.some(f => `${row[f]}`.includes(v));
+
+                    _filteredData = _filteredData.filter(doFilter());
+
+                    if (_globalFilterValue) {
+                        _filteredData = _filteredData.filter(doFilter(_globalFilterValue));
+                    }
+                    
+
+                    // eslint-disable-next-line one-var
+                    const newVirtual = __getVirtual({
+                            dimensions,
+                            size: _filteredData.length,
+                            scrollTop, lineGap
+                        }),
+                        { fromItem, toItem } = newVirtual;
+                        
+                    return {
+                        filters: _newFilters,
+
+                        filteredData: _filteredData,
+                        data: _filteredData.slice(fromItem, toItem),
+                        globalFilterValue: _globalFilterValue,
+                        virtual: {
+                            ...virtual,
+                            ...newVirtual,
+                        },
+                        filtered: _filteredData.length
+                    };
                 },
                 unFilter: () => {                    
                     let _globalFilterValue = globalFilterValue,
@@ -183,7 +235,7 @@ const prefix = 'HYG_',
                             scrollTop, lineGap
                         }),
                         { fromItem, toItem } = newVirtual;
-                        console.log('_globalFilterValue', _globalFilterValue)
+                        
                     return {
                         filters: _newFilters,
 

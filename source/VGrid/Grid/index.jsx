@@ -115,10 +115,10 @@ const Grid = () => {
 
         resetFilters = useCallback((what = '_ALL_') => {
             let actionType = null;
-            if (what.match(/_ALL_|_GLOBAL_|_FIELDS_/)) {
-                actionType = 'unFilter';
-            } else if (Array.isArray(what) && what.every(w => fields.includes(w))) { // is array and all in fields
+            if (Array.isArray(what) && what.every(w => fields.includes(w))) { // is array and all in fields
                 actionType = 'unFilterFields';
+            } else if (what.match(/_ALL_|_GLOBAL_|_FIELDS_/)) {
+                actionType = 'unFilter';
             }
             actionType && dispatch({
                 type: actionType,
