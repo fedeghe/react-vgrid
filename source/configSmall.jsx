@@ -19,21 +19,24 @@ export default {
         // { key: 'name3', type: 'str' },
         // { key: 'date3', type: 'date' },
     ], 1e5),
-    filters: {
-        id: ({userValue, row}) => 
-            `${row.id}`.startsWith(userValue),
-        name: ({userValue, row}) => 
-            `${row.name}`.includes(userValue),
-        entityid: ({userValue, row}) => 
-            `${row.entityid}`.includes(userValue)
-    },
-    // sorters: {
-    //     nameMe: (itemA, itemB, direction) => {
-    //         if (itemA.entityid === itemB.entityid) return 0;
-    //         const v = itemA.entityid > itemB.entityid ? 1 : -1;
-    //         return direction === 'asc' ? v : -v;
-    //     }
-    // },
+
+    headers: [{
+        key: 'id',
+        filter: ({userValue, row}) => `${row.id}`.startsWith(userValue),
+        preFiltered: '',
+    },{
+        key: 'name',
+        filter: ({userValue, row}) => `${row.name}`.includes(userValue),
+        preFiltered: null,
+    },{
+        key: 'entityid',
+        filter: ({userValue, row}) => `${row.entityid}`.includes(userValue),
+        preFiltered: null,
+    }],
+
+    // globalPreFilter: '2',
+
+
     Item,
     Loader: () => (<div className="Loading">loading</div>),
     dimensions: {
@@ -50,14 +53,18 @@ export default {
         // filtering: 200,
     },
 
-    headerCaption: {
-        Component: HeaderCaption,
-        height: 100
-    },
 
-    footerCaption: {
-        Component: FooterCaption ,
-        height: 25
+    header: {
+        caption: {
+            Component: HeaderCaption,
+            height: 100
+        }
+    },
+    footer: {
+        caption: {
+            Component: FooterCaption,
+            height: 25
+        }
     },
 
     // events: {
