@@ -266,14 +266,20 @@ const prefix = 'HYG_',
                 scrolling = 50,
                 filtering = 50,
             } = {},
-            headerCaption: {
-                Component: HeaderCaptionComponent = null,
-                height: headerCaptionHeight = 0
+            
+            header: {
+                caption: {
+                    Component: HeaderCaptionComponent = null,
+                    height: headerCaptionHeight = 0
+                }
             } = {},
-            footerCaption: {
-                Component: FooterCaptionComponent = null,
-                height: footerCaptionHeight = 0
+            footer: {
+                caption: {        
+                    Component: FooterCaptionComponent = null,
+                    height: footerCaptionHeight = 0
+                }
             } = {},
+
             events: {
                 onItemEnter,
                 onItemLeave,

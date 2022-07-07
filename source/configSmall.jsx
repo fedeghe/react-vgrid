@@ -33,16 +33,10 @@ export default {
         filter: ({userValue, row}) => `${row.entityid}`.includes(userValue),
         preFiltered: null,
     }],
-    globalPreFilter: '2',
+
+    // globalPreFilter: '2',
 
 
-    // sorters: {
-    //     nameMe: (itemA, itemB, direction) => {
-    //         if (itemA.entityid === itemB.entityid) return 0;
-    //         const v = itemA.entityid > itemB.entityid ? 1 : -1;
-    //         return direction === 'asc' ? v : -v;
-    //     }
-    // },
     Item,
     Loader: () => (<div className="Loading">loading</div>),
     dimensions: {
@@ -59,14 +53,18 @@ export default {
         // filtering: 200,
     },
 
-    headerCaption: {
-        Component: HeaderCaption,
-        height: 100
-    },
 
-    footerCaption: {
-        Component: FooterCaption ,
-        height: 25
+    header: {
+        caption: {
+            Component: HeaderCaption,
+            height: 100
+        }
+    },
+    footer: {
+        caption: {
+            Component: FooterCaption,
+            height: 25
+        }
     },
 
     // events: {
