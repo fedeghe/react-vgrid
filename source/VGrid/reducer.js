@@ -169,7 +169,6 @@ const prefix = 'HYG_',
                         _filteredData = _filteredData.filter(doFilter(_globalFilterValue));
                     }
                     
-
                     // eslint-disable-next-line one-var
                     const newVirtual = __getVirtual({
                             dimensions,
