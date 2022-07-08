@@ -16,4 +16,4 @@
 - [ ] groups (config and captions)
 - [ ] but even before try to think a flexible way to allow those to be headless
 - [ ] add a virtualisation cutoff value setting (after filters)
-- [ ] completely adapt the config consuption so that the react-vtable one can be used seamlessly for react-vgrid (doen partially)
+- [ ] completely adapt the config consuption so that the react-vtable one can be used seamlessly for react-vgrid (done partially)
