@@ -42,7 +42,7 @@ export default {
     dimensions: {
         itemWidth: 250,
         itemHeight: 230,
-        width: 1250,
+        width: 1000,
         height: 800
     },
     lineGap : 2,

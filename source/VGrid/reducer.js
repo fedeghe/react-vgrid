@@ -252,47 +252,48 @@ const prefix = 'HYG_',
     },
     init = (cnf = {}) => {
         const {
-            data = [],
-            lineGap = 2,
-            Loader = () => (<div>loading</div>),
-            dimensions: {
-                width = 1200,
-                height = 800,
-                itemHeight = 150,
-                itemWidth = 200
-            } = {},
-            rhgID = '_ID',
-            debounceTimes: {
-                scrolling = 50,
-                filtering = 50,
-            } = {},
-            
-            header: {
-                caption: {
-                    Component: HeaderCaptionComponent = null,
-                    height: headerCaptionHeight = 0
-                }
-            } = {},
-            footer: {
-                caption: {        
-                    Component: FooterCaptionComponent = null,
-                    height: footerCaptionHeight = 0
-                }
-            } = {},
+                data = [],
+                lineGap = 2,
+                Loader = () => (<div>loading</div>),
+                dimensions: {
+                    width = 1200,
+                    height = 800,
+                    itemHeight = 150,
+                    itemWidth = 200
+                } = {},
+                rhgID = '_ID',
+                debounceTimes: {
+                    scrolling = 50,
+                    filtering = 50,
+                } = {},
+                
+                header: {
+                    caption: {
+                        Component: HeaderCaptionComponent = null,
+                        height: headerCaptionHeight = 0
+                    }
+                } = {},
+                footer: {
+                    caption: {        
+                        Component: FooterCaptionComponent = null,
+                        height: footerCaptionHeight = 0
+                    }
+                } = {},
 
-            events: {
-                onItemEnter,
-                onItemLeave,
-                onItemClick,
-            } = {},
-            headers = {},
-            globalPreFilter = '',
-            NoFilterData = () => 'no data',
-            cls: {
-                HeaderCaption: HeaderCaptionCls = null,
-                FooterCaption: FooterCaptionCls = null,
-            } = {}
-        } = cnf,
+                events: {
+                    onItemEnter,
+                    onItemLeave,
+                    onItemClick,
+                } = {},
+                headers = {},
+                globalPreFilter = '',
+                NoFilterData = () => 'no data',
+                cls: {
+                    HeaderCaption: HeaderCaptionCls = null,
+                    FooterCaption: FooterCaptionCls = null,
+                } = {}
+            } = cnf,
+
             dimensions = {
                 width,
                 height,
@@ -312,6 +313,11 @@ const prefix = 'HYG_',
                     acc[header.key] = {
                         filter: header.filter,
                         value: header.preFiltered || ''
+                    };
+                } else {
+                    acc[header.key] = {
+                        filter: () => true,
+                        value: ''
                     };
                 }
                 return acc;
