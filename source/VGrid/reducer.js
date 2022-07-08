@@ -8,6 +8,7 @@ const prefix = 'HYG_',
             return prefix + count;
         }
     },
+
     __cleanFilters = _filters => Object.keys(_filters).reduce((acc, k) => {
         acc[k] = {
             filter: _filters[k].filter,
@@ -15,6 +16,7 @@ const prefix = 'HYG_',
         };
         return acc;
     }, {}),
+
     __getVirtual = ({ scrollTop, dimensions, size, lineGap }) => {
         const { height, itemHeight, width, itemWidth } = dimensions,
             columns = Math.floor(width / itemWidth),
@@ -48,7 +50,7 @@ const prefix = 'HYG_',
         };
     },
 
-    getDoFilter = ({fields, filters}) => {
+    __getDoFilter = ({fields, filters}) => {
         const {funcFilteredFields, valueFilteredFields} = fields.reduce((acc, f) => {
             acc[(f in filters)? 'funcFilteredFields' : 'valueFilteredFields'].push(f);
             return acc;
@@ -80,6 +82,7 @@ const prefix = 'HYG_',
                 fields,
                 // globalFilterValue
             } = oldState,
+
             actions = {
                 loading: () => ({
                     virtual: {
@@ -109,8 +112,7 @@ const prefix = 'HYG_',
                         };
                     }
                     // eslint-disable-next-line one-var
-                    const doFilter = getDoFilter({fields, filters: _newFilters});
-                    
+                    const doFilter = __getDoFilter({fields, filters: _newFilters});
                         
                     // global ? 
                     if (isGlobalSearch || _globalFilterValue) {
@@ -151,7 +153,7 @@ const prefix = 'HYG_',
                     filteringFields.forEach(f => {_newFilters[f].value = '';});
                     
                     // eslint-disable-next-line one-var
-                    const doFilter = getDoFilter({
+                    const doFilter = __getDoFilter({
                         fields,
                         filters: _newFilters
                     });
@@ -188,7 +190,7 @@ const prefix = 'HYG_',
                         _newFilters = {...filters},
                         _filteredData = [...originalData];
 
-                    const doFilter = getDoFilter ({fields, filters: _newFilters});
+                    const doFilter = __getDoFilter ({fields, filters: _newFilters});
                             
                     switch (payload) {
                         case '_ALL_':
@@ -323,7 +325,7 @@ const prefix = 'HYG_',
                 return acc;
             }, {}),
             fields = headers.map(h => h.key),
-            doFilter = getDoFilter({fields, filters: funcFilters}),
+            doFilter = __getDoFilter({fields, filters: funcFilters}),
             initialData = (
                 globalPreFilter
                 ? originalData.filter(doFilter(globalPreFilter))
