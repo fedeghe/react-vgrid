@@ -3,6 +3,7 @@ import generateRowData from './utils';
 import Item from './sample/Item';
 import HeaderCaption from './sample/HeaderCaption';
 import FooterCaption from './sample/FooterCaption';
+import GroupComponent from './sample/GroupComponent';
 export default {
     data: generateRowData([
         { key: 'id', type: 'int' },
@@ -19,6 +20,19 @@ export default {
         // { key: 'name3', type: 'str' },
         // { key: 'date3', type: 'date' },
     ], 1e5),
+
+    grouping: {
+        groups: [{
+            label: 'idEven',
+            grouper: ({row}) => row.id % 2 === 1
+        },{
+            label: 'others',
+        }],
+        group: {
+            Component: GroupComponent,
+            height:50
+        }
+    },
 
     headers: [{
         key: 'id',

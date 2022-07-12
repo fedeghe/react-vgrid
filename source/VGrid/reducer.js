@@ -268,6 +268,14 @@ const prefix = 'HYG_',
                     scrolling = 50,
                     filtering = 50,
                 } = {},
+
+                grouping: {
+                    groups = [],
+                    group: {
+                        Component: GroupComponent = n => n,
+                        height : groupComponentHeight = 20
+                    } = {}
+                } = {},
                 
                 header: {
                     caption: {
@@ -331,17 +339,37 @@ const prefix = 'HYG_',
                 ? originalData.filter(doFilter(globalPreFilter))
                 : originalData
             ).filter(doFilter());
-        
+
+        // groups
+        let _groups = groups;
+        if (groups.length === 0) {
+            _groups = [{
+                label: null,
+                grouper: () => true
+            }];
+        }
+        // one group shouldn't have a grouper
+        if (_groups.every(group => typeof group.grouper === 'function')) {
+            throw 'No default group found (one group shouldn\'t have a grouper)';
+        }
+
         return {
             ...cnf,
             rhgID,
+            
             originalData: originalData,
             filteredData: [...initialData],
-            filtered: initialData.length,
             data: initialData.slice(fromItem, toItem),
+            
+            filtered: initialData.length,
             total: originalData.length,
             fields,
             Loader,
+            grouping: {
+                groups: _groups,
+                GroupComponent,
+                groupComponentHeight
+            },
             header: {
                 HeaderCaptionComponent,
                 headerCaptionHeight
