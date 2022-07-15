@@ -31,6 +31,9 @@ export default {
         },{
             label: 'mid',
             grouper: (row) => row.id >=50 && row.id <= 100
+        },{
+            label: 'high',
+            grouper: (row) => row.id >=100 && row.id <= 300
         }],
         group: {
             Component: GroupComponent,

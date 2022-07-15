@@ -276,8 +276,7 @@ const reducer = (oldState, action) => {
             // all rows that dont belong to any group
             tmpGroupFlags = Array.from({length: data.length}, () => true),
             groupedData = (() => {
-                const g = groups.reduce((acc, {label, grouper}, k) => {
-                
+                const g = groups.reduce((acc, {label, grouper}) => {
                     acc[label] = data.filter((row, i) => {
                         if (grouper && grouper(row)) {
                             tmpGroupFlags[i] = false;
@@ -327,7 +326,12 @@ const reducer = (oldState, action) => {
                 : originalData
             ).filter(doFilter());
         
+        // check 
         console.log(groupedData);
+        // order?
+        for (var g in groupedData) {
+            console.log(g, groupedData[g].length);
+        }
         // one group shouldn't have a grouper
         if (groups.length && groups.some(group => typeof group.grouper !== 'function')) {
             throw 'Every group should have a grouper function';
