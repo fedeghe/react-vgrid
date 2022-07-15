@@ -270,9 +270,14 @@ const reducer = (oldState, action) => {
                 height,
                 itemHeight, itemWidth
             },
+
+            // use a flag array so to be able afterward to 
+            // recognise and filter in the default group
+            // all rows that dont belong to any group
             tmpGroupFlags = Array.from({length: data.length}, () => true),
-            groupedData = groups.reduce((acc, {label, grouper}, k) => {
-                if (k < groups.length -1) {
+            groupedData = (() => {
+                const g = groups.reduce((acc, {label, grouper}, k) => {
+                
                     acc[label] = data.filter((row, i) => {
                         if (grouper && grouper(row)) {
                             tmpGroupFlags[i] = false;
@@ -280,12 +285,12 @@ const reducer = (oldState, action) => {
                         }
                         return false;
                     });
-                } else {
-                    acc[label] = data.filter((row, i) =>    tmpGroupFlags[i]);
-                }
-                return acc;
-            }, {}),
-
+                    return acc;
+                }, {});
+                g.__DEFAULT = data.filter((row, i) => tmpGroupFlags[i]);
+                return g;
+            })(),
+            
 
             originalData = data.map(item => ({ [rhgID]: `${uniqueID}`, ...item })),
             innerVirtual = __getVirtual({
@@ -324,8 +329,8 @@ const reducer = (oldState, action) => {
         
         console.log(groupedData);
         // one group shouldn't have a grouper
-        if (groups.length && groups.every(group => typeof group.grouper === 'function')) {
-            throw 'No default group found (at least one group should only have a label)';
+        if (groups.length && groups.some(group => typeof group.grouper !== 'function')) {
+            throw 'Every group should have a grouper function';
         }
 
         return {

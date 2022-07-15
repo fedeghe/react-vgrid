@@ -26,10 +26,11 @@ export default {
     // exception will be thrown
     grouping: {
         groups: [{
-            label: 'idEven',
-            grouper: (row) => row.id % 2 === 1
+            label: 'lower',
+            grouper: (row) => row.id < 50
         },{
-            label: 'default',
+            label: 'mid',
+            grouper: (row) => row.id >=50 && row.id <= 100
         }],
         group: {
             Component: GroupComponent,
