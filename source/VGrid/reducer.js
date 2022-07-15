@@ -1,72 +1,8 @@
 import React from 'react';
 import { isFunction } from './utils';
-let count = 0;
-const prefix = 'HYG_',
-    uniqueID = {
-        toString: () => {
-            count += 1;
-            return prefix + count;
-        }
-    },
+import { __getDoFilter,  __cleanFilters, __getVirtual, uniqueID} from './reducerUtils';
 
-    __cleanFilters = _filters => Object.keys(_filters).reduce((acc, k) => {
-        acc[k] = {
-            filter: _filters[k].filter,
-            value: ''
-        };
-        return acc;
-    }, {}),
-
-    __getVirtual = ({ scrollTop, dimensions, size, lineGap }) => {
-        const { height, itemHeight, width, itemWidth } = dimensions,
-            columns = Math.floor(width / itemWidth),
-            lines = Math.ceil(size / columns),
-            carpetHeight = lines * itemHeight,
-            trigger = scrollTop > (lineGap + 1) * itemHeight,
-
-            topLinesSkipped = Math.max(0, Math.floor(scrollTop / itemHeight) - lineGap),
-            topFillerHeight = topLinesSkipped * itemHeight,
-            linesToRender = 2 * lineGap + Math.ceil(height / itemHeight),
-            dataHeight = linesToRender * itemHeight,
-            maxRenderedItems = columns * linesToRender,
-            bottomFillerHeight = Math.max(carpetHeight - topFillerHeight - dataHeight, 0),
-            fromItem = trigger
-                ? topLinesSkipped * columns
-                : 0,
-            toItem = trigger ? fromItem + maxRenderedItems : linesToRender * columns;
-        return {
-            fromItem,
-            toItem,
-            carpetHeight,
-            topFillerHeight,
-            bottomFillerHeight,
-            linesToRender,
-            dataHeight,
-            maxRenderedItems,
-            loading: false,
-            lines,
-            columns,
-            scrollTop,
-        };
-    },
-
-    __getDoFilter = ({fields, filters}) => {
-        const {funcFilteredFields, valueFilteredFields} = fields.reduce((acc, f) => {
-            acc[(f in filters)? 'funcFilteredFields' : 'valueFilteredFields'].push(f);
-            return acc;
-        }, {funcFilteredFields: [], valueFilteredFields: []});
-        return  v => row => 
-            funcFilteredFields[v ? 'some' : 'every'](fk => 
-                filters[fk].filter({
-                    userValue: v || filters[fk].value,
-                    row
-                })
-            )
-            ||
-            valueFilteredFields.some(f => `${row[f]}`.includes(v));
-    },
-
-    reducer = (oldState, action) => {
+const reducer = (oldState, action) => {
         const { payload = {}, type } = action,
             {
                 dimensions,
@@ -80,6 +16,7 @@ const prefix = 'HYG_',
                 globalFilterValue,
                 filters,
                 fields,
+                grouping,
                 // globalFilterValue
             } = oldState,
 
@@ -127,7 +64,13 @@ const prefix = 'HYG_',
                     _newData = _newData.filter(doFilter());
                     
                     // eslint-disable-next-line one-var
-                    const newVirtual = __getVirtual({ dimensions, size: _newData.length, scrollTop, lineGap }),
+                    const newVirtual = __getVirtual({
+                            dimensions,
+                            size: _newData.length,
+                            scrollTop,
+                            lineGap,
+                            grouping
+                        }),
                         { fromItem, toItem } = newVirtual;
                     return {
                         ...ret,
@@ -168,7 +111,9 @@ const prefix = 'HYG_',
                     const newVirtual = __getVirtual({
                             dimensions,
                             size: _filteredData.length,
-                            scrollTop, lineGap
+                            scrollTop,
+                            lineGap,
+                            grouping
                         }),
                         { fromItem, toItem } = newVirtual;
                         
@@ -212,7 +157,9 @@ const prefix = 'HYG_',
                     const newVirtual = __getVirtual({
                             dimensions,
                             size: _filteredData.length,
-                            scrollTop, lineGap
+                            scrollTop,
+                            lineGap,
+                            grouping
                         }),
                         { fromItem, toItem } = newVirtual;
                         
@@ -232,7 +179,13 @@ const prefix = 'HYG_',
                 },
                 scroll: () => {
                     const scrollTop = parseInt(payload, 10),
-                        newVirtual = __getVirtual({ dimensions, size: filteredData.length, scrollTop, lineGap }),
+                        newVirtual = __getVirtual({
+                            dimensions,
+                            size: filteredData.length,
+                            scrollTop,
+                            lineGap,
+                            grouping
+                        }),
                         { fromItem, toItem } = newVirtual;
 
                     return {
@@ -304,14 +257,43 @@ const prefix = 'HYG_',
                 } = {}
             } = cnf,
 
+            grouping= {
+                groups,
+                group: {
+                    Component: GroupComponent,
+                    height : groupComponentHeight
+                }
+            },
+
             dimensions = {
                 width,
                 height,
                 itemHeight, itemWidth
             },
+            tmpGroupFlags = Array.from({length: data.length}, () => true),
+            groupedData = groups.reduce((acc, {label, grouper}, k) => {
+                if (k < groups.length -1) {
+                    acc[label] = data.filter((row, i) => {
+                        if (grouper && grouper(row)) {
+                            tmpGroupFlags[i] = false;
+                            return true;
+                        }
+                        return false;
+                    });
+                } else {
+                    acc[label] = data.filter((row, i) =>    tmpGroupFlags[i]);
+                }
+                return acc;
+            }, {}),
+
 
             originalData = data.map(item => ({ [rhgID]: `${uniqueID}`, ...item })),
-            innerVirtual = __getVirtual({ dimensions, size: originalData.length, scrollTop: 0, lineGap }),
+            innerVirtual = __getVirtual({
+                dimensions,
+                size: originalData.length,
+                lineGap,
+                grouping
+            }),
             virtual = {
                 loading: false,
                 lineGap,
@@ -339,18 +321,11 @@ const prefix = 'HYG_',
                 ? originalData.filter(doFilter(globalPreFilter))
                 : originalData
             ).filter(doFilter());
-
-        // groups
-        let _groups = groups;
-        if (groups.length === 0) {
-            _groups = [{
-                label: null,
-                grouper: () => true
-            }];
-        }
+        
+        console.log(groupedData);
         // one group shouldn't have a grouper
-        if (_groups.every(group => typeof group.grouper === 'function')) {
-            throw 'No default group found (one group shouldn\'t have a grouper)';
+        if (groups.length && groups.every(group => typeof group.grouper === 'function')) {
+            throw 'No default group found (at least one group should only have a label)';
         }
 
         return {
@@ -365,11 +340,7 @@ const prefix = 'HYG_',
             total: originalData.length,
             fields,
             Loader,
-            grouping: {
-                groups: _groups,
-                GroupComponent,
-                groupComponentHeight
-            },
+            grouping,
             header: {
                 HeaderCaptionComponent,
                 headerCaptionHeight
@@ -396,8 +367,6 @@ const prefix = 'HYG_',
                 FooterCaptionCls
             },
             NoFilterData
-            // filters: [],
-            // globalFilter: ''
         };
     };
 

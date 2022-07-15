@@ -19,18 +19,21 @@ export default {
         // { key: 'entityid3', type: 'int' },
         // { key: 'name3', type: 'str' },
         // { key: 'date3', type: 'date' },
-    ], 1e5),
+    ], 1e3),
 
+    // each gouper must exclusively select an element,
+    // if two grouper let the same row pass then a specific
+    // exception will be thrown
     grouping: {
         groups: [{
             label: 'idEven',
-            grouper: ({row}) => row.id % 2 === 1
+            grouper: (row) => row.id % 2 === 1
         },{
-            label: 'others',
+            label: 'default',
         }],
         group: {
             Component: GroupComponent,
-            height:50
+            height:500
         }
     },
 
@@ -63,7 +66,7 @@ export default {
     NoFilterData: ({total}) => <div>no data out of {total}</div>,
 
     debounceTimes: {
-        // scrolling: 10,
+        scrolling: 10,
         // filtering: 200,
     },
 
