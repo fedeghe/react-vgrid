@@ -275,7 +275,7 @@ const reducer = (oldState, action) => {
             // recognise and filter in the default group
             // all rows that dont belong to any group
             tmpGroupFlags = Array.from({length: data.length}, () => true),
-            unselectedGroupKey = '__UNSELECTED__',
+            unselectedGroupKey = '__UNGROUPED__',
             groupedData = (() => {
                 const g = groups.reduce((acc, {label, grouper}) => {
                     acc[label] = data.filter((row, i) => {
@@ -325,10 +325,24 @@ const reducer = (oldState, action) => {
                 globalPreFilter
                 ? originalData.filter(doFilter(globalPreFilter))
                 : originalData
-            ).filter(doFilter());
+            ).filter(doFilter()),
+            groupNames = Object.keys(groupedData),
+            initialGroupedDataGobalFiltered = (
+                globalPreFilter
+                ? groupNames.reduce((acc, groupName) => {
+                    acc[groupName] = groupedData[groupName].filter(doFilter(globalPreFilter))
+                    return acc;
+                }, {})
+                : groupedData
+            ),
+            initialGroupedDataGobal = groupNames.reduce((acc, groupName) => {
+                acc[groupName] = initialGroupedDataGobalFiltered[groupName].filter(doFilter());
+                return acc;
+            }, {});
         
         // check 
         console.log(groupedData);
+        console.log(initialGroupedDataGobal);
         // order?
         for (var g in groupedData) {
             console.log(g, groupedData[g].length);
