@@ -275,6 +275,7 @@ const reducer = (oldState, action) => {
             // recognise and filter in the default group
             // all rows that dont belong to any group
             tmpGroupFlags = Array.from({length: data.length}, () => true),
+            unselectedGroupKey = '__UNSELECTED__',
             groupedData = (() => {
                 const g = groups.reduce((acc, {label, grouper}) => {
                     acc[label] = data.filter((row, i) => {
@@ -286,7 +287,7 @@ const reducer = (oldState, action) => {
                     });
                     return acc;
                 }, {});
-                g.__DEFAULT = data.filter((row, i) => tmpGroupFlags[i]);
+                g[unselectedGroupKey] = data.filter((row, i) => tmpGroupFlags[i]);
                 return g;
             })(),
             
