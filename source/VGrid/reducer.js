@@ -320,29 +320,35 @@ const reducer = (oldState, action) => {
                 return acc;
             }, {}),
             fields = headers.map(h => h.key),
-            doFilter = __getDoFilter({fields, filters: funcFilters}),
+            getFilter = __getDoFilter({fields, filters: funcFilters}),
+
+            theDoFilter = getFilter(),
+            theDoFilterGlobal = getFilter(globalPreFilter),
+            
             initialData = (
                 globalPreFilter
-                ? originalData.filter(doFilter(globalPreFilter))
+                ? originalData.filter(theDoFilterGlobal)
                 : originalData
-            ).filter(doFilter()),
+            ).filter(theDoFilter  ),
             groupNames = Object.keys(groupedData),
             initialGroupedDataGobalFiltered = (
                 globalPreFilter
                 ? groupNames.reduce((acc, groupName) => {
-                    acc[groupName] = groupedData[groupName].filter(doFilter(globalPreFilter))
+                    acc[groupName] = groupedData[groupName].filter(theDoFilterGlobal);
                     return acc;
                 }, {})
                 : groupedData
             ),
-            initialGroupedDataGobal = groupNames.reduce((acc, groupName) => {
-                acc[groupName] = initialGroupedDataGobalFiltered[groupName].filter(doFilter());
+            initialGroupedData = groupNames.reduce((acc, groupName) => {
+                acc[groupName] = initialGroupedDataGobalFiltered[groupName].filter(theDoFilter);
                 return acc;
             }, {});
         
         // check 
         console.log(groupedData);
-        console.log(initialGroupedDataGobal);
+        console.log(initialGroupedData);
+
+
         // order?
         for (var g in groupedData) {
             console.log(g, groupedData[g].length);
@@ -351,6 +357,12 @@ const reducer = (oldState, action) => {
         if (groups.length && groups.some(group => typeof group.grouper !== 'function')) {
             throw 'Every group should have a grouper function';
         }
+
+
+
+
+
+
 
         return {
             ...cnf,
