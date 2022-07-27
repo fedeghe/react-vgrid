@@ -358,12 +358,6 @@ const reducer = (oldState, action) => {
             throw 'Every group should have a grouper function';
         }
 
-
-
-
-
-
-
         return {
             ...cnf,
             rhgID,
