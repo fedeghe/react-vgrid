@@ -139,8 +139,8 @@ const Grid = () => {
 
     useEffect(() => {
         if (ref && scrollTop === 0) {
-            // ref.current.scrollTo(ref.current.scrollLeft, 0);
-            ref.current.scrollTop = 0;
+            ref.current.scrollTo(0, 0);
+            // ref.current.scrollTop = 0;
         }
     }, [scrollTop, ref]);    
 

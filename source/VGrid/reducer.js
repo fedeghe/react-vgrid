@@ -276,7 +276,7 @@ const reducer = (oldState, action) => {
             // all rows that dont belong to any group
             tmpGroupFlags = Array.from({length: data.length}, () => true),
             unselectedGroupKey = '__UNGROUPED__',
-            groupedData = (() => {
+            originalGroupedData = (() => {
                 const g = groups.reduce((acc, {label, grouper}) => {
                     acc[label] = data.filter((row, i) => {
                         if (grouper && grouper(row)) {
@@ -330,14 +330,14 @@ const reducer = (oldState, action) => {
                 ? originalData.filter(theDoFilterGlobal)
                 : originalData
             ).filter(theDoFilter  ),
-            groupNames = Object.keys(groupedData),
+            groupNames = Object.keys(originalGroupedData),
             initialGroupedDataGobalFiltered = (
                 globalPreFilter
                 ? groupNames.reduce((acc, groupName) => {
-                    acc[groupName] = groupedData[groupName].filter(theDoFilterGlobal);
+                    acc[groupName] = originalGroupedData[groupName].filter(theDoFilterGlobal);
                     return acc;
                 }, {})
-                : groupedData
+                : originalGroupedData
             ),
             initialGroupedData = groupNames.reduce((acc, groupName) => {
                 acc[groupName] = initialGroupedDataGobalFiltered[groupName].filter(theDoFilter);
@@ -345,13 +345,13 @@ const reducer = (oldState, action) => {
             }, {});
         
         // check 
-        console.log(groupedData);
+        console.log(originalGroupedData);
         console.log(initialGroupedData);
 
 
         // order?
-        for (var g in groupedData) {
-            console.log(g, groupedData[g].length);
+        for (var g in originalGroupedData) {
+            console.log(g, originalGroupedData[g].length);
         }
         // one group shouldn't have a grouper
         if (groups.length && groups.some(group => typeof group.grouper !== 'function')) {
@@ -361,9 +361,15 @@ const reducer = (oldState, action) => {
         return {
             ...cnf,
             rhgID,
+
+            //grouped
+            originalGroupedData,
+            filteredGroupedData: {...initialGroupedData},
             
+            //ungrouped
             originalData: originalData,
             filteredData: [...initialData],
+            
             data: initialData.slice(fromItem, toItem),
             
             filtered: initialData.length,
