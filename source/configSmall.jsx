@@ -70,7 +70,7 @@ export default {
     NoFilterData: ({total}) => <div>no data out of {total}</div>,
 
     debounceTimes: {
-        // scrolling: 10,
+        // scrolling: 20,
         // filtering: 200,
     },
 
