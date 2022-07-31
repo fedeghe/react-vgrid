@@ -293,18 +293,8 @@ const reducer = (oldState, action) => {
             
 
             originalData = data.map(item => ({ [rhgID]: `${uniqueID}`, ...item })),
-            innerVirtual = __getVirtual({
-                dimensions,
-                size: originalData.length,
-                lineGap,
-                grouping
-            }),
-            virtual = {
-                loading: false,
-                lineGap,
-                ...innerVirtual
-            },
-            { fromItem, toItem } = innerVirtual,
+
+            groupNames = Object.keys(originalGroupedData),
             funcFilters = headers.reduce((acc, header) => {
                 if (isFunction(header.filter)) {
                     acc[header.key] = {
@@ -324,13 +314,6 @@ const reducer = (oldState, action) => {
 
             theDoFilter = getFilter(),
             theDoFilterGlobal = getFilter(globalPreFilter),
-            
-            initialData = (
-                globalPreFilter
-                ? originalData.filter(theDoFilterGlobal)
-                : originalData
-            ).filter(theDoFilter  ),
-            groupNames = Object.keys(originalGroupedData),
             initialGroupedDataGobalFiltered = (
                 globalPreFilter
                 ? groupNames.reduce((acc, groupName) => {
@@ -342,11 +325,32 @@ const reducer = (oldState, action) => {
             initialGroupedData = groupNames.reduce((acc, groupName) => {
                 acc[groupName] = initialGroupedDataGobalFiltered[groupName].filter(theDoFilter);
                 return acc;
-            }, {});
+            }, {}),
+
+            innerVirtual = __getVirtual({
+                dimensions,
+                size: originalData.length,
+                lineGap,
+                grouping: initialGroupedData
+            }),
+
+            virtual = {
+                loading: false,
+                lineGap,
+                ...innerVirtual
+            },
+            { fromItem, toItem } = innerVirtual,
+            
+            
+            initialData = (
+                globalPreFilter
+                ? originalData.filter(theDoFilterGlobal)
+                : originalData
+            ).filter(theDoFilter  );
         
         // check 
-        console.log(originalGroupedData);
-        console.log(initialGroupedData);
+        // console.log(originalGroupedData);
+        // console.log(initialGroupedData);
 
 
         // order?

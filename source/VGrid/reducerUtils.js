@@ -26,7 +26,7 @@ __cleanFilters = _filters => Object.keys(_filters).reduce((acc, k) => {
 }, {}),
 
 __getVirtual = ({ dimensions, size, lineGap, grouping, scrollTop = 0}) => {
-    // console.log('grouping: ', grouping,);
+    console.log('grouping: ', grouping,);
 
     const { height, itemHeight, width, itemWidth } = dimensions,
         columns = Math.floor(width / itemWidth),
