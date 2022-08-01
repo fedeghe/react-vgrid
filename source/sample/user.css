@@ -33,7 +33,7 @@ body {
 }
 
 .HeaderCaption {
-    background-color: orange;
+    background-color: rgb(20, 93, 130);
     line-height: 45px;
 }
 
@@ -42,7 +42,7 @@ body {
 }
 
 .FooterCaption {
-    background-color: rgb(255, 232, 190);
+    background-color: rgb(112, 182, 201);
     padding-left: 2px;
     line-height: 25px;
 }
