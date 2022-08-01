@@ -357,7 +357,8 @@ const reducer = (oldState, action) => {
         for (var g in originalGroupedData) {
             console.log(g, originalGroupedData[g].length);
         }
-        // one group shouldn't have a grouper
+
+        // every group must have a grouper
         if (groups.length && groups.some(group => typeof group.grouper !== 'function')) {
             throw 'Every group should have a grouper function';
         }
@@ -366,18 +367,21 @@ const reducer = (oldState, action) => {
             ...cnf,
             rhgID,
 
-            //grouped
-            originalGroupedData,
-            filteredGroupedData: {...initialGroupedData},
             
             //ungrouped
             originalData: originalData,
             filteredData: [...initialData],
             
+            // others data related fields which need a grouped correspondence
             data: initialData.slice(fromItem, toItem),
-            
             filtered: initialData.length,
             total: originalData.length,
+
+            //grouped
+            originalGroupedData,
+            filteredGroupedData: {...initialGroupedData},
+
+
             fields,
             Loader,
             grouping,
