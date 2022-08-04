@@ -5,7 +5,9 @@ const HeaderCaption = ({
     globalFilter, globalFilterValue,
     filtered, maxRenderedItems,
     filters, resetFilters,
-    loading
+    loading,
+    downloadJson,
+    downloadXsv
 }) => {
     const classes = useStyles();
     return (
@@ -20,6 +22,10 @@ const HeaderCaption = ({
                 {loading && <div className="spinner-grow spinner-grow-sm text-light" role="status">
                     <span className="visually-hidden">Loading...</span>
                 </div>}&nbsp;
+                <button type="button" className="btn btn-secondary btn-sm" onClick={downloadJson}>▼ json</button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => downloadXsv()}>▼ csv</button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => downloadXsv({separator: "\t"})}>▼ tsv</button>
+            
                     <button title="reset global filter only" type="button" className="btn btn-secondary btn-sm"
                         onClick={()=>resetFilters('_GLOBAL_')}>&times; global</button>
                     &nbsp;

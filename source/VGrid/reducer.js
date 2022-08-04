@@ -15,7 +15,7 @@ const reducer = (oldState, action) => {
                 },
                 globalFilterValue,
                 filters,
-                fields,
+                columns,
                 grouping,
                 // globalFilterValue
             } = oldState,
@@ -49,7 +49,7 @@ const reducer = (oldState, action) => {
                         };
                     }
                     // eslint-disable-next-line one-var
-                    const doFilter = __getDoFilter({fields, filters: _newFilters});
+                    const doFilter = __getDoFilter({columns, filters: _newFilters});
                         
                     // global ? 
                     if (isGlobalSearch || _globalFilterValue) {
@@ -91,13 +91,13 @@ const reducer = (oldState, action) => {
                         _newFilters = {...filters},
                         _filteredData = [...originalData];
 
-                    const filteringFields = payload.filter(f => fields.includes(f));
+                    const filteringFields = payload.filter(f => columns.includes(f));
                     
                     filteringFields.forEach(f => {_newFilters[f].value = '';});
                     
                     // eslint-disable-next-line one-var
                     const doFilter = __getDoFilter({
-                        fields,
+                        columns,
                         filters: _newFilters
                     });
 
@@ -135,7 +135,7 @@ const reducer = (oldState, action) => {
                         _newFilters = {...filters},
                         _filteredData = [...originalData];
 
-                    const doFilter = __getDoFilter ({fields, filters: _newFilters});
+                    const doFilter = __getDoFilter ({columns, filters: _newFilters});
                             
                     switch (payload) {
                         case '_ALL_':
@@ -309,8 +309,8 @@ const reducer = (oldState, action) => {
                 }
                 return acc;
             }, {}),
-            fields = headers.map(h => h.key),
-            getFilter = __getDoFilter({fields, filters: funcFilters}),
+            columns = headers.map(h => h.key),
+            getFilter = __getDoFilter({columns, filters: funcFilters}),
 
             theDoFilter = getFilter(),
             theDoFilterGlobal = getFilter(globalPreFilter),
@@ -382,7 +382,7 @@ const reducer = (oldState, action) => {
             filteredGroupedData: {...initialGroupedData},
 
 
-            fields,
+            columns,
             Loader,
             grouping,
             header: {

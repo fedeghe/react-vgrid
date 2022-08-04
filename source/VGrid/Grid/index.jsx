@@ -4,7 +4,7 @@ import Filler from './Filler';
 
 
 import GridContext from './../Context';
-import { debounce } from './../utils';
+import { debounce, asXsv, asJson } from './../utils';
 import useStyles from './style.js';
 
 const Grid = () => {
@@ -47,7 +47,7 @@ const Grid = () => {
             globalFilterValue,
             filtered,
             filters,
-            fields,
+            columns,
             cls: {
                 HeaderCaptionCls,
                 FooterCaptionCls
@@ -115,7 +115,7 @@ const Grid = () => {
 
         resetFilters = useCallback((what = '_ALL_') => {
             let actionType = null;
-            if (Array.isArray(what) && what.every(w => fields.includes(w))) { // is array and all in fields
+            if (Array.isArray(what) && what.every(w => columns.includes(w))) { // is array and all in fields
                 actionType = 'unFilterFields';
             } else if (what.match(/_ALL_|_GLOBAL_|_FIELDS_/)) {
                 actionType = 'unFilter';
@@ -124,7 +124,38 @@ const Grid = () => {
                 type: actionType,
                 payload: what
             });
-        }, [dispatch, fields]),
+        }, [dispatch, columns]),
+
+
+        filterDataFields = useCallback(({fields}) => 
+            fields ? data.map(e => {
+                const o = fields.reduce((acc, f) => {
+                    if (f in e) acc[f] = e[f];
+                    return acc;
+                }, {});
+                return o;
+            }) : data
+        , [data]),
+
+        downloadJson = useCallback(({fields} = {}) => {
+            const a = document.createElement('a'),
+                d = filterDataFields({fields}),
+                blob = new Blob([JSON.stringify(asJson(d, rhgID))]);
+            a.href = URL.createObjectURL(blob);
+            a.target = '_blank';
+            a.download = 'extract.json';                     //filename to download
+            a.click();
+        }, [filterDataFields, rhgID]),
+        downloadXsv = useCallback(({separator = ',', fields} = {}) => {
+            const a = document.createElement('a'),
+                d = filterDataFields({fields}),
+                xsv = asXsv((fields || columns).map(f => ({key: f})) , d, rhgID, separator),
+                blob = new Blob([xsv], { type: 'text/csv' });
+            a.href = URL.createObjectURL(blob);
+            a.target = '_blank';
+            a.download = 'extract.csv';                     //filename to download
+            a.click();
+        }, [columns, filterDataFields, rhgID]),
 
         captionProps = {
             globalFilter, 
@@ -134,7 +165,9 @@ const Grid = () => {
             maxRenderedItems,
             filters,
             resetFilters,
-            fromItem, toItem
+            fromItem, toItem,
+            downloadJson,
+            downloadXsv
         };
 
     useEffect(() => {

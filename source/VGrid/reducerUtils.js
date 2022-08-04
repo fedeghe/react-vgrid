@@ -1,8 +1,8 @@
 let count = 0;
 const prefix = 'HYG_';
 // eslint-disable-next-line one-var
-export const __getDoFilter = ({fields, filters}) => {
-    const {funcFilteredFields, valueFilteredFields} = fields.reduce((acc, f) => {
+export const __getDoFilter = ({columns, filters}) => {
+    const {funcFilteredFields, valueFilteredFields} = columns.reduce((acc, f) => {
         acc[(f in filters)? 'funcFilteredFields' : 'valueFilteredFields'].push(f);
         return acc;
     }, {funcFilteredFields: [], valueFilteredFields: []});
