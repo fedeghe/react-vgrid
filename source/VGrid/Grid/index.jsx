@@ -1,6 +1,7 @@
 import React, { useCallback, useContext, useEffect, useRef } from 'react';
 import NoData from './NoData';
 import Filler from './Filler';
+import {FILTERS} from './../constants';
 
 
 import GridContext from './../Context';
@@ -113,11 +114,11 @@ const Grid = () => {
             return handlers;
         }, [dispatch, onItemClick, onItemEnter, onItemLeave]),
 
-        resetFilters = useCallback((what = '_ALL_') => {
+        resetFilters = useCallback((what = FILTERS.ALL) => {
             let actionType = null;
             if (Array.isArray(what) && what.every(w => columns.includes(w))) { // is array and all in fields
                 actionType = 'unFilterFields';
-            } else if (what.match(/_ALL_|_GLOBAL_|_FIELDS_/)) {
+            } else if (what in FILTERS) {
                 actionType = 'unFilter';
             }
             actionType && dispatch({

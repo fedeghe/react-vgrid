@@ -27,13 +27,13 @@ const HeaderCaption = ({
             <button type="button" className="btn btn-secondary btn-sm" onClick={() => downloadXsv({separator: "\t"})}>▼ tsv</button>
             
                     <button title="reset global filter only" type="button" className="btn btn-secondary btn-sm"
-                        onClick={()=>resetFilters('_GLOBAL_')}>&times; global</button>
+                        onClick={()=>resetFilters('GLOBAL')}>&times; global</button>
                     &nbsp;
                     <button title="reset all fields filter only" type="button" className="btn btn-secondary btn-sm"
-                        onClick={()=>resetFilters('_FIELDS_')}>&times; filters</button>
+                        onClick={()=>resetFilters('FIELDS')}>&times; filters</button>
                     &nbsp;
                     <button title="reset all filters" type="button" className="btn btn-secondary btn-sm"
-                        onClick={()=>resetFilters('_ALL_')}>&times; all</button>
+                        onClick={()=>resetFilters('ALL')}>&times; all</button>
                     &nbsp;
                     <button title="reset id & name filters" type="button" className="btn btn-secondary btn-sm"
                         onClick={()=>resetFilters(['id','name'])}>&times; id, name</button>

@@ -1,6 +1,15 @@
 import React from 'react';
 import { isFunction } from './utils';
-import { __getDoFilter,  __cleanFilters, __getVirtual, uniqueID} from './reducerUtils';
+import {
+    __getDoFilter,  __cleanFilters, __getVirtual,
+    uniqueID
+} from './reducerUtils';
+import {
+    LINE_GAP, WIDTH, HEIGHT, ITEM_HEIGHT, ITEM_WIDTH,
+    RHG_ID, DEBOUNCE_SCROLLING, DEBOUNCE_FILTERING,
+    NO_FILTER_DATA_MESSAGE, GROUP_COMPONENT_HEIGHT,
+    UNGROUPED, FILTERS
+} from './constants';
 
 const reducer = (oldState, action) => {
         const { payload = {}, type } = action,
@@ -138,15 +147,15 @@ const reducer = (oldState, action) => {
                     const doFilter = __getDoFilter ({columns, filters: _newFilters});
                             
                     switch (payload) {
-                        case '_ALL_':
+                        case FILTERS.ALL:
                             _globalFilterValue = '';
                             _newFilters = __cleanFilters(filters);
                             break;
-                        case '_GLOBAL_':
+                        case FILTERS.GLOBAL:
                             _globalFilterValue = '';
                             _filteredData = _filteredData.filter(doFilter());
                             break;
-                        case '_FIELDS_':
+                        case FILTERS.FIELDS:
                             _newFilters = __cleanFilters(filters);
                             _filteredData = _filteredData.filter(doFilter(_globalFilterValue));
                             break;
@@ -208,25 +217,25 @@ const reducer = (oldState, action) => {
     init = (cnf = {}) => {
         const {
                 data = [],
-                lineGap = 2,
+                lineGap = LINE_GAP,
                 Loader = () => (<div>loading</div>),
                 dimensions: {
-                    width = 1200,
-                    height = 800,
-                    itemHeight = 150,
-                    itemWidth = 200
+                    width = WIDTH,
+                    height = HEIGHT,
+                    itemHeight = ITEM_HEIGHT,
+                    itemWidth = ITEM_WIDTH
                 } = {},
-                rhgID = '_ID',
+                rhgID = RHG_ID,
                 debounceTimes: {
-                    scrolling = 50,
-                    filtering = 50,
+                    scrolling = DEBOUNCE_SCROLLING,
+                    filtering = DEBOUNCE_FILTERING,
                 } = {},
 
                 grouping: {
                     groups = [],
                     group: {
                         Component: GroupComponent = n => n,
-                        height : groupComponentHeight = 20
+                        height : groupComponentHeight = GROUP_COMPONENT_HEIGHT
                     } = {}
                 } = {},
                 
@@ -250,7 +259,7 @@ const reducer = (oldState, action) => {
                 } = {},
                 headers = {},
                 globalPreFilter = '',
-                NoFilterData = () => 'no data',
+                NoFilterData = () => NO_FILTER_DATA_MESSAGE,
                 cls: {
                     HeaderCaption: HeaderCaptionCls = null,
                     FooterCaption: FooterCaptionCls = null,
@@ -275,7 +284,10 @@ const reducer = (oldState, action) => {
             // recognise and filter in the default group
             // all rows that dont belong to any group
             tmpGroupFlags = Array.from({length: data.length}, () => true),
-            unselectedGroupKey = '__UNGROUPED__',
+
+            // might be some data does not belong to any group
+            // a key is needed for that particular group
+
             originalGroupedData = (() => {
                 const g = groups.reduce((acc, {label, grouper}) => {
                     acc[label] = data.filter((row, i) => {
@@ -287,11 +299,10 @@ const reducer = (oldState, action) => {
                     });
                     return acc;
                 }, {});
-                g[unselectedGroupKey] = data.filter((row, i) => tmpGroupFlags[i]);
+                g[UNGROUPED] = data.filter((row, i) => tmpGroupFlags[i]);
                 return g;
             })(),
             
-
             originalData = data.map(item => ({ [rhgID]: `${uniqueID}`, ...item })),
 
             groupNames = Object.keys(originalGroupedData),
@@ -314,14 +325,14 @@ const reducer = (oldState, action) => {
 
             theDoFilter = getFilter(),
             theDoFilterGlobal = getFilter(globalPreFilter),
-            initialGroupedDataGobalFiltered = (
-                globalPreFilter
+
+            initialGroupedDataGobalFiltered = globalPreFilter
                 ? groupNames.reduce((acc, groupName) => {
                     acc[groupName] = originalGroupedData[groupName].filter(theDoFilterGlobal);
                     return acc;
                 }, {})
-                : originalGroupedData
-            ),
+                : originalGroupedData,
+
             initialGroupedData = groupNames.reduce((acc, groupName) => {
                 acc[groupName] = initialGroupedDataGobalFiltered[groupName].filter(theDoFilter);
                 return acc;
@@ -331,7 +342,8 @@ const reducer = (oldState, action) => {
                 dimensions,
                 size: originalData.length,
                 lineGap,
-                grouping: initialGroupedData
+                grouping,
+                grouped: initialGroupedData
             }),
 
             virtual = {
@@ -353,14 +365,14 @@ const reducer = (oldState, action) => {
         // console.log(initialGroupedData);
 
 
-        // order?
+        // what about order?
         for (var g in originalGroupedData) {
             console.log(g, originalGroupedData[g].length);
         }
 
         // every group must have a grouper
         if (groups.length && groups.some(group => typeof group.grouper !== 'function')) {
-            throw 'Every group should have a grouper function';
+            throw 'Every defined group must have a grouper function';
         }
 
         return {
