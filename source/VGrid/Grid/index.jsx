@@ -3,7 +3,6 @@ import NoData from './NoData';
 import Filler from './Filler';
 import {FILTERS} from './../constants';
 
-
 import GridContext from './../Context';
 import { debounce, asXsv, asJson } from './../utils';
 import useStyles from './style.js';
@@ -127,7 +126,6 @@ const Grid = () => {
             });
         }, [dispatch, columns]),
 
-
         filterDataFields = useCallback(({fields}) => 
             fields ? data.map(e => {
                 const o = fields.reduce((acc, f) => {
@@ -147,6 +145,7 @@ const Grid = () => {
             a.download = 'extract.json';                     //filename to download
             a.click();
         }, [filterDataFields, rhgID]),
+
         downloadXsv = useCallback(({separator = ',', fields} = {}) => {
             const a = document.createElement('a'),
                 d = filterDataFields({fields}),
