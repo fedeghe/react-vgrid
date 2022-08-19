@@ -5,7 +5,7 @@ import {
     uniqueID
 } from './reducerUtils';
 import {
-    LINE_GAP, WIDTH, HEIGHT, ITEM_HEIGHT, ITEM_WIDTH,
+    CMP, LINE_GAP, WIDTH, HEIGHT, ITEM_HEIGHT, ITEM_WIDTH,
     RHG_ID, DEBOUNCE_SCROLLING, DEBOUNCE_FILTERING,
     NO_FILTER_DATA_MESSAGE, GROUP_COMPONENT_HEIGHT,
     UNGROUPED, FILTERS
@@ -285,12 +285,14 @@ const reducer = (oldState, action) => {
             // all rows that dont belong to any group
             tmpGroupFlags = Array.from({length: data.length}, () => true),
 
-            // might be some data does not belong to any group
-            // a key is needed for that particular group
-
+            
+            /**
+             * starting from specified groups, separate the data and create the groups
+             */
             originalGroupedData = (() => {
                 const g = groups.reduce((acc, {label, grouper}) => {
                     acc[label] = data.filter((row, i) => {
+                        if (!tmpGroupFlags[i]) return false;
                         if (grouper && grouper(row)) {
                             tmpGroupFlags[i] = false;
                             return true;
@@ -299,7 +301,12 @@ const reducer = (oldState, action) => {
                     });
                     return acc;
                 }, {});
+
+                // might be some data does not belong to any group
                 g[UNGROUPED] = data.filter((row, i) => tmpGroupFlags[i]);
+                if (groups.length && g[UNGROUPED].length) {
+                    console.warn(`[${CMP.toUpperCase()} warning]: ${g[UNGROUPED].length} elements are ungrouped`);
+                }
                 return g;
             })(),
             
