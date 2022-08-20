@@ -19,7 +19,7 @@ export default {
         // { key: 'entityid3', type: 'int' },
         // { key: 'name3', type: 'str' },
         // { key: 'date3', type: 'date' },
-    ], 1e2),
+    ], 1e5),
 
     // each gouper must exclusively select an element,
     // if two grouper let the same row pass then a specific
@@ -88,11 +88,11 @@ export default {
         }
     },
 
-    // events: {
-    //     onItemEnter: (e, {item}) => {console.log('enter Item ', item);},
-    //     onItemLeave: (e, {item}) => {console.log('leave Item ', item);},
-    //     onItemClick: (e, {item}) => {console.log('click Item ', item);},
-    // },
+    events: {
+        // onItemEnter: (e, {item}) => {console.log('enter Item ', item);},
+        // onItemLeave: (e, {item}) => {console.log('leave Item ', item);},
+        // onItemClick: (e, {item}) => {console.log('click Item ', item);},
+    },
 
     cls: {
         HeaderCaption: 'HeaderCaption',

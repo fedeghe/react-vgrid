@@ -2,6 +2,7 @@ import React from 'react';
 import { isFunction } from './utils';
 import {
     __getDoFilter,  __cleanFilters, __getVirtual,
+    __getGrouped, __getGrouped2,
     uniqueID
 } from './reducerUtils';
 import {
@@ -280,36 +281,14 @@ const reducer = (oldState, action) => {
                 itemHeight, itemWidth
             },
 
-            // use a flag array so to be able afterward to 
-            // recognise and filter in the default group
-            // all rows that dont belong to any group
-            tmpGroupFlags = Array.from({length: data.length}, () => true),
 
-            
             /**
              * starting from specified groups, separate the data and create the groups
              */
-            originalGroupedData = (() => {
-                const g = groups.reduce((acc, {label, grouper}) => {
-                    acc[label] = data.filter((row, i) => {
-                        if (!tmpGroupFlags[i]) return false;
-                        if (grouper && grouper(row)) {
-                            tmpGroupFlags[i] = false;
-                            return true;
-                        }
-                        return false;
-                    });
-                    return acc;
-                }, {});
+            originalGroupedData = __getGrouped({data, groups, opts: {UNGROUPED, CMP, trak: true}}),
+            // originalGroupedData2 = __getGrouped2({data, groups, opts: {UNGROUPED, CMP, trak: true}}),
 
-                // might be some data does not belong to any group
-                g[UNGROUPED] = data.filter((row, i) => tmpGroupFlags[i]);
-                if (groups.length && g[UNGROUPED].length) {
-                    console.warn(`[${CMP.toUpperCase()} warning]: ${g[UNGROUPED].length} elements are ungrouped`);
-                }
-                return g;
-            })(),
-            
+
             originalData = data.map(item => ({ [rhgID]: `${uniqueID}`, ...item })),
 
             groupNames = Object.keys(originalGroupedData),

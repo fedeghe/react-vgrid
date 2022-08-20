@@ -25,6 +25,59 @@ __cleanFilters = _filters => Object.keys(_filters).reduce((acc, k) => {
     return acc;
 }, {}),
 
+__getGrouped = ({data, groups, opts}) => {
+    const trak = {};
+    if (opts.trak) trak.start = +new Date();
+    // eslint-disable-next-line one-var
+    const tmpGroupFlags = Array.from({length: data.length}, () => true),
+        g = groups.reduce((acc, {label, grouper}) => {
+            acc[label] = data.filter((row, i) => {
+                if (!tmpGroupFlags[i]) return false;
+                if (grouper && grouper(row)) {
+                    tmpGroupFlags[i] = false;
+                    return true;
+                }
+                return false;
+            });
+            return acc;
+        }, {});
+
+    // might be some data does not belong to any group
+    g[opts.UNGROUPED] = data.filter((row, i) => tmpGroupFlags[i]);
+    if (groups.length && g[opts.UNGROUPED].length) {
+        console.warn(`[${opts.CMP.toUpperCase()} warning]: ${g[opts.UNGROUPED].length} elements are ungrouped`);
+    }
+    if (opts.trak) {
+        trak.end = +new Date();
+        console.log(`__getGrouped spent ${trak.end - trak.start}ms`);
+    }
+    return g;
+},
+__getGrouped2 = ({data, groups, opts}) => {
+    const trak = {};
+    if (opts.trak) trak.start = +new Date();
+    // eslint-disable-next-line one-var
+    const g =  data.reduce((acc, d) => {
+        const filter = groups.find(({grouper}) => grouper(d));
+        if (filter) {
+            if(!(filter.label in acc)) acc[filter.label] = [];
+            acc[filter.label].push(d);
+        } else {
+            acc[opts.UNGROUPED].push(d);
+        }
+        return acc;
+    }, {[opts.UNGROUPED]: []});
+    if (groups.length && g[opts.UNGROUPED].length) {
+        console.warn(`[${opts.CMP.toUpperCase()} warning]: ${g[opts.UNGROUPED].length} elements are ungrouped`);
+    }
+    if (opts.trak) {
+        trak.end = +new Date();
+        console.log(`__getGrouped2 spent ${trak.end - trak.start}ms`);
+    }
+    return g;
+},
+
+
 __getVirtual = ({ dimensions, size, lineGap, grouping, grouped, scrollTop = 0}) => {
     console.log('grouping: ', grouping);
     console.log('grouped: ', grouped);
