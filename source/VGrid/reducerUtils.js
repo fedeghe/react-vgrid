@@ -53,6 +53,8 @@ __getGrouped = ({data, groups, opts}) => {
     }
     return g;
 },
+
+// this does not perform better
 __getGrouped2 = ({data, groups, opts}) => {
     const trak = {};
     if (opts.trak) trak.start = +new Date();
