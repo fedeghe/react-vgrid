@@ -1,8 +1,8 @@
 import React from 'react';
 import { isFunction } from './utils';
 import {
-    __getDoFilter,  __cleanFilters, __getVirtual,
-    __getGrouped, __getGrouped2,
+    __getFilterFactory,  __cleanFilters, __getVirtual,
+    __getGrouped, __getGrouped2, __composeFilters,
     uniqueID
 } from './reducerUtils';
 import {
@@ -59,7 +59,7 @@ const reducer = (oldState, action) => {
                         };
                     }
                     // eslint-disable-next-line one-var
-                    const doFilter = __getDoFilter({columns, filters: _newFilters});
+                    const doFilter = __getFilterFactory({columns, filters: _newFilters});
                         
                     // global ? 
                     if (isGlobalSearch || _globalFilterValue) {
@@ -106,7 +106,7 @@ const reducer = (oldState, action) => {
                     filteringFields.forEach(f => {_newFilters[f].value = '';});
                     
                     // eslint-disable-next-line one-var
-                    const doFilter = __getDoFilter({
+                    const doFilter = __getFilterFactory({
                         columns,
                         filters: _newFilters
                     });
@@ -145,7 +145,7 @@ const reducer = (oldState, action) => {
                         _newFilters = {...filters},
                         _filteredData = [...originalData];
 
-                    const doFilter = __getDoFilter ({columns, filters: _newFilters});
+                    const doFilter = __getFilterFactory ({columns, filters: _newFilters});
                             
                     switch (payload) {
                         case FILTERS.ALL:
@@ -292,25 +292,12 @@ const reducer = (oldState, action) => {
             originalData = data.map(item => ({ [rhgID]: `${uniqueID}`, ...item })),
 
             groupNames = Object.keys(originalGroupedData),
-            funcFilters = headers.reduce((acc, header) => {
-                if (isFunction(header.filter)) {
-                    acc[header.key] = {
-                        filter: header.filter,
-                        value: header.preFiltered || ''
-                    };
-                } else {
-                    acc[header.key] = {
-                        filter: () => true,
-                        value: ''
-                    };
-                }
-                return acc;
-            }, {}),
+            funcFilters = __composeFilters({headers}),
             columns = headers.map(h => h.key),
-            getFilter = __getDoFilter({columns, filters: funcFilters}),
+            filterFactory = __getFilterFactory({columns, filters: funcFilters}),
 
-            theDoFilter = getFilter(),
-            theDoFilterGlobal = getFilter(globalPreFilter),
+            theDoFilterGlobal = filterFactory(globalPreFilter),
+            theDoFilter = filterFactory(),
 
             initialGroupedDataGobalFiltered = globalPreFilter
                 ? groupNames.reduce((acc, groupName) => {
@@ -344,7 +331,7 @@ const reducer = (oldState, action) => {
                 globalPreFilter
                 ? originalData.filter(theDoFilterGlobal)
                 : originalData
-            ).filter(theDoFilter  );
+            ).filter(theDoFilter);
         
         // check 
         // console.log(originalGroupedData);

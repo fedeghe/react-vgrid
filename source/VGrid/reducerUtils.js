@@ -1,7 +1,9 @@
+import { isFunction } from './utils';
+
 let count = 0;
 const prefix = 'HYG_';
 // eslint-disable-next-line one-var
-export const __getDoFilter = ({columns, filters}) => {
+export const __getFilterFactory = ({columns, filters}) => {
     const {funcFilteredFields, valueFilteredFields} = columns.reduce((acc, f) => {
         acc[(f in filters)? 'funcFilteredFields' : 'valueFilteredFields'].push(f);
         return acc;
@@ -17,6 +19,8 @@ export const __getDoFilter = ({columns, filters}) => {
         valueFilteredFields.some(f => `${row[f]}`.includes(v));
 },
 
+__applyFilter = () => {}, 
+
 __cleanFilters = _filters => Object.keys(_filters).reduce((acc, k) => {
     acc[k] = {
         filter: _filters[k].filter,
@@ -24,7 +28,20 @@ __cleanFilters = _filters => Object.keys(_filters).reduce((acc, k) => {
     };
     return acc;
 }, {}),
-
+__composeFilters = ({headers}) => headers.reduce((acc, header) => {
+    if (isFunction(header.filter)) {
+        acc[header.key] = {
+            filter: header.filter,
+            value: header.preFiltered || ''
+        };
+    } else {
+        acc[header.key] = {
+            filter: () => true,
+            value: ''
+        };
+    }
+    return acc;
+}, {}),
 __getGrouped = ({data, groups, opts}) => {
     const trak = {};
     if (opts.trak) trak.start = +new Date();
@@ -54,7 +71,7 @@ __getGrouped = ({data, groups, opts}) => {
     return g;
 },
 
-// this does not perform better
+// this does NOT perform better
 __getGrouped2 = ({data, groups, opts}) => {
     const trak = {};
     if (opts.trak) trak.start = +new Date();
