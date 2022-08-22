@@ -3,6 +3,7 @@ import { isFunction } from './utils';
 import {
     __getFilterFactory,  __cleanFilters, __getVirtual,
     __getGrouped, __getGrouped2, __composeFilters,
+    __applyFilter,
     uniqueID
 } from './reducerUtils';
 import {
@@ -291,7 +292,6 @@ const reducer = (oldState, action) => {
 
             originalData = data.map(item => ({ [rhgID]: `${uniqueID}`, ...item })),
 
-            groupNames = Object.keys(originalGroupedData),
             funcFilters = __composeFilters({headers}),
             columns = headers.map(h => h.key),
             filterFactory = __getFilterFactory({columns, filters: funcFilters}),
@@ -299,24 +299,20 @@ const reducer = (oldState, action) => {
             theDoFilterGlobal = filterFactory(globalPreFilter),
             theDoFilter = filterFactory(),
 
-            initialGroupedDataGobalFiltered = globalPreFilter
-                ? groupNames.reduce((acc, groupName) => {
-                    acc[groupName] = originalGroupedData[groupName].filter(theDoFilterGlobal);
-                    return acc;
-                }, {})
-                : originalGroupedData,
 
-            initialGroupedData = groupNames.reduce((acc, groupName) => {
-                acc[groupName] = initialGroupedDataGobalFiltered[groupName].filter(theDoFilter);
-                return acc;
-            }, {}),
+            gData = __applyFilter({
+                globalValue: globalPreFilter,
+                groupedData: originalGroupedData,
+                gFilter: theDoFilterGlobal,
+                filter: theDoFilter
+            }),
 
             innerVirtual = __getVirtual({
                 dimensions,
                 size: originalData.length,
                 lineGap,
                 grouping,
-                grouped: initialGroupedData
+                grouped: gData
             }),
 
             virtual = {
@@ -364,7 +360,7 @@ const reducer = (oldState, action) => {
 
             //grouped
             originalGroupedData,
-            filteredGroupedData: {...initialGroupedData},
+            filteredGroupedData: {...gData},
 
 
             columns,
