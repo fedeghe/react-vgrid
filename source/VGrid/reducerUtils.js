@@ -19,7 +19,19 @@ export const __getFilterFactory = ({columns, filters}) => {
         valueFilteredFields.some(f => `${row[f]}`.includes(v));
 },
 
-__applyFilter = () => {}, 
+__applyFilter = ({globalValue, groupedData, gFilter, filter}) => {
+    const groupNames = Object.keys(groupedData),
+        initialGroupedDataGobalFiltered = globalValue
+                ? groupNames.reduce((acc, groupName) => {
+                    acc[groupName] = groupedData[groupName].filter(gFilter);
+                    return acc;
+                }, {})
+                : groupedData;
+    return groupNames.reduce((acc, groupName) => {
+        acc[groupName] = initialGroupedDataGobalFiltered[groupName].filter(filter);
+        return acc;
+    }, {});
+}, 
 
 __cleanFilters = _filters => Object.keys(_filters).reduce((acc, k) => {
     acc[k] = {
