@@ -19,7 +19,7 @@ export default {
         // { key: 'entityid3', type: 'int' },
         // { key: 'name3', type: 'str' },
         // { key: 'date3', type: 'date' },
-    ], 1e5),
+    ], 1e3),
 
     // each gouper must exclusively select an element,
     // if two grouper let the same row pass then a specific
@@ -37,7 +37,7 @@ export default {
         }],
         group: {
             Component: GroupComponent,
-            height:500
+            height:50
         }
     },
 

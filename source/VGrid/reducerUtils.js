@@ -40,12 +40,15 @@ __cleanFilters = _filters => Object.keys(_filters).reduce((acc, k) => {
     };
     return acc;
 }, {}),
+
 __composeFilters = ({headers}) => headers.reduce((acc, header) => {
+    // in case a header has a filter, use it
     if (isFunction(header.filter)) {
         acc[header.key] = {
             filter: header.filter,
             value: header.preFiltered || ''
         };
+    // otherwise let data pass
     } else {
         acc[header.key] = {
             filter: () => true,
@@ -54,11 +57,12 @@ __composeFilters = ({headers}) => headers.reduce((acc, header) => {
     }
     return acc;
 }, {}),
+
 __getGrouped = ({data, groups, opts}) => {
-    const trak = {};
-    if (opts.trak) trak.start = +new Date();
-    // eslint-disable-next-line one-var
-    const tmpGroupFlags = Array.from({length: data.length}, () => true),
+    const trak = opts.trak ? {start: +new Date()} : null,
+        
+        tmpGroupFlags = Array.from({length: data.length}, () => true),
+
         g = groups.reduce((acc, {label, grouper}) => {
             acc[label] = data.filter((row, i) => {
                 if (!tmpGroupFlags[i]) return false;
@@ -71,7 +75,7 @@ __getGrouped = ({data, groups, opts}) => {
             return acc;
         }, {});
 
-    // might be some data does not belong to any group
+    // might be` some data does not belong to any group
     g[opts.UNGROUPED] = data.filter((row, i) => tmpGroupFlags[i]);
     if (groups.length && g[opts.UNGROUPED].length) {
         console.warn(`[${opts.CMP.toUpperCase()} warning]: ${g[opts.UNGROUPED].length} elements are ungrouped`);
@@ -85,19 +89,18 @@ __getGrouped = ({data, groups, opts}) => {
 
 // this does NOT perform better
 __getGrouped2 = ({data, groups, opts}) => {
-    const trak = {};
-    if (opts.trak) trak.start = +new Date();
-    // eslint-disable-next-line one-var
-    const g =  data.reduce((acc, d) => {
-        const filter = groups.find(({grouper}) => grouper(d));
-        if (filter) {
-            if(!(filter.label in acc)) acc[filter.label] = [];
-            acc[filter.label].push(d);
-        } else {
-            acc[opts.UNGROUPED].push(d);
-        }
-        return acc;
-    }, {[opts.UNGROUPED]: []});
+    const trak = opts.trak ? {start: +new Date()} : null,
+        g =  data.reduce((acc, d) => {
+            const filter = groups.find(({grouper}) => grouper(d));
+            if (filter) {
+                if(!(filter.label in acc)) acc[filter.label] = [];
+                acc[filter.label].push(d);
+            } else {
+                acc[opts.UNGROUPED].push(d);
+            }
+            return acc;
+        }, {[opts.UNGROUPED]: []});
+
     if (groups.length && g[opts.UNGROUPED].length) {
         console.warn(`[${opts.CMP.toUpperCase()} warning]: ${g[opts.UNGROUPED].length} elements are ungrouped`);
     }
@@ -147,6 +150,38 @@ __getVirtual = ({ dimensions, size, lineGap, grouping, grouped, scrollTop = 0}) 
         scrollTop,
     };
 },
+__getVirtualGroup = ({ dimensions, lineGap, grouping, grouped, scrollTop}) => {
+    console.log(grouped)
+    console.log(grouping)
+    // common things
+    const { height, itemHeight, width, itemWidth } = dimensions,
+        columns = Math.floor(width / itemWidth),
+        groupHeader = grouping.group,
+        groupsDimensions = Object.entries(grouped).reduce((acc, [groupName, groupData]) => {
+            const size = groupData.length,
+                groupLines = Math.ceil(size / columns),
+                groupHeight = groupLines * itemHeight + groupHeader.height;
+            acc.carpetHeight += groupHeight;
+            acc.groupsHeights[groupName] = groupHeight;
+            return acc;
+        }, {carpetHeight: 0, columns, groupsHeights: {}}),
+
+        topFillerHeight= 0,
+        bottomFillerHeight = 0;
+
+    return {
+        groupsDimensions,
+
+        topFillerHeight,
+        bottomFillerHeight,
+        renderingGroups: [{
+            name: 'the name',
+            group: [/* the raw data, only the one that needs to be rendered*/],
+            includeHeader: true // or false
+        }]
+    };
+},
+
 uniqueID = {
     toString: () => {
         count += 1;

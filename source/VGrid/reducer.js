@@ -1,7 +1,8 @@
 import React from 'react';
 import { isFunction } from './utils';
 import {
-    __getFilterFactory,  __cleanFilters, __getVirtual,
+    __getFilterFactory,  __cleanFilters,
+    __getVirtual, __getVirtualGroup,
     __getGrouped, __getGrouped2, __composeFilters,
     __applyFilter,
     uniqueID
@@ -294,6 +295,7 @@ const reducer = (oldState, action) => {
 
             funcFilters = __composeFilters({headers}),
             columns = headers.map(h => h.key),
+
             filterFactory = __getFilterFactory({columns, filters: funcFilters}),
 
             theDoFilterGlobal = filterFactory(globalPreFilter),
@@ -312,7 +314,8 @@ const reducer = (oldState, action) => {
                 size: originalData.length,
                 lineGap,
                 grouping,
-                grouped: gData
+                grouped: gData,
+                scrollTop: 0
             }),
 
             virtual = {
@@ -329,11 +332,22 @@ const reducer = (oldState, action) => {
                 : originalData
             ).filter(theDoFilter);
         
+            
+        console.log('new : ',
+            __getVirtualGroup({
+                dimensions,
+                lineGap,
+                grouping,
+                grouped: gData,
+                scrollTop: 0
+            })
+        );
+
+
+
         // check 
         // console.log(originalGroupedData);
         // console.log(initialGroupedData);
-
-
         // what about order?
         for (var g in originalGroupedData) {
             console.log(g, originalGroupedData[g].length);
