@@ -64,7 +64,7 @@ __getGrouped = ({data, groups, opts}) => {
         tmpGroupFlags = Array.from({length: data.length}, () => true),
 
         g = groups.reduce((acc, {label, grouper}) => {
-            acc[label] = data.filter((row, i) => {
+            const entries = data.filter((row, i) => {
                 if (!tmpGroupFlags[i]) return false;
                 if (grouper && grouper(row)) {
                     tmpGroupFlags[i] = false;
@@ -72,6 +72,11 @@ __getGrouped = ({data, groups, opts}) => {
                 }
                 return false;
             });
+            if (entries.length){
+                acc[label] = entries;
+            } else {
+                console.warn(`[${opts.CMP.toUpperCase()} warning]: group named \`${label}\` is empty thus ignored`);
+            }
             return acc;
         }, {});
 
@@ -87,7 +92,7 @@ __getGrouped = ({data, groups, opts}) => {
     return g;
 },
 
-// this does NOT perform better
+// this does NOT perform better (this does not remove empty groups automatically)
 __getGrouped2 = ({data, groups, opts}) => {
     const trak = opts.trak ? {start: +new Date()} : null,
         g =  data.reduce((acc, d) => {
@@ -161,24 +166,39 @@ __getVirtualGroup = ({ dimensions, lineGap, grouping, grouped, scrollTop}) => {
             const size = groupData.length,
                 groupLines = Math.ceil(size / columns),
                 groupHeight = groupLines * itemHeight + groupHeader.height;
+
+            // if there are no lines then we should skip it,
+            // this can be removed since __getGrouped (what returns what here we get as 'groouped')
+            // automatically skips groups that do not contain any data
+            if (!groupLines) return acc;
+
             acc.carpetHeight += groupHeight;
             acc.groupsHeights[groupName] = groupHeight;
             return acc;
         }, {carpetHeight: 0, columns, groupsHeights: {}}),
 
         topFillerHeight= 0,
-        bottomFillerHeight = 0;
+        bottomFillerHeight = 0,
+        renderingGroups = Object.entries(groupsDimensions.groupsHeights).reduce(
+            (acc, [groupName, groupHeight]) => {
+                // here we can be sure that all the groups will have a positive height
+                // at least equal to one line (itemHeight)
+                acc.push({
+                    name: groupName,
+                    group: grouped[groupName],
+                    includeHeader: true // or false
+                });
+                return acc;
+            },
+            []
+        );
 
     return {
         groupsDimensions,
 
         topFillerHeight,
         bottomFillerHeight,
-        renderingGroups: [{
-            name: 'the name',
-            group: [/* the raw data, only the one that needs to be rendered*/],
-            includeHeader: true // or false
-        }]
+        renderingGroups
     };
 },
 
