@@ -34,6 +34,9 @@ export default {
         },{
             label: 'high',
             grouper: (row) => row.id >=100 && row.id <= 300
+        },{
+            label: 'impossible',
+            grouper: (row) => row.id >= Infinity && row.id <= 300
         }],
         group: {
             Component: GroupComponent,
