@@ -4,10 +4,13 @@ export default createUseStyles({
     Item: {
         backgroundColor: '#eee',
         overflow:'scroll',
-        height:'inherit',
         border:'5px solid white',
         outline: '1px solid gray',
-        borderRadius: 5
+        borderRadius: 5,
+        
+        // comment-toggle both the following to get a margin
+        height:'inherit',
+        // margin:20
     },
     Inner:{
         padding:'10px',
