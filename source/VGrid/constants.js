@@ -2,7 +2,7 @@
 
 
 // the name of the component
-export const CMP = 'react-vgrid',
+export const CMPNAME = 'react-vgrid',
     // how many lines extra viewport up and down before virtualization ? 
     LINE_GAP = 2,
 

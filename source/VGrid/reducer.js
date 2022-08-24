@@ -8,7 +8,7 @@ import {
     uniqueID
 } from './reducerUtils';
 import {
-    CMP, LINE_GAP, WIDTH, HEIGHT, ITEM_HEIGHT, ITEM_WIDTH,
+    CMPNAME, LINE_GAP, WIDTH, HEIGHT, ITEM_HEIGHT, ITEM_WIDTH,
     RHG_ID, DEBOUNCE_SCROLLING, DEBOUNCE_FILTERING,
     NO_FILTER_DATA_MESSAGE, GROUP_COMPONENT_HEIGHT,
     UNGROUPED, FILTERS
@@ -33,12 +33,15 @@ const reducer = (oldState, action) => {
             } = oldState,
 
             actions = {
+
+                
                 loading: () => ({
                     virtual: {
                         ...virtual,
                         loading: true
                     }
                 }),
+
 
                 filter: () => {
                     const { value, field } = payload,
@@ -98,6 +101,7 @@ const reducer = (oldState, action) => {
                     };
                 },
 
+
                 unFilterFields: () => {
                     let _globalFilterValue = globalFilterValue,
                         _newFilters = {...filters},
@@ -142,6 +146,8 @@ const reducer = (oldState, action) => {
                         filtered: _filteredData.length
                     };
                 },
+
+                
                 unFilter: () => {                    
                     let _globalFilterValue = globalFilterValue,
                         _newFilters = {...filters},
@@ -163,7 +169,6 @@ const reducer = (oldState, action) => {
                             _filteredData = _filteredData.filter(doFilter(_globalFilterValue));
                             break;
                     }
-                    
 
                     // eslint-disable-next-line one-var
                     const newVirtual = __getVirtual({
@@ -189,6 +194,8 @@ const reducer = (oldState, action) => {
                     };
 
                 },
+
+
                 scroll: () => {
                     const scrollTop = parseInt(payload, 10),
                         newVirtual = __getVirtual({
@@ -239,7 +246,8 @@ const reducer = (oldState, action) => {
                     group: {
                         Component: GroupComponent = n => n,
                         height : groupComponentHeight = GROUP_COMPONENT_HEIGHT
-                    } = {}
+                    } = {},
+                    ungroupedLabel = UNGROUPED
                 } = {},
                 
                 header: {
@@ -282,12 +290,12 @@ const reducer = (oldState, action) => {
                 height,
                 itemHeight, itemWidth
             },
-
+            elementsPerLine = Math.floor(width / itemWidth),
 
             /**
              * starting from specified groups, separate the data and create the groups
              */
-            originalGroupedData = __getGrouped({data, groups, opts: {UNGROUPED, CMP, trak: true}}),
+            originalGroupedData = __getGrouped({data, groups, elementsPerLine, opts: {ungroupedLabel, lib: CMPNAME, trak: true}}),
             // originalGroupedData2 = __getGrouped2({data, groups, opts: {UNGROUPED, CMP, trak: true}}),
 
 
@@ -306,7 +314,8 @@ const reducer = (oldState, action) => {
                 globalValue: globalPreFilter,
                 groupedData: originalGroupedData,
                 gFilter: theDoFilterGlobal,
-                filter: theDoFilter
+                filter: theDoFilter,
+                elementsPerLine
             }),
 
             innerVirtual = __getVirtual({
@@ -344,19 +353,27 @@ const reducer = (oldState, action) => {
         );
 
 
+        /*
 
-        // check 
+        :::===== :::  === :::===== :::===== :::  ===      :::====  :::====  ::: :::= === :::====
+        :::      :::  === :::      :::      ::: ===       :::  === :::  === ::: :::===== :::====
+        ===      ======== ======   ===      ======        =======  ===  === === ========   ===
+        ===      ===  === ===      ===      === ===       ===      ===  === === === ====   ===
+         ======= ===  === ========  ======= ===  ===      ===       ======  === ===  ===   ===
+        
+        */
+        // 
         // console.log(originalGroupedData);
         // console.log(initialGroupedData);
         // what about order?
-        for (var g in originalGroupedData) {
-            console.log(g, originalGroupedData[g].length);
-        }
-
+        /**/for (var g in originalGroupedData) {
+        /**/    console.log(g, originalGroupedData[g].entries.length);
+        /**/}
         // every group must have a grouper
-        if (groups.length && groups.some(group => typeof group.grouper !== 'function')) {
-            throw 'Every defined group must have a grouper function';
-        }
+        /**/if (groups.length && groups.some(group => typeof group.grouper !== 'function')) {
+        /**/    throw 'Every defined group must have a grouper function';
+        /**/}
+        /////////////////////////////////////////////////////////////////////
 
         return {
             ...cnf,

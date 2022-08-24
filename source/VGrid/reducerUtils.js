@@ -1,7 +1,8 @@
 import { isFunction } from './utils';
 
 let count = 0;
-const prefix = 'HYG_';
+const prefix = 'HYG_',
+    getLines = ({entries, elementsPerLine}) => Math.ceil(entries.length / elementsPerLine);
 // eslint-disable-next-line one-var
 export const __getFilterFactory = ({columns, filters}) => {
     const {funcFilteredFields, valueFilteredFields} = columns.reduce((acc, f) => {
@@ -19,16 +20,32 @@ export const __getFilterFactory = ({columns, filters}) => {
         valueFilteredFields.some(f => `${row[f]}`.includes(v));
 },
 
-__applyFilter = ({globalValue, groupedData, gFilter, filter}) => {
+__applyFilter = ({globalValue, groupedData, gFilter, filter, elementsPerLine}) => {
+    /**
+     * {
+     *      [groupName]: {
+     *          entries: [{...}],
+     *          lines: #of lines for that group
+     *      }
+     * }
+     */
     const groupNames = Object.keys(groupedData),
         initialGroupedDataGobalFiltered = globalValue
                 ? groupNames.reduce((acc, groupName) => {
-                    acc[groupName] = groupedData[groupName].filter(gFilter);
+                    const entries = groupedData[groupName].entries.filter(gFilter)
+                    acc[groupName] = {
+                        entries,
+                        lines: getLines({entries, elementsPerLine})
+                    };
                     return acc;
                 }, {})
                 : groupedData;
     return groupNames.reduce((acc, groupName) => {
-        acc[groupName] = initialGroupedDataGobalFiltered[groupName].filter(filter);
+        const entries = initialGroupedDataGobalFiltered[groupName].entries.filter(filter);
+        acc[groupName] = {
+            entries,
+            lines: getLines({entries, elementsPerLine})
+        };
         return acc;
     }, {});
 }, 
@@ -58,7 +75,8 @@ __composeFilters = ({headers}) => headers.reduce((acc, header) => {
     return acc;
 }, {}),
 
-__getGrouped = ({data, groups, opts}) => {
+
+__getGrouped = ({data, groups, elementsPerLine, opts}) => {
     const trak = opts.trak ? {start: +new Date()} : null,
         
         tmpGroupFlags = Array.from({length: data.length}, () => true),
@@ -73,17 +91,25 @@ __getGrouped = ({data, groups, opts}) => {
                 return false;
             });
             if (entries.length){
-                acc[label] = entries;
+                acc[label] = {
+                    entries,
+                    lines: getLines({entries, elementsPerLine})
+                };
             } else {
-                console.warn(`[${opts.CMP.toUpperCase()} warning]: group named \`${label}\` is empty thus ignored`);
+                console.warn(`[${opts.lib.toUpperCase()} warning]: group named \`${label}\` is empty thus ignored`);
             }
             return acc;
-        }, {});
+        }, {}),
+        // might be` some data does not belong to any group
+        outcast = data.filter((row, i) => tmpGroupFlags[i]);
 
-    // might be` some data does not belong to any group
-    g[opts.UNGROUPED] = data.filter((row, i) => tmpGroupFlags[i]);
-    if (groups.length && g[opts.UNGROUPED].length) {
-        console.warn(`[${opts.CMP.toUpperCase()} warning]: ${g[opts.UNGROUPED].length} elements are ungrouped`);
+
+    g[opts.ungroupedLabel] = {
+        entries: outcast,
+        lines: getLines({entries: outcast, elementsPerLine})
+    };
+    if (groups.length && g[opts.ungroupedLabel].entries.length) {
+        console.warn(`[${opts.lib.toUpperCase()} warning]: ${g[opts.ungroupedLabel].length} elements are ungrouped`);
     }
     if (opts.trak) {
         trak.end = +new Date();
@@ -104,10 +130,10 @@ __getGrouped2 = ({data, groups, opts}) => {
                 acc[opts.UNGROUPED].push(d);
             }
             return acc;
-        }, {[opts.UNGROUPED]: []});
+        }, {[opts.ungroupedLabel]: []});
 
-    if (groups.length && g[opts.UNGROUPED].length) {
-        console.warn(`[${opts.CMP.toUpperCase()} warning]: ${g[opts.UNGROUPED].length} elements are ungrouped`);
+    if (groups.length && g[opts.ungroupedLabel].length) {
+        console.warn(`[${opts.lib.toUpperCase()} warning]: ${g[opts.ungroupedLabel].length} elements are ungrouped`);
     }
     if (opts.trak) {
         trak.end = +new Date();
@@ -118,9 +144,7 @@ __getGrouped2 = ({data, groups, opts}) => {
 
 
 __getVirtual = ({ dimensions, size, lineGap, grouping, grouped, scrollTop = 0}) => {
-    console.log('grouping: ', grouping);
-    console.log('grouped: ', grouped);
-
+    
     const { height, itemHeight, width, itemWidth } = dimensions,
         columns = Math.floor(width / itemWidth),
         lines = Math.ceil(size / columns),
@@ -156,48 +180,63 @@ __getVirtual = ({ dimensions, size, lineGap, grouping, grouped, scrollTop = 0}) 
     };
 },
 __getVirtualGroup = ({ dimensions, lineGap, grouping, grouped, scrollTop}) => {
-    console.log(grouped)
-    console.log(grouping)
+    console.log('grouped: ', grouped)
+    console.log('grouping: ', grouping)
     // common things
-    const { height, itemHeight, width, itemWidth } = dimensions,
+    const { height: contentHeight, itemHeight, width, itemWidth } = dimensions,
         columns = Math.floor(width / itemWidth),
         groupHeader = grouping.group,
-        groupsDimensions = Object.entries(grouped).reduce((acc, [groupName, groupData]) => {
+        groupingDimensions = Object.entries(grouped).reduce((acc, [groupName, groupData]) => {
+            // if there is no data then we should skip it,
+            // buit __getGrouped (what returns what here we get as 'groouped')
+            // automatically skips groups that do not contain any data
+            // thus we can skip it
+            // if (!groupData.length) return acc;
+
             const size = groupData.length,
                 groupLines = Math.ceil(size / columns),
                 groupHeight = groupLines * itemHeight + groupHeader.height;
 
-            // if there are no lines then we should skip it,
-            // this can be removed since __getGrouped (what returns what here we get as 'groouped')
-            // automatically skips groups that do not contain any data
-            if (!groupLines) return acc;
+            
 
             acc.carpetHeight += groupHeight;
             acc.groupsHeights[groupName] = groupHeight;
             return acc;
         }, {carpetHeight: 0, columns, groupsHeights: {}}),
 
-        topFillerHeight= 0,
-        bottomFillerHeight = 0,
-        renderingGroups = Object.entries(groupsDimensions.groupsHeights).reduce(
+        renderingGroups = Object.entries(groupingDimensions.groupsHeights).reduce(
             (acc, [groupName, groupHeight]) => {
-                // here we can be sure that all the groups will have a positive height
-                // at least equal to one line (itemHeight)
-                acc.push({
+                /** 
+                 * Here we can be sure that all the groups will have a
+                 * positive height at least equal to one line (itemHeight)
+                 * 
+                 * Clearly not all groups will go in acc.groups cause we need
+                 * to put only those ones which have rendering relevant elements
+                 */
+                acc.groups.push({
                     name: groupName,
                     group: grouped[groupName],
                     includeHeader: true // or false
                 });
                 return acc;
             },
-            []
+            {
+                groups: [],
+                topFillerHeight: 0
+            }
         );
 
-    return {
-        groupsDimensions,
+    // In case one only group is there the header must be skipped,
+    // regardless is the opts.UNGROUPED or a user named single group
+    if (renderingGroups.groups.length === 1) {
+        renderingGroups.groups[0].includeHeader = false;
+    }
 
-        topFillerHeight,
-        bottomFillerHeight,
+    return {
+        groupingDimensions,
+
+        topFillerHeight: 0,
+        bottomFillerHeight: 0,
         renderingGroups
     };
 },

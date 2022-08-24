@@ -38,6 +38,7 @@ export default {
             label: 'impossible',
             grouper: (row) => row.id >= Infinity && row.id <= 300
         }],
+        // ungroupedLabel: 'Un-grouped',
         group: {
             Component: GroupComponent,
             height:50
