@@ -295,8 +295,8 @@ const reducer = (oldState, action) => {
             /**
              * starting from specified groups, separate the data and create the groups
              */
-            originalGroupedData = __getGrouped({data, groups, elementsPerLine, opts: {ungroupedLabel, lib: CMPNAME, trak: true}}),
-            // originalGroupedData2 = __getGrouped2({data, groups, opts: {UNGROUPED, CMP, trak: true}}),
+            originalGroupedData = __getGrouped2({data, groups, elementsPerLine, opts: {ungroupedLabel, lib: CMPNAME, trak: true}}),
+            // originalGroupedData0 = __getGrouped({data, groups, elementsPerLine, opts: {ungroupedLabel, lib: CMPNAME, trak: true}}),
 
 
             originalData = data.map(item => ({ [rhgID]: `${uniqueID}`, ...item })),
@@ -315,7 +315,8 @@ const reducer = (oldState, action) => {
                 groupedData: originalGroupedData,
                 gFilter: theDoFilterGlobal,
                 filter: theDoFilter,
-                elementsPerLine
+                elementsPerLine,
+                opts: {trak: true}
             }),
 
             innerVirtual = __getVirtual({
@@ -348,10 +349,13 @@ const reducer = (oldState, action) => {
                 lineGap,
                 grouping,
                 grouped: gData,
-                scrollTop: 0
+                scrollTop: 0,
+                opts: {trak: true}
             })
         );
-
+        
+console.log('originalGroupedData', originalGroupedData);
+// console.log('originalGroupedData0', originalGroupedData0)
 
         /*
 

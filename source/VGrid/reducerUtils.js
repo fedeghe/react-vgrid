@@ -20,7 +20,7 @@ export const __getFilterFactory = ({columns, filters}) => {
         valueFilteredFields.some(f => `${row[f]}`.includes(v));
 },
 
-__applyFilter = ({globalValue, groupedData, gFilter, filter, elementsPerLine}) => {
+__applyFilter = ({globalValue, groupedData, gFilter, filter, elementsPerLine, opts = {}}) => {
     /**
      * {
      *      [groupName]: {
@@ -29,7 +29,8 @@ __applyFilter = ({globalValue, groupedData, gFilter, filter, elementsPerLine}) =
      *      }
      * }
      */
-    const groupNames = Object.keys(groupedData),
+    const trak = opts.trak ? {start: +new Date()} : null,
+        groupNames = Object.keys(groupedData),
         initialGroupedDataGobalFiltered = globalValue
                 ? groupNames.reduce((acc, groupName) => {
                     const entries = groupedData[groupName].entries.filter(gFilter)
@@ -39,15 +40,20 @@ __applyFilter = ({globalValue, groupedData, gFilter, filter, elementsPerLine}) =
                     };
                     return acc;
                 }, {})
-                : groupedData;
-    return groupNames.reduce((acc, groupName) => {
-        const entries = initialGroupedDataGobalFiltered[groupName].entries.filter(filter);
-        acc[groupName] = {
-            entries,
-            lines: getLines({entries, elementsPerLine})
-        };
-        return acc;
-    }, {});
+                : groupedData,
+        ret = groupNames.reduce((acc, groupName) => {
+            const entries = initialGroupedDataGobalFiltered[groupName].entries.filter(filter);
+            acc[groupName] = {
+                entries,
+                lines: getLines({entries, elementsPerLine})
+            };
+            return acc;
+        }, {});
+    if (opts.trak) {
+        trak.end = +new Date();
+        console.log(`__applyFilter spent ${trak.end - trak.start}ms`);
+    }
+    return ret;
 }, 
 
 __cleanFilters = _filters => Object.keys(_filters).reduce((acc, k) => {
@@ -76,7 +82,7 @@ __composeFilters = ({headers}) => headers.reduce((acc, header) => {
 }, {}),
 
 
-__getGrouped = ({data, groups, elementsPerLine, opts}) => {
+__getGrouped = ({data, groups, elementsPerLine, opts = {}}) => {
     const trak = opts.trak ? {start: +new Date()} : null,
         
         tmpGroupFlags = Array.from({length: data.length}, () => true),
@@ -109,7 +115,7 @@ __getGrouped = ({data, groups, elementsPerLine, opts}) => {
         lines: getLines({entries: outcast, elementsPerLine})
     };
     if (groups.length && g[opts.ungroupedLabel].entries.length) {
-        console.warn(`[${opts.lib.toUpperCase()} warning]: ${g[opts.ungroupedLabel].length} elements are ungrouped`);
+        console.warn(`[${opts.lib.toUpperCase()} warning]: ${g[opts.ungroupedLabel].entries.length} elements are ungrouped`);
     }
     if (opts.trak) {
         trak.end = +new Date();
@@ -118,28 +124,37 @@ __getGrouped = ({data, groups, elementsPerLine, opts}) => {
     return g;
 },
 
-// this does NOT perform better (this does not remove empty groups automatically)
-__getGrouped2 = ({data, groups, opts}) => {
+/**
+ * Quite not surprisingly looping on each entry and find the first filter get it (if any)
+ * does perform better.... 
+ */
+__getGrouped2 = ({data, groups, elementsPerLine, opts = {}}) => {
     const trak = opts.trak ? {start: +new Date()} : null,
         g =  data.reduce((acc, d) => {
             const filter = groups.find(({grouper}) => grouper(d));
             if (filter) {
-                if(!(filter.label in acc)) acc[filter.label] = [];
-                acc[filter.label].push(d);
+                if(!(filter.label in acc)) acc[filter.label] = {entries: []};
+                acc[filter.label].entries.push(d);
             } else {
-                acc[opts.UNGROUPED].push(d);
+                acc[opts.ungroupedLabel].entries.push(d);
             }
             return acc;
-        }, {[opts.ungroupedLabel]: []});
+        }, {[opts.ungroupedLabel]: {entries: []}});
 
-    if (groups.length && g[opts.ungroupedLabel].length) {
-        console.warn(`[${opts.lib.toUpperCase()} warning]: ${g[opts.ungroupedLabel].length} elements are ungrouped`);
+    if (groups.length && g[opts.ungroupedLabel].entries.length) {
+        console.warn(`[${opts.lib.toUpperCase()} warning]: ${g[opts.ungroupedLabel].entries.length} elements are ungrouped`);
     }
     if (opts.trak) {
         trak.end = +new Date();
         console.log(`__getGrouped2 spent ${trak.end - trak.start}ms`);
     }
-    return g;
+    return Object.entries(g).reduce((acc, [name, group]) => {
+        acc[name] = {
+            ...group,
+            lines: getLines({entries: group.entries, elementsPerLine})
+        };
+        return acc;
+    }, {});
 },
 
 
@@ -179,30 +194,30 @@ __getVirtual = ({ dimensions, size, lineGap, grouping, grouped, scrollTop = 0}) 
         scrollTop,
     };
 },
-__getVirtualGroup = ({ dimensions, lineGap, grouping, grouped, scrollTop}) => {
+
+__getVirtualGroup = ({ dimensions, lineGap, grouping, grouped, scrollTop, elementsPerLine, opts = {}}) => {
     console.log('grouped: ', grouped)
     console.log('grouping: ', grouping)
     // common things
-    const { height: contentHeight, itemHeight, width, itemWidth } = dimensions,
-        columns = Math.floor(width / itemWidth),
+    const trak = opts.trak ? {start: +new Date()} : null,
+        { height: contentHeight, itemHeight, width, itemWidth } = dimensions,
         groupHeader = grouping.group,
-        groupingDimensions = Object.entries(grouped).reduce((acc, [groupName, groupData]) => {
-            // if there is no data then we should skip it,
-            // buit __getGrouped (what returns what here we get as 'groouped')
-            // automatically skips groups that do not contain any data
-            // thus we can skip it
-            // if (!groupData.length) return acc;
+        groupingDimensions = Object.entries(grouped).reduce((acc, [groupName, group]) => {
+            /**
+             * if there is no data then we should skip it, but
+             * __getGrouped ,which returns what here we get as 'groouped',
+             * automatically skips groups that do not contain any data
+             * thus we can skip it (see the 'impossible' group in configSmall)
+             * 
+             * if (!groupData.entries.length) return acc;
+             */ 
 
-            const size = groupData.length,
-                groupLines = Math.ceil(size / columns),
-                groupHeight = groupLines * itemHeight + groupHeader.height;
-
-            
+            const groupHeight = group.lines * itemHeight + groupHeader.height;
 
             acc.carpetHeight += groupHeight;
             acc.groupsHeights[groupName] = groupHeight;
             return acc;
-        }, {carpetHeight: 0, columns, groupsHeights: {}}),
+        }, {carpetHeight: 0, groupsHeights: {}}),
 
         renderingGroups = Object.entries(groupingDimensions.groupsHeights).reduce(
             (acc, [groupName, groupHeight]) => {
@@ -213,9 +228,10 @@ __getVirtualGroup = ({ dimensions, lineGap, grouping, grouped, scrollTop}) => {
                  * Clearly not all groups will go in acc.groups cause we need
                  * to put only those ones which have rendering relevant elements
                  */
+                
                 acc.groups.push({
                     name: groupName,
-                    group: grouped[groupName],
+                    group: grouped[groupName], // each has {entries, lines}
                     includeHeader: true // or false
                 });
                 return acc;
@@ -226,18 +242,24 @@ __getVirtualGroup = ({ dimensions, lineGap, grouping, grouped, scrollTop}) => {
             }
         );
 
-    // In case one only group is there the header must be skipped,
-    // regardless is the opts.UNGROUPED or a user named single group
+    /** 
+     * In case one only group is there the header must be skipped,
+     * regardless is the opts.UNGROUPED
+     * or a user named single group containing all data
+     */
     if (renderingGroups.groups.length === 1) {
         renderingGroups.groups[0].includeHeader = false;
     }
 
+    if (opts.trak) {
+        trak.end = +new Date();
+        console.log(`__getVirtualGroup spent ${trak.end - trak.start}ms`);
+    }
     return {
         groupingDimensions,
-
+        renderingGroups,
         topFillerHeight: 0,
         bottomFillerHeight: 0,
-        renderingGroups
     };
 },
 
