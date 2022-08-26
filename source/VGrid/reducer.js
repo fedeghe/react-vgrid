@@ -5,7 +5,7 @@ import {
     __getVirtual, __getVirtualGroup,
     __getGrouped, __getGrouped2, __composeFilters,
     __applyFilter,
-    uniqueID
+    uniqueID, trakTime
 } from './reducerUtils';
 import {
     CMPNAME, LINE_GAP, WIDTH, HEIGHT, ITEM_HEIGHT, ITEM_WIDTH,
@@ -225,7 +225,9 @@ const reducer = (oldState, action) => {
         return oldState;
     },
     init = (cnf = {}) => {
-        const {
+        const trak = {start: +new Date},
+            {
+                trakTimes = false,
                 data = [],
                 lineGap = LINE_GAP,
                 Loader = () => (<div>loading</div>),
@@ -295,16 +297,16 @@ const reducer = (oldState, action) => {
             /**
              * starting from specified groups, separate the data and create the groups
              */
-            originalGroupedData = __getGrouped2({data, groups, elementsPerLine, opts: {ungroupedLabel, lib: CMPNAME, trak: true}}),
+            originalGroupedData = __getGrouped2({data, groups, elementsPerLine, opts: {ungroupedLabel, lib: CMPNAME, trakTimes}}),
             // originalGroupedData0 = __getGrouped({data, groups, elementsPerLine, opts: {ungroupedLabel, lib: CMPNAME, trak: true}}),
 
 
             originalData = data.map(item => ({ [rhgID]: `${uniqueID}`, ...item })),
 
-            funcFilters = __composeFilters({headers}),
+            funcFilters = __composeFilters({headers, opts: {trakTimes}}),
             columns = headers.map(h => h.key),
 
-            filterFactory = __getFilterFactory({columns, filters: funcFilters}),
+            filterFactory = __getFilterFactory({columns, filters: funcFilters, opts: {trakTimes}}),
 
             theDoFilterGlobal = filterFactory(globalPreFilter),
             theDoFilter = filterFactory(),
@@ -316,7 +318,7 @@ const reducer = (oldState, action) => {
                 gFilter: theDoFilterGlobal,
                 filter: theDoFilter,
                 elementsPerLine,
-                opts: {trak: true}
+                opts: {trakTimes}
             }),
 
             innerVirtual = __getVirtual({
@@ -350,11 +352,11 @@ const reducer = (oldState, action) => {
                 grouping,
                 grouped: gData,
                 scrollTop: 0,
-                opts: {trak: true}
+                opts: {trakTimes}
             })
         );
         
-console.log('originalGroupedData', originalGroupedData);
+// console.log('originalGroupedData', originalGroupedData);
 // console.log('originalGroupedData0', originalGroupedData0)
 
         /*
@@ -378,7 +380,10 @@ console.log('originalGroupedData', originalGroupedData);
         /**/    throw 'Every defined group must have a grouper function';
         /**/}
         /////////////////////////////////////////////////////////////////////
-
+        if (trakTimes) {
+            trak.end = +new Date;
+            trakTime({what: 'reducer initialization', time: trak.end - trak.start})
+        }
         return {
             ...cnf,
             rhgID,
