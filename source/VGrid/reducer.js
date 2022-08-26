@@ -14,7 +14,8 @@ import {
     UNGROUPED, FILTERS
 } from './constants';
 
-const reducer = (oldState, action) => {
+const lib = CMPNAME,
+     reducer = (oldState, action) => {
         const { payload = {}, type } = action,
             {
                 dimensions,
@@ -245,7 +246,7 @@ const reducer = (oldState, action) => {
 
                 grouping: {
                     groups = [],
-                    group: {
+                    groupHeader: {
                         Component: GroupComponent = n => n,
                         height : groupComponentHeight = GROUP_COMPONENT_HEIGHT
                     } = {},
@@ -281,7 +282,7 @@ const reducer = (oldState, action) => {
 
             grouping= {
                 groups,
-                group: {
+                groupHeader: {
                     Component: GroupComponent,
                     height : groupComponentHeight
                 }
@@ -292,21 +293,22 @@ const reducer = (oldState, action) => {
                 height,
                 itemHeight, itemWidth
             },
+
             elementsPerLine = Math.floor(width / itemWidth),
 
             /**
              * starting from specified groups, separate the data and create the groups
              */
-            originalGroupedData = __getGrouped2({data, groups, elementsPerLine, opts: {ungroupedLabel, lib: CMPNAME, trakTimes}}),
-            // originalGroupedData0 = __getGrouped({data, groups, elementsPerLine, opts: {ungroupedLabel, lib: CMPNAME, trak: true}}),
+            originalGroupedData = __getGrouped2({data, groups, elementsPerLine, opts: {ungroupedLabel, lib, trakTimes}}),
+            // originalGroupedData0 = __getGrouped({data, groups, elementsPerLine, opts: {ungroupedLabel, lib, trak: true}}),
 
 
             originalData = data.map(item => ({ [rhgID]: `${uniqueID}`, ...item })),
 
-            funcFilters = __composeFilters({headers, opts: {trakTimes}}),
+            funcFilters = __composeFilters({headers, opts: {trakTimes, lib}}),
             columns = headers.map(h => h.key),
 
-            filterFactory = __getFilterFactory({columns, filters: funcFilters, opts: {trakTimes}}),
+            filterFactory = __getFilterFactory({columns, filters: funcFilters, opts: {trakTimes, lib}}),
 
             theDoFilterGlobal = filterFactory(globalPreFilter),
             theDoFilter = filterFactory(),
@@ -318,7 +320,7 @@ const reducer = (oldState, action) => {
                 gFilter: theDoFilterGlobal,
                 filter: theDoFilter,
                 elementsPerLine,
-                opts: {trakTimes}
+                opts: {trakTimes, lib}
             }),
 
             innerVirtual = __getVirtual({
@@ -352,7 +354,7 @@ const reducer = (oldState, action) => {
                 grouping,
                 grouped: gData,
                 scrollTop: 0,
-                opts: {trakTimes}
+                opts: {trakTimes, lib}
             })
         );
         
@@ -382,7 +384,11 @@ const reducer = (oldState, action) => {
         /////////////////////////////////////////////////////////////////////
         if (trakTimes) {
             trak.end = +new Date;
-            trakTime({what: 'reducer initialization', time: trak.end - trak.start})
+            trakTime({
+                what: 'reducer initialization',
+                time: trak.end - trak.start,
+                opts: {trakTimes, lib}}
+            );
         }
         return {
             ...cnf,

@@ -39,7 +39,7 @@ export default {
             grouper: (row) => row.id >= Infinity && row.id <= 300
         }],
         // ungroupedLabel: 'Un-grouped',
-        group: {
+        groupHeader: {
             Component: GroupComponent,
             height:50
         }

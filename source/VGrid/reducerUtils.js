@@ -5,7 +5,10 @@ const prefix = 'HYG_',
     getLines = ({entries, elementsPerLine}) => Math.ceil(entries.length / elementsPerLine);
 
 // eslint-disable-next-line one-var
-export const trakTime = ({what, time}) => console.log(`Time trak: ${what} spent ${time}ms`),
+export const trakTime = ({what, time, opts}) =>
+        console.info(`%c${opts.lib.toUpperCase()} 🐢 ${what} spent ${time}ms`, 'color:DodgerBlue'),
+    doWarn = ({message, opts}) =>
+        console.warn(`${opts.lib.toUpperCase()} 🙉 ${message}`),
     __getFilterFactory = ({columns, filters, opts ={}}) => {
 
         const trak = opts.trakTimes ? {start: +new Date()} : null,
@@ -25,7 +28,7 @@ export const trakTime = ({what, time}) => console.log(`Time trak: ${what} spent 
 
         if (opts.trakTimes) {
             trak.end = +new Date();
-            trakTime({what: '__getFilterFactory', time: trak.end - trak.start});
+            trakTime({what: '__getFilterFactory', time: trak.end - trak.start, opts});
         }
         return ret;
     },
@@ -62,7 +65,7 @@ export const trakTime = ({what, time}) => console.log(`Time trak: ${what} spent 
             }, {});
         if (opts.trakTimes) {
             trak.end = +new Date();
-            trakTime({what: '__applyFilter', time: trak.end - trak.start});
+            trakTime({what: '__applyFilter', time: trak.end - trak.start, opts});
         }
         return ret;
     }, 
@@ -99,7 +102,7 @@ export const trakTime = ({what, time}) => console.log(`Time trak: ${what} spent 
             }, {});
         if (opts.trakTimes) {
             trak.end = +new Date();
-            trakTime({what: '__composeFilters', time: trak.end - trak.start});
+            trakTime({what: '__composeFilters', time: trak.end - trak.start, opts});
         }
         return ret;
     },
@@ -125,7 +128,7 @@ export const trakTime = ({what, time}) => console.log(`Time trak: ${what} spent 
                         lines: getLines({entries, elementsPerLine})
                     };
                 } else {
-                    console.warn(`[${opts.lib.toUpperCase()} warning]: group named \`${label}\` is empty thus ignored`);
+                    doWarn({message: `group named \`${label}\` is empty thus ignored`, opts});
                 }
                 return acc;
             }, {}),
@@ -138,11 +141,11 @@ export const trakTime = ({what, time}) => console.log(`Time trak: ${what} spent 
             lines: getLines({entries: outcast, elementsPerLine})
         };
         if (groups.length && g[opts.ungroupedLabel].entries.length) {
-            console.warn(`[${opts.lib.toUpperCase()} warning]: ${g[opts.ungroupedLabel].entries.length} elements are ungrouped`);
+            doWarn({message: `${g[opts.ungroupedLabel].entries.length} elements are ungrouped`, opts});
         }
         if (opts.trakTimes) {
             trak.end = +new Date();
-            trakTime({what: '__getGrouped', time: trak.end - trak.start});
+            trakTime({what: '__getGrouped', time: trak.end - trak.start, opts});
         }
         return g;
     },
@@ -166,11 +169,13 @@ export const trakTime = ({what, time}) => console.log(`Time trak: ${what} spent 
             }, {[opts.ungroupedLabel]: {entries: []}});
 
         if (groups.length && g[opts.ungroupedLabel].entries.length) {
-            console.warn(`[${opts.lib.toUpperCase()} warning]: ${g[opts.ungroupedLabel].entries.length} elements are ungrouped`);
+            // console.warn(`${opts.lib.toUpperCase()} 🙉 : ${g[opts.ungroupedLabel].entries.length} elements are ungrouped`);
+            doWarn({message: `${g[opts.ungroupedLabel].entries.length} elements are ungrouped`, opts});
         }
         if (opts.trakTimes) {
             trak.end = +new Date();
-            trakTime({what: '__getGrouped2', time: trak.end - trak.start});
+            trakTime({what: '__getGrouped2', time: trak.end - trak.start, opts});
+            
         }
         return Object.entries(g).reduce((acc, [name, group]) => {
             acc[name] = {
@@ -225,7 +230,8 @@ export const trakTime = ({what, time}) => console.log(`Time trak: ${what} spent 
         // common things
         const trak = opts.trakTimes ? {start: +new Date()} : null,
             { height: contentHeight, itemHeight, width, itemWidth } = dimensions,
-            groupHeader = grouping.group,
+            {groupHeader, groups} = grouping,
+            // groupHeader = grouping.group,
             groupingDimensions = Object.entries(grouped).reduce((acc, [groupName, group]) => {
                 /**
                  * if there is no data then we should skip it, but
@@ -243,28 +249,25 @@ export const trakTime = ({what, time}) => console.log(`Time trak: ${what} spent 
                 return acc;
             }, {carpetHeight: 0, groupsHeights: {}}),
 
-            renderingGroups = Object.entries(groupingDimensions.groupsHeights).reduce(
-                (acc, [groupName, groupHeight]) => {
-                    /** 
-                     * Here we can be sure that all the groups will have a
-                     * positive height at least equal to one line (itemHeight)
-                     * 
-                     * Clearly not all groups will go in acc.groups cause we need
-                     * to put only those ones which have rendering relevant elements
-                     */
-                    
-                    acc.groups.push({
-                        name: groupName,
-                        group: grouped[groupName], // each has {entries, lines}
-                        includeHeader: true // or false
-                    });
-                    return acc;
-                },
-                {
-                    groups: [],
-                    topFillerHeight: 0
-                }
-            );
+            // group here brings the right order given in the config
+            renderingGroups = groups.reduce((acc, {label}) => {
+                /** 
+                 * Here we can be sure that all the groups will have a
+                 * positive height at least equal to one line (itemHeight)
+                 * 
+                 * Clearly not all groups will go in acc.groups cause we need
+                 * to put only those ones which have rendering relevant elements
+                 */
+                acc.groups.push({
+                    name: label,
+                    group: grouped[label],
+                    includeHeader: true
+                });
+                return acc;
+            }, {
+                groups: [],
+                topFillerHeight: 0
+            });
 
         /** 
          * In case one only group is there the header must be skipped,
@@ -277,7 +280,7 @@ export const trakTime = ({what, time}) => console.log(`Time trak: ${what} spent 
 
         if (opts.trakTimes) {
             trak.end = +new Date();
-            trakTime({what: '__getVirtualGroup', time: trak.end - trak.start});
+            trakTime({what: '__getVirtualGroup', time: trak.end - trak.start, opts});
         }
         return {
             groupingDimensions,
