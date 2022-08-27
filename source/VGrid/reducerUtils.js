@@ -2,7 +2,31 @@ import { isFunction } from './utils';
 
 let count = 0;
 const prefix = 'HYG_',
-    getLines = ({entries, elementsPerLine}) => Math.ceil(entries.length / elementsPerLine);
+    getLines = ({entries, elementsPerLine}) => Math.ceil(entries.length / elementsPerLine),
+
+
+
+    /**
+     * 
+     *                  false
+     * +----from----+.........  scrollTop
+     * |            |
+     * |            |
+     * |            |
+     * |            |  true
+     * |            |
+     * |            |
+     * +----to------+ ........  scrollTop + contentHeight
+     * 
+     *                  null      
+     * 
+     */
+     getAllocation = ({cursor, range, groupDimensions, groupLines}) => {
+        console.log({cursor, range, groupDimensions, groupLines});
+        const {from, to} = range;
+        if (cursor > to) return null;
+        return cursor >= from;
+    };    
 
 // eslint-disable-next-line one-var
 export const trakTime = ({what, time, opts}) =>
@@ -231,6 +255,7 @@ export const trakTime = ({what, time, opts}) =>
         const trak = opts.trakTimes ? {start: +new Date()} : null,
             { height: contentHeight, itemHeight, width, itemWidth } = dimensions,
             {groupHeader, groups} = grouping,
+            {height : headerHeight} = groupHeader,
             // groupHeader = grouping.group,
             groupingDimensions = Object.entries(grouped).reduce((acc, [groupName, group]) => {
                 /**
@@ -248,9 +273,13 @@ export const trakTime = ({what, time, opts}) =>
                 acc.groupsHeights[groupName] = groupHeight;
                 return acc;
             }, {carpetHeight: 0, groupsHeights: {}}),
+            { carpetHeight } = groupingDimensions,
 
             // group here brings the right order given in the config
-            renderingGroups = groups.reduce((acc, {label}) => {
+            // here on first instance we scan through aiming to find the starting&ending element to 
+            // include (considering headers and lines)
+            range = {from: scrollTop, to: scrollTop + contentHeight},
+            renderingGroups = Object.keys(grouped).reduce((acc, label) => {
                 /** 
                  * Here we can be sure that all the groups will have a
                  * positive height at least equal to one line (itemHeight)
@@ -258,15 +287,41 @@ export const trakTime = ({what, time, opts}) =>
                  * Clearly not all groups will go in acc.groups cause we need
                  * to put only those ones which have rendering relevant elements
                  */
-                acc.groups.push({
-                    name: label,
-                    group: grouped[label],
-                    includeHeader: true
-                });
+                let {cursor, alloc} = acc;
+                console.log('GROUP', grouped[label])
+                const group = grouped[label],
+                    /**
+                     * null => is below, thus no header, no lines
+                     * true => is in, yes header, find out lines
+                     */
+                    ranging = getAllocation({
+                        cursor, range,
+                        groupDimensions: groupingDimensions.groupsHeights[label],
+                        groupLines: group.lines
+                    });
+
+                // initialise the alloc map for the group
+                alloc[label] = [{
+                    header: ranging,
+                    lines: 3
+                }];
+        
+
+                // MAYBE
+                // acc.groups.push({
+                //     label,
+                //     group,
+                //     includeHeader: true
+                // });
+
+                acc.alloc = alloc;
                 return acc;
             }, {
                 groups: [],
-                topFillerHeight: 0
+                alloc: {}, // label : [{h: bool}, {lines: num}, {h: bool}, {lines: num}, .....],
+                allocStart: null,
+                allocEnd: null,
+                cursor: 0
             });
 
         /** 
