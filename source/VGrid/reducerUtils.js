@@ -21,8 +21,8 @@ const prefix = 'HYG_',
      *                  null      
      * 
      */
-     getAllocation = ({cursor, range, groupDimensions, groupLines}) => {
-        console.log({cursor, range, groupDimensions, groupLines});
+     getAllocation = ({cursor, range, groupDimensions, groupLines, itemHeight}) => {
+        console.log({cursor, range, groupDimensions, groupLines, itemHeight});
         const {from, to} = range;
         if (cursor > to) return null;
         return cursor >= from;
@@ -291,13 +291,19 @@ export const trakTime = ({what, time, opts}) =>
                 console.log('GROUP', grouped[label])
                 const group = grouped[label],
                     /**
-                     * null => is below, thus no header, no lines
-                     * true => is in, yes header, find out lines
+                     *  ranging: {
+                     *      counts // boolean
+                     *      cursor // updated
+                     *      header // boolean
+                     *      from // integer
+                     *      to // integer
+                     *  }
                      */
                     ranging = getAllocation({
                         cursor, range,
                         groupDimensions: groupingDimensions.groupsHeights[label],
-                        groupLines: group.lines
+                        groupLines: group.lines,
+                        itemHeight
                     });
 
                 // initialise the alloc map for the group
