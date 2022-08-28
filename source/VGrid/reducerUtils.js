@@ -6,26 +6,70 @@ const prefix = 'HYG_',
 
 
 
-    /**
+    /**                                           
+     *                                          CASE 0
+     *                                          +-----------+
+     *                                          |           |
+     *                                          |           |
+     *                                          |           |
+     *                                          +-----------+
      * 
-     *                  false
-     * +----from----+.........  scrollTop
+     *                                          CASE 1
+     *                                          +-----------+
+     *                                          |           |
+     * +----from----+ scrollTop    - - - - - - -|- - - - - -|- - - - 
+     * |            |                           |           |
+     * |            |                           +-----------+
      * |            |
+     * |            |                           CASE 2
+     * |            |                           +-----------+
+     * |            |                           |           |
+     * |            |                           |           |
+     * |            |                           |           |
+     * |            |                           +-----------+
      * |            |
-     * |            |
-     * |            |  true
-     * |            |
-     * |            |
-     * +----to------+ ........  scrollTop + contentHeight
+     * |            |                           CASE 3
+     * |            |                           +-----------+
+     * |            |                           |           |
+     * +----to------+ scrollTop +   - - - - - - |- - - - - -|- - - -
+     *                contentHeight             |           |
+     *                                          +-----------+
      * 
-     *                  null      
+     *                                          CASE 4
+     *                                          +-----------+
+     *                                          |           |
+     *                                          |           |
+     *                                          |           |
+     *                                          +-----------+
      * 
+     * case 0:
+     * - at that point wecannot be sure 
+     * 
+     * 
+     * 
+     * returns
+     * 
+     *  ranging: {
+     *      renders // boolean
+     *      cursor // updated
+     *      header // boolean
+     *      from // integer
+     *      to // integer
+     *  }
      */
-     getAllocation = ({cursor, range, groupDimensions, groupLines, itemHeight}) => {
-        console.log({cursor, range, groupDimensions, groupLines, itemHeight});
-        const {from, to} = range;
-        if (cursor > to) return null;
-        return cursor >= from;
+     getAllocation = ({label, cursor, range, lineGap, groupHeight, groupLines, itemHeight, elementsPerLine}) => {
+        console.log({cursor, range, lineGap, groupHeight, groupLines, itemHeight, elementsPerLine});
+        
+        const ret = {
+            label,
+            renders: true,
+            cursor: 0,
+            header: false,
+            items: {from: 0, to: 0}
+        };
+        // rendered ? if not skip the rest
+
+        return ret;
     };    
 
 // eslint-disable-next-line one-var
@@ -287,56 +331,46 @@ export const trakTime = ({what, time, opts}) =>
                  * Clearly not all groups will go in acc.groups cause we need
                  * to put only those ones which have rendering relevant elements
                  */
-                let {cursor, alloc} = acc;
-                console.log('GROUP', grouped[label])
+                let {cursor} = acc;
+                console.log('GROUP', grouped[label]);
                 const group = grouped[label],
                     /**
                      *  ranging: {
-                     *      counts // boolean
-                     *      cursor // updated
-                     *      header // boolean
-                     *      from // integer
-                     *      to // integer
+                     *      renders // boolean: renders something, header and/or items; if false ignore the rest
+                     *      header // boolean: renders the header
+                     *      from // integer: in case not both 0, then renders some items
+                     *      to // integer  : 
+                     * 
+                     *      cursor // updated, just operational role to keep track of the current
                      *  }
                      */
                     ranging = getAllocation({
-                        cursor, range,
-                        groupDimensions: groupingDimensions.groupsHeights[label],
+                        label,
+                        cursor, range, lineGap,
+                        groupHeight: groupingDimensions.groupsHeights[label],
                         groupLines: group.lines,
-                        itemHeight
+                        itemHeight,
+                        elementsPerLine
                     });
 
-                // initialise the alloc map for the group
-                alloc[label] = [{
-                    header: ranging,
-                    lines: 3
-                }];
-        
-
-                // MAYBE
-                // acc.groups.push({
-                //     label,
-                //     group,
-                //     includeHeader: true
-                // });
-
-                acc.alloc = alloc;
+                // maybe initialise the alloc map for the group
+                if (ranging.renders) {
+                    acc.alloc[label] = ranging;
+                }
                 return acc;
             }, {
-                groups: [],
                 alloc: {}, // label : [{h: bool}, {lines: num}, {h: bool}, {lines: num}, .....],
-                allocStart: null,
-                allocEnd: null,
                 cursor: 0
-            });
+            }),
+            renderingOnes = Object.values(renderingGroups.alloc).filter(a => a.renders);
 
         /** 
          * In case one only group is there the header must be skipped,
          * regardless is the opts.UNGROUPED
          * or a user named single group containing all data
          */
-        if (renderingGroups.groups.length === 1) {
-            renderingGroups.groups[0].includeHeader = false;
+        if (renderingOnes.length === 1) {
+            renderingGroups.alloc[renderingOnes[0].label].header = false;
         }
 
         if (opts.trakTimes) {

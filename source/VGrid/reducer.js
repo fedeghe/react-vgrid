@@ -354,6 +354,7 @@ const lib = CMPNAME,
                 grouping,
                 grouped: gData,
                 scrollTop: 0,
+                elementsPerLine,
                 opts: {trakTimes, lib}
             })
         );
