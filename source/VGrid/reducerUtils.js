@@ -3,16 +3,16 @@ import { isFunction } from './utils';
 let count = 0;
 const prefix = 'HYG_',
     getLines = ({entries, elementsPerLine}) => Math.ceil(entries.length / elementsPerLine),
-
+    inRange = ({n, from, to}) => n > from && n <= to,
     /**                                           
      *                                          CASE 0
-     *                                          +-----------+
+     *                                          +-----------+ cursor
      *                                          |           |
-     *                                          +-----------+
+     *                                          +-----------+ cursor + groupHeight = cursorEnd
      * 
      *                                          CASE 1
      *                                          +-----------+
-     * +----from----+ scrollTop    - - - - - - -|- - - - - -|- - - - 
+     * +-range.from-+ scrollTop    - - - - - - -|- - - - - -|- - - - 
      * |            |                           +-----------+
      * |            |
      * |            |                           CASE 2
@@ -22,7 +22,7 @@ const prefix = 'HYG_',
      * |            |
      * |            |                           CASE 3
      * |            |                           +-----------+
-     * +----to------+ scrollTop +   - - - - - - |- - - - - -|- - - -
+     * +--range.to--+ scrollTop +   - - - - - - |- - - - - -|- - - -
      *                contentHeight             +-----------+                                         
      * 
      *                                          CASE 4
@@ -46,9 +46,18 @@ const prefix = 'HYG_',
         height, carpetHeight,
         groupLines, itemHeight, elementsPerLine
     }) => {
+        const cursorEnd = cursor + groupHeight;
         console.log(`Get allocation for group: ${label}`);
         console.log({cursor, range, lineGap, groupHeight, headerHeight, height, carpetHeight, groupLines, itemHeight, elementsPerLine});
+        // case 0 
+        if (cursorEnd < range.from) {console.log(`${label} : group 0`);} else
+        if (cursor <= range.from && inRange({n: cursor, ...range})) {console.log(`${label} : group 1`);} else
+        if (inRange({n: cursorEnd, ...range}) && inRange({n: cursor, ...range})) {console.log(`${label} : group 2`);} else
+        if (cursor > range.to && inRange({n: cursor, ...range})) {console.log(`${label} : group 3`);} else
+        if (cursor > range.to && cursorEnd > range.to) {console.log(`${label} : group 4`);}
+    
         
+        // eslint-disable-next-line one-var
         const ret = {
             label,
             renders: true,
@@ -164,8 +173,10 @@ export const trakTime = ({what, time, opts}) =>
         return ret;
     },
 
-
-    __getGrouped = ({data, groups, elementsPerLine, opts = {}}) => {
+    /**
+     * NOT PERFORMING BETTER
+     */
+    __getGrouped0 = ({data, groups, elementsPerLine, opts = {}}) => {
         const trak = opts.trakTimes ? {start: +new Date()} : null,
             
             tmpGroupFlags = Array.from({length: data.length}, () => true),
@@ -211,35 +222,47 @@ export const trakTime = ({what, time, opts}) =>
 
 
     /**
-     * Quite not surprisingly looping on each entry and find the first filter get it (if any)
-     * does perform better.... 
+     * If we loop over filters and for each filter we loop over all data (even skipping the entries
+     * already included somewhere) it is a way slower compared to 
+     * looping on each entry and find the first filter get it (if any)
      */
-    __getGrouped2 = ({data, groups, elementsPerLine, opts = {}}) => {
+    __getGrouped = ({data, groups, elementsPerLine, opts = {}}) => {
         const trak = opts.trakTimes ? {start: +new Date()} : null,
             g =  data.reduce((acc, d) => {
                 const filter = groups.find(({grouper}) => grouper(d));
                 if (filter) {
-                    if(!(filter.label in acc)) acc[filter.label] = {entries: []};
-                    acc[filter.label].entries.push(d);
+                    if(!(filter.label in acc)) acc[filter.label] = [];
+                    acc[filter.label].push(d);
                 } else {
-                    acc[opts.ungroupedLabel].entries.push(d);
+                    acc[opts.ungroupedLabel].push(d);
                 }
                 return acc;
-            }, {[opts.ungroupedLabel]: {entries: []}});
-
+            }, {
+                // be sure to mantain the original order
+                ...groups.reduce((acc, g) => {
+                    acc[g.label] = [];
+                    return acc;
+                }, {}),
+                [opts.ungroupedLabel]: []
+            });
+        
         if (groups.length && g[opts.ungroupedLabel].entries.length) {
             doWarn({message: `${g[opts.ungroupedLabel].entries.length} elements are ungrouped`, opts});
         }
         if (opts.trakTimes) {
             trak.end = +new Date();
             trakTime({what: '__getGrouped2', time: trak.end - trak.start, opts});
-            
         }
-        return Object.entries(g).reduce((acc, [name, group]) => {
-            acc[name] = {
-                ...group,
-                lines: getLines({entries: group.entries, elementsPerLine})
-            };
+        // return group entries & lines filtering out empty groups
+        return Object.entries(g).reduce((acc, [name, groupEntries]) => {
+            if (groupEntries.length) {
+                acc[name] = {
+                    entries: groupEntries,
+                    lines: getLines({entries: groupEntries, elementsPerLine})
+                };
+            } else {
+                doWarn({message: `group named \`${name}\` is empty thus ignored`, opts});
+            }
             return acc;
         }, {});
     },
@@ -283,13 +306,13 @@ export const trakTime = ({what, time, opts}) =>
     },
 
     __getVirtualGroup = ({ dimensions, lineGap, grouping, grouped, scrollTop, elementsPerLine, opts = {}}) => {
-        console.log('grouped: ', grouped)
-        console.log('grouping: ', grouping)
+        console.log('grouped: ', grouped);
+        console.log('grouping: ', grouping);
+        console.log('check groups name order: ', Object.keys(grouped));
         // common things
         const trak = opts.trakTimes ? {start: +new Date()} : null,
             { height: contentHeight, itemHeight, height  } = dimensions,
             {groupHeader, groups} = grouping,
-            groupsOrder = groups.map(g => g.label),
             {height : headerHeight} = groupHeader,
             // groupHeader = grouping.group,
             groupingDimensions = Object.entries(grouped).reduce((acc, [groupName, group]) => {
@@ -315,6 +338,7 @@ export const trakTime = ({what, time, opts}) =>
             // include (considering headers and lines)
             range = {from: scrollTop, to: scrollTop + contentHeight},
             renderingGroups = Object.keys(grouped).reduce((acc, label) => {
+                // console.log(' G ', label)
                 /** 
                  * Here we can be sure that all the groups will have a
                  * positive height at least equal to one line (itemHeight)
@@ -323,7 +347,7 @@ export const trakTime = ({what, time, opts}) =>
                  * to put only those ones which have rendering relevant elements
                  */
                 let {cursor} = acc;
-                console.log('GROUP', grouped[label]);
+                // console.log('GROUP', grouped[label]);
                 const group = grouped[label],
                     /**
                      *  ranging: {
@@ -335,10 +359,11 @@ export const trakTime = ({what, time, opts}) =>
                      *      cursor // updated, just operational role to keep track of the current
                      *  }
                      */
+                    groupHeight = groupingDimensions.groupsHeights[label],
                     ranging = getAllocation({
                         label,
                         cursor, range, lineGap,
-                        groupHeight: groupingDimensions.groupsHeights[label],
+                        groupHeight,
                         groupLines: group.lines,
                         headerHeight,
                         itemHeight,
@@ -350,6 +375,7 @@ export const trakTime = ({what, time, opts}) =>
                 if (ranging.renders) {
                     acc.alloc[label] = ranging;
                 }
+                acc.cursor += groupHeight;
                 return acc;
             }, {
                 alloc: {}, // label : [{h: bool}, {lines: num}, {h: bool}, {lines: num}, .....],

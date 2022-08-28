@@ -3,7 +3,7 @@ import { isFunction } from './utils';
 import {
     __getFilterFactory,  __cleanFilters,
     __getVirtual, __getVirtualGroup,
-    __getGrouped, __getGrouped2, __composeFilters,
+    __getGrouped0, __getGrouped, __composeFilters,
     __applyFilter,
     uniqueID, trakTime
 } from './reducerUtils';
@@ -299,7 +299,7 @@ const lib = CMPNAME,
             /**
              * starting from specified groups, separate the data and create the groups
              */
-            originalGroupedData = __getGrouped2({data, groups, elementsPerLine, opts: {ungroupedLabel, lib, trakTimes}}),
+            originalGroupedData = __getGrouped({data, groups, elementsPerLine, opts: {ungroupedLabel, lib, trakTimes}}),
             // originalGroupedData0 = __getGrouped({data, groups, elementsPerLine, opts: {ungroupedLabel, lib, trak: true}}),
 
 
