@@ -4,57 +4,41 @@ let count = 0;
 const prefix = 'HYG_',
     getLines = ({entries, elementsPerLine}) => Math.ceil(entries.length / elementsPerLine),
 
-
-
     /**                                           
      *                                          CASE 0
      *                                          +-----------+
-     *                                          |           |
-     *                                          |           |
      *                                          |           |
      *                                          +-----------+
      * 
      *                                          CASE 1
      *                                          +-----------+
-     *                                          |           |
      * +----from----+ scrollTop    - - - - - - -|- - - - - -|- - - - 
-     * |            |                           |           |
      * |            |                           +-----------+
      * |            |
      * |            |                           CASE 2
      * |            |                           +-----------+
      * |            |                           |           |
-     * |            |                           |           |
-     * |            |                           |           |
      * |            |                           +-----------+
      * |            |
      * |            |                           CASE 3
      * |            |                           +-----------+
-     * |            |                           |           |
      * +----to------+ scrollTop +   - - - - - - |- - - - - -|- - - -
-     *                contentHeight             |           |
-     *                                          +-----------+
+     *                contentHeight             +-----------+                                         
      * 
      *                                          CASE 4
      *                                          +-----------+
      *                                          |           |
-     *                                          |           |
-     *                                          |           |
      *                                          +-----------+
-     * 
-     * case 0:
-     * - at that point wecannot be sure 
-     * 
-     * 
-     * 
-     * returns
+     *  returns
      * 
      *  ranging: {
      *      renders // boolean
      *      cursor // updated
      *      header // boolean
-     *      from // integer
-     *      to // integer
+     *      items: {
+     *          from // int
+     *          to // int
+     *      }
      *  }
      */
      getAllocation = ({label, cursor, range, lineGap, groupHeight, groupLines, itemHeight, elementsPerLine}) => {
@@ -237,7 +221,6 @@ export const trakTime = ({what, time, opts}) =>
             }, {[opts.ungroupedLabel]: {entries: []}});
 
         if (groups.length && g[opts.ungroupedLabel].entries.length) {
-            // console.warn(`${opts.lib.toUpperCase()} 🙉 : ${g[opts.ungroupedLabel].entries.length} elements are ungrouped`);
             doWarn({message: `${g[opts.ungroupedLabel].entries.length} elements are ungrouped`, opts});
         }
         if (opts.trakTimes) {
