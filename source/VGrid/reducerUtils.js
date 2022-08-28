@@ -41,7 +41,11 @@ const prefix = 'HYG_',
      *      }
      *  }
      */
-     getAllocation = ({label, cursor, range, lineGap, groupHeight, groupLines, itemHeight, elementsPerLine}) => {
+    getAllocation = ({
+        label, cursor, range, lineGap, groupHeight,
+        groupLines, itemHeight, elementsPerLine
+    }) => {
+        console.log(`Get allocation for group: ${label}`);
         console.log({cursor, range, lineGap, groupHeight, groupLines, itemHeight, elementsPerLine});
         
         const ret = {
@@ -174,6 +178,8 @@ export const trakTime = ({what, time, opts}) =>
                     }
                     return false;
                 });
+
+                // skip empties and warn
                 if (entries.length){
                     acc[label] = {
                         entries,
@@ -185,15 +191,15 @@ export const trakTime = ({what, time, opts}) =>
                 return acc;
             }, {}),
             // might be` some data does not belong to any group
-            outcast = data.filter((row, i) => tmpGroupFlags[i]);
-
-
-        g[opts.ungroupedLabel] = {
-            entries: outcast,
-            lines: getLines({entries: outcast, elementsPerLine})
-        };
-        if (groups.length && g[opts.ungroupedLabel].entries.length) {
-            doWarn({message: `${g[opts.ungroupedLabel].entries.length} elements are ungrouped`, opts});
+            outcasts = data.filter((row, i) => tmpGroupFlags[i]);
+        
+        // out outcasts in the right place and warn
+        if(outcasts.length) {
+            g[opts.ungroupedLabel] = {
+                entries: outcasts,
+                lines: getLines({entries: outcasts, elementsPerLine})
+            };
+            doWarn({message: `${outcasts.length} elements are ungrouped`, opts});
         }
         if (opts.trakTimes) {
             trak.end = +new Date();
