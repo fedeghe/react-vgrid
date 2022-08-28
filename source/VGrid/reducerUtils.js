@@ -42,11 +42,12 @@ const prefix = 'HYG_',
      *  }
      */
     getAllocation = ({
-        label, cursor, range, lineGap, groupHeight,
+        label, cursor, range, lineGap, groupHeight, headerHeight,
+        height, carpetHeight,
         groupLines, itemHeight, elementsPerLine
     }) => {
         console.log(`Get allocation for group: ${label}`);
-        console.log({cursor, range, lineGap, groupHeight, groupLines, itemHeight, elementsPerLine});
+        console.log({cursor, range, lineGap, groupHeight, headerHeight, height, carpetHeight, groupLines, itemHeight, elementsPerLine});
         
         const ret = {
             label,
@@ -286,8 +287,9 @@ export const trakTime = ({what, time, opts}) =>
         console.log('grouping: ', grouping)
         // common things
         const trak = opts.trakTimes ? {start: +new Date()} : null,
-            { height: contentHeight, itemHeight, width, itemWidth } = dimensions,
+            { height: contentHeight, itemHeight, height  } = dimensions,
             {groupHeader, groups} = grouping,
+            groupsOrder = groups.map(g => g.label),
             {height : headerHeight} = groupHeader,
             // groupHeader = grouping.group,
             groupingDimensions = Object.entries(grouped).reduce((acc, [groupName, group]) => {
@@ -338,7 +340,9 @@ export const trakTime = ({what, time, opts}) =>
                         cursor, range, lineGap,
                         groupHeight: groupingDimensions.groupsHeights[label],
                         groupLines: group.lines,
+                        headerHeight,
                         itemHeight,
+                        height, carpetHeight,
                         elementsPerLine
                     });
 
