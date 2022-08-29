@@ -3,7 +3,7 @@ import { isFunction } from './utils';
 let count = 0;
 const prefix = 'HYG_',
     getLines = ({entries, elementsPerLine}) => Math.ceil(entries.length / elementsPerLine),
-    inRange = ({n, from, to}) => n > from && n <= to,
+    inRange = ({n, from, to}) => n >= from && n < to,
     /**                                           
      *                                          CASE 0
      *                                          +-----------+ cursor
@@ -54,7 +54,14 @@ const prefix = 'HYG_',
         if (cursor <= range.from && inRange({n: cursor, ...range})) {console.log(`${label} : group 1`);} else
         if (inRange({n: cursorEnd, ...range}) && inRange({n: cursor, ...range})) {console.log(`${label} : group 2`);} else
         if (cursor > range.to && inRange({n: cursor, ...range})) {console.log(`${label} : group 3`);} else
-        if (cursor > range.to && cursorEnd > range.to) {console.log(`${label} : group 4`);}
+        if (cursor > range.to && cursorEnd > range.to) {console.log(`${label} : group 4`);} else {
+            console.error('Something really wrong in there:');
+            console.error({
+                cursor,
+                cursorEnd,
+                range
+            });
+        }
     
         
         // eslint-disable-next-line one-var
@@ -223,7 +230,7 @@ export const trakTime = ({what, time, opts}) =>
 
     /**
      * If we loop over filters and for each filter we loop over all data (even skipping the entries
-     * already included somewhere) it is a way slower compared to 
+     * already included somewhere, check __getGrouped0) it is a way slower compared to 
      * looping on each entry and find the first filter get it (if any)
      */
     __getGrouped = ({data, groups, elementsPerLine, opts = {}}) => {
