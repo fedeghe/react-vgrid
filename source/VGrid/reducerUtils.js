@@ -3,32 +3,32 @@ import { isFunction } from './utils';
 let count = 0;
 const prefix = 'HYG_',
     getLines = ({entries, elementsPerLine}) => Math.ceil(entries.length / elementsPerLine),
-    inRange = ({n, from, to}) => n >= from && n < to,
+    inRange = ({n, from, to}) => n >= from && n <= to,
     /**                                           
-     *                                          CASE 0
-     *                                          +-----------+ cursor
-     *                                          |           |
-     *                                          +-----------+ cursor + groupHeight = cursorEnd
-     * 
-     *                                          CASE 1
-     *                                          +-----------+
-     * +-range.from-+ scrollTop    - - - - - - -|- - - - - -|- - - - 
-     * |            |                           +-----------+
-     * |            |
-     * |            |                           CASE 2
-     * |            |                           +-----------+
-     * |            |                           |           |
-     * |            |                           +-----------+
-     * |            |
-     * |            |                           CASE 3
-     * |            |                           +-----------+
-     * +--range.to--+ scrollTop +   - - - - - - |- - - - - -|- - - -
-     *                contentHeight             +-----------+                                         
-     * 
-     *                                          CASE 4
-     *                                          +-----------+
-     *                                          |           |
-     *                                          +-----------+
+     *                              g0  g1  g2  g3  g4  g5
+     *     cursor +-----------+     c   c   c
+     *            |           |     |   |   |   
+     *  cursorEnd +-----------+     |   |   |
+     *                              |   |   |
+     *                              cE  |   |
+     *                                  |   |
+     * +-range.from-+ scrollTop   - - - + - + - - - - - - - - - - - 
+     * |            |                   |   |   c   c
+     * |            |                   |   |   |   |
+     * |            |                   |   |   |   |
+     * |            |                   |   |   |   |
+     * |            |                   |   |   |   |
+     * |            |                   |   |   |   |
+     * |            |                   |   |   |   |
+     * |            |                   |   |   |   |
+     * |            |                   cE  |   cE  |
+     * +--range.to--+ scrollTop +   - - - - + - - - + - - - - - - -
+     *                contentHeight         |       |
+     *                                      |       |
+     *                                      cE      cE  c
+     *                                                  |
+     *                                                  |
+     *                                                  cE
      *  returns
      * 
      *  ranging: {
@@ -46,15 +46,31 @@ const prefix = 'HYG_',
         height, carpetHeight,
         groupLines, itemHeight, elementsPerLine
     }) => {
-        const cursorEnd = cursor + groupHeight;
-        console.log(`Get allocation for group: ${label}`);
-        console.log({cursor, range, lineGap, groupHeight, headerHeight, height, carpetHeight, groupLines, itemHeight, elementsPerLine});
-        // case 0 
-        if (cursorEnd < range.from) {console.log(`${label} : group 0`);} else
-        if (cursor <= range.from && inRange({n: cursor, ...range})) {console.log(`${label} : group 1`);} else
-        if (inRange({n: cursorEnd, ...range}) && inRange({n: cursor, ...range})) {console.log(`${label} : group 2`);} else
-        if (cursor > range.to && inRange({n: cursor, ...range})) {console.log(`${label} : group 3`);} else
-        if (cursor > range.to && cursorEnd > range.to) {console.log(`${label} : group 4`);} else {
+        const cursorEnd = cursor + groupHeight,
+            cUp = cursor < range.from,
+            cMid = inRange({n: cursor, ...range}),
+            cDown = cursor > range.to,
+            ceUp = cursorEnd < range.from,
+            ceMid = inRange({n: cursorEnd, ...range}),
+            ceDown = cursorEnd > range.to;
+        let groupType = null;
+        
+        // console.log({cursor, range, lineGap, groupHeight, headerHeight, height, carpetHeight, groupLines, itemHeight, elementsPerLine});
+        
+        if (cUp) {
+            if (ceUp) groupType = 0;
+            else if (ceMid) groupType = 1;
+            else if (ceDown) groupType = 2;
+        } else if (cMid) {
+            if (ceMid) {
+                groupType = 3;
+            } else
+            if (ceDown) {
+                groupType = 4;
+            }
+        } else if (cDown) {
+            groupType = 5;
+        } else {
             console.error('Something really wrong in there:');
             console.error({
                 cursor,
@@ -62,13 +78,13 @@ const prefix = 'HYG_',
                 range
             });
         }
-    
+        console.log(`Allocation for group '${label}' : lines=${groupLines}, type=${groupType}`);
+
         
         // eslint-disable-next-line one-var
         const ret = {
             label,
             renders: true,
-            cursor: 0,
             header: false,
             items: {from: 0, to: 0}
         };
@@ -316,9 +332,10 @@ export const trakTime = ({what, time, opts}) =>
         console.log('grouped: ', grouped);
         console.log('grouping: ', grouping);
         console.log('check groups name order: ', Object.keys(grouped));
+        console.log(dimensions);
         // common things
         const trak = opts.trakTimes ? {start: +new Date()} : null,
-            { height: contentHeight, itemHeight, height  } = dimensions,
+            { contentHeight, itemHeight, height  } = dimensions,
             {groupHeader, groups} = grouping,
             {height : headerHeight} = groupHeader,
             // groupHeader = grouping.group,

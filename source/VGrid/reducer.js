@@ -291,7 +291,8 @@ const lib = CMPNAME,
             dimensions = {
                 width,
                 height,
-                itemHeight, itemWidth
+                itemHeight, itemWidth,
+                contentHeight: height - headerCaptionHeight - footerCaptionHeight
             },
 
             elementsPerLine = Math.floor(width / itemWidth),
