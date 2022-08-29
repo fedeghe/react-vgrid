@@ -9,7 +9,7 @@ const Item = data => {
             <ul>
                 {Object.keys(data).filter(k => k !=='_ID').map((fk, i) => (
                     <li key={`k_${i}`}>
-                        {fk} : {data[fk]}
+                        <b>{fk}</b> : {data[fk]}
                     </li>
                 ))}
             </ul>

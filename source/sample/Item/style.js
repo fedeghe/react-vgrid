@@ -14,5 +14,9 @@ export default createUseStyles({
     },
     Inner:{
         padding:'10px',
+        '& ul':{
+            listStyleType: 'none',
+            paddingLeft: '10px'
+        }
     }
 });
