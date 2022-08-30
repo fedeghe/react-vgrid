@@ -47,10 +47,14 @@ const prefix = 'HYG_',
         groupLines, itemHeight, elementsPerLine
     }) => {
         const cursorEnd = cursor + groupHeight,
+            
+            // next 3 mutually exclusive
             cUp = cursor < range.from,
             cMid = inRange({n: cursor, ...range}),
             cDown = cursor > range.to,
             ceUp = cursorEnd < range.from,
+
+            // next 3 mutually exclusive
             ceMid = inRange({n: cursorEnd, ...range}),
             ceDown = cursorEnd > range.to;
         let groupType = null;
