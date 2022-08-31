@@ -410,6 +410,8 @@ export const trakTime = ({ what, time, opts }) =>
             // here on first instance we scan through aiming to find the starting&ending element to 
             // include (considering headers and lines)
             range = { from: scrollTop, to: scrollTop + contentHeight },
+            headerHeight2 =  headerHeight/2,
+            itemHeight2 = itemHeight/2,
             allocation = Object.entries(grouped).reduce((acc, [label, group]) => {
                 // console.log(' G ', label, {contentHeight})
                 /** 
@@ -418,34 +420,49 @@ export const trakTime = ({ what, time, opts }) =>
                  * 
                  * Clearly not all groups will go in acc.groups cause we need
                  * to put only those ones which have rendering relevant elements
+                 * 
+                 * linegap + 1 in the reducer: why ? 
+                 * 
+                 * linegap by default is the constant LINE_GAP (currently 2)
+                 * as edge case let's suppose it's set to 0; the inRange function checks
+                 * if n is in the viewport (range) and n is passed as the mean vertical point
+                 * allowing to make only 2 comparisons but,  if only the lower 40% or the item (line)
+                 * appears at the top of the viewport it will not result within the range 
+                 * and this would be a problem, to solve it we can
+                 * - use a 4 comparison rangeInRange function instead of inRange to check if
+                 *   the top of the line is in the range OR the bottom is inthe range (4 comparison)
+                 * - use the less expensive inRange and use lineGap+1 so that when we take lineGap
+                 *   into account we basically render one more element at the top and at the bottom
+                 * the second option might do the whole 'inRange' check on average in half the time
+                 * thus is the choosen option
                  */
 
-                let { cursor, alloc } = acc;
-                alloc[label] = {
-                    header: [cursor, cursor + headerHeight],
-                    headerRenders: inRange({n: cursor + headerHeight/2, ...range}),
+                let { cursor } = acc;
+                acc.alloc[label] = {
+                    header: {
+                        from: cursor,
+                        to: cursor + headerHeight,
+                        renders:  inRange({n: cursor + headerHeight2, ...range}),
+                    },
                     lines: Array.from({length: group.lines}, (_, i) => {
-                        const start = cursor + headerHeight + i * itemHeight;
+                        const from = cursor + headerHeight + i * itemHeight,
+                            renders = inRange({n: from + itemHeight2, ...range});
                         return {
-                            renders: inRange({n: start + itemHeight/2, ...range}),
-                            from: start,
-                            to: start + itemHeight
+                            renders,
+                            from,
+                            to: from + itemHeight
                         };
                     })
                 };
 
                 const groupHeight = groupingDimensions.groupsHeights[label];
-
                 
                 acc.cursor += groupHeight;
-                acc.alloc = alloc;
                 return acc;
             }, {
                 alloc: {}, // label : [{h: bool}, {lines: num}, {h: bool}, {lines: num}, .....],
                 cursor: 0
             });
-
-        
 
         if (opts.trakTimes) {
             trak.end = +new Date();
