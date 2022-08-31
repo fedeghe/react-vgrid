@@ -5,7 +5,8 @@ import {
     __getVirtual, __getVirtualGroup,
     __getGrouped0, __getGrouped, __composeFilters,
     __applyFilter,
-    uniqueID, trakTime
+    uniqueID, trakTime,
+    doWarn, doThrow
 } from './reducerUtils';
 import {
     CMPNAME, LINE_GAP, WIDTH, HEIGHT, ITEM_HEIGHT, ITEM_WIDTH,
@@ -301,7 +302,9 @@ const lib = CMPNAME,
                     FooterCaption: FooterCaptionCls = null,
                 } = {}
             } = cnf,
-
+            /**
+             * to know why read the comment in __getVirtualGroup */
+            lineGapPlus = lineGap +1,
             grouping= {
                 groups,
                 groupHeader: {
@@ -349,7 +352,7 @@ const lib = CMPNAME,
             innerVirtual = __getVirtual({
                 dimensions,
                 size: originalData.length,
-                lineGap,
+                lineGap: lineGapPlus,
                 grouping,
                 grouped: gData,
                 scrollTop: 0
@@ -357,7 +360,7 @@ const lib = CMPNAME,
 
             virtual = {
                 loading: false,
-                lineGap,
+                lineGap: lineGapPlus,
                 ...innerVirtual
             },
             { fromItem, toItem } = innerVirtual,
@@ -369,11 +372,11 @@ const lib = CMPNAME,
                 : originalData
             ).filter(theDoFilter);
         
-            
+        if (lineGapPlus < 1) doThrow({message: 'The parameter `lineGap` cannot be negative',opts:{lib}});
         console.log('new : ',
             __getVirtualGroup({
                 dimensions,
-                lineGap,
+                lineGap: lineGapPlus,
                 grouping,
                 grouped: gData,
                 scrollTop: 0,

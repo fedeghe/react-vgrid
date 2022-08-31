@@ -3,150 +3,16 @@ import { isFunction } from './utils';
 let count = 0;
 const prefix = 'HYG_',
     getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / elementsPerLine),
-    inRange = ({ n, from, to }) => n >= from && n <= to,
-    /**                                           
-     *                              g0  g1  g2  g3  g4  g5
-     *     cursor +-----------+     c   c   c
-     *            |           |     |   |   |   
-     *  cursorEnd +-----------+     |   |   |
-     *                              |   |   |
-     *                              cE  |   |
-     *                                  |   |
-     * +-range.from-+ scrollTop   - - - + - + - - - - - - - - - - - 
-     * |            |                   |   |   c   c
-     * |            |                   |   |   |   |
-     * |            |                   |   |   |   |
-     * |            |                   |   |   |   |
-     * |            |                   |   |   |   |
-     * |            |                   |   |   |   |
-     * |            |                   |   |   |   |
-     * |            |                   |   |   |   |
-     * |            |                   cE  |   cE  |
-     * +--range.to--+ scrollTop +   - - - - + - - - + - - - - - - -
-     *                contentHeight         |       |
-     *                                      |       |
-     *                                      cE      cE  c
-     *                                                  |
-     *                                                  |
-     *                                                  cE
-     *  returns
-     * 
-     *  ranging: {
-     *      renders // boolean
-     *      cursor // updated
-     *      header // boolean
-     *      items: {
-     *          from // int
-     *          to // int
-     *      }
-     *  }
-     */
-    getAllocation = ({
-        label, cursor, range, lineGap, groupHeight, headerHeight,
-        height, carpetHeight,
-        groupLines, itemHeight, elementsPerLine,
-        entriesNumber
-    }) => {
-        const cursorEnd = cursor + groupHeight,
-
-            // next 3 mutually exclusive
-            cUp = cursor < range.from,
-            cMid = inRange({ n: cursor, ...range }),
-            cDown = cursor > range.to,
-            ceUp = cursorEnd < range.from,
-
-            // next 3 mutually exclusive
-            ceMid = inRange({ n: cursorEnd, ...range }),
-            ceDown = cursorEnd > range.to;
-        let groupType = null;
-
-        // console.log({cursor, range, lineGap, groupHeight, headerHeight, height, carpetHeight, groupLines, itemHeight, elementsPerLine});
-
-        if (cUp) {
-            if (ceUp) groupType = 0;
-            else if (ceMid) groupType = 1;
-            else if (ceDown) groupType = 2;
-        } else if (cMid) {
-            if (ceMid) {
-                groupType = 3;
-            } else
-                if (ceDown) {
-                    groupType = 4;
-                }
-        } else if (cDown) {
-            groupType = 5;
-        } else {
-            console.error('Something really wrong in there:');
-            console.error({
-                cursor,
-                cursorEnd,
-                range
-            });
-        }
-        console.log(`Allocation for group '${label}' : lines=${groupLines}, type=${groupType}`);
-
-        switch (groupType) {
-            case 0:
-                return {
-                    label,
-                    renders: false,
-                    header: false,
-                    items: { from: null, to: null }
-                };
-            case 1:
-                return {
-                    label,
-                    renders: true,
-                    header: false,
-                    items: { from: 'xxx', to: entriesNumber - 1  }
-                };
-            case 2:
-                return {
-                    label,
-                    renders: true,
-                    header: false,
-                    items: { from: 'yyy', to: 'zzz'}
-                };
-            case 3:
-                return {
-                    label,
-                    renders: true,
-                    header: true,
-                    items: { from: 0, to: entriesNumber - 1 }
-                };
-            case 4:
-                return {
-                    label,
-                    renders: true,
-                    header: true,
-                    items: { from: 0, to: 'www' }
-                };
-            case 5:
-                return {
-                    label,
-                    renders: false,
-                    header: false,
-                    items: { from: null, to: null }
-                };
-        }
-
-        // eslint-disable-next-line one-var
-        const ret = {
-            label,
-            renders: true,
-            header: false,
-            items: { from: 0, to: 0 }
-        };
-        // rendered ? if not skip the rest
-
-        return ret;
-    };
+    inRange = ({ n, from, to }) => n >= from && n <= to;
 
 // eslint-disable-next-line one-var
 export const trakTime = ({ what, time, opts }) =>
     console.info(`%c${opts.lib.toUpperCase()} 🐢 ${what} spent ${time}ms`, 'color:DodgerBlue'),
     doWarn = ({ message, opts }) =>
         console.warn(`${opts.lib.toUpperCase()} 🙉 ${message}`),
+    doThrow = ({ message, opts }) => {
+        throw `${opts.lib.toUpperCase()} 🚨 ${message}`;
+    },
     __getFilterFactory = ({ columns, filters, opts = {} }) => {
 
         const trak = opts.trakTimes ? { start: +new Date() } : null,
@@ -417,11 +283,8 @@ export const trakTime = ({ what, time, opts }) =>
                 /** 
                  * Here we can be sure that all the groups will have a
                  * positive height at least equal to one line (itemHeight)
-                 * 
-                 * Clearly not all groups will go in acc.groups cause we need
-                 * to put only those ones which have rendering relevant elements
-                 * 
-                 * linegap + 1 in the reducer: why ? 
+                 * ---------------------------------
+                 * linegap + 1 set in the reducer: why ? 
                  * 
                  * linegap by default is the constant LINE_GAP (currently 2)
                  * as edge case let's suppose it's set to 0; the inRange function checks
@@ -430,7 +293,7 @@ export const trakTime = ({ what, time, opts }) =>
                  * appears at the top of the viewport it will not result within the range 
                  * and this would be a problem, to solve it we can
                  * - use a 4 comparison rangeInRange function instead of inRange to check if
-                 *   the top of the line is in the range OR the bottom is inthe range (4 comparison)
+                 *   the top of the line is in the range OR the bottom is in the range (4 comparison)
                  * - use the less expensive inRange and use lineGap+1 so that when we take lineGap
                  *   into account we basically render one more element at the top and at the bottom
                  * the second option might do the whole 'inRange' check on average in half the time
