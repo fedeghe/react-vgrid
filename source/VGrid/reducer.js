@@ -21,6 +21,7 @@ const lib = CMPNAME,
                 dimensions,
                 originalData,
                 filteredData,
+                filteredGroupedData,
                 virtual,
                 virtual: {
                     lineGap,
@@ -30,6 +31,8 @@ const lib = CMPNAME,
                 filters,
                 columns,
                 grouping,
+                trakTimes,
+                elementsPerLine,
                 // globalFilterValue
             } = oldState,
 
@@ -207,6 +210,25 @@ const lib = CMPNAME,
                             grouping
                         }),
                         { fromItem, toItem } = newVirtual;
+
+
+                    /**
+                     * 
+                     */
+                     console.log('new on scroll : ',
+                     __getVirtualGroup({
+                         dimensions,
+                         lineGap,
+                         grouping,
+                         grouped: filteredGroupedData,
+                         scrollTop,
+                         elementsPerLine,
+                         opts: {trakTimes, lib}
+                     })
+                 );
+                    /**
+                     * 
+                     */
 
                     return {
                         data: filteredData.slice(fromItem, toItem),
@@ -395,7 +417,7 @@ const lib = CMPNAME,
         return {
             ...cnf,
             rhgID,
-
+            trakTimes,
             
             //ungrouped
             originalData: originalData,
@@ -409,7 +431,7 @@ const lib = CMPNAME,
             //grouped
             originalGroupedData,
             filteredGroupedData: {...gData},
-
+            elementsPerLine,
 
             columns,
             Loader,
