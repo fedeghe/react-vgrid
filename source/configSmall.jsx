@@ -37,6 +37,10 @@ export default {
         },{
             label: 'impossible',
             grouper: (row) => row.id >= Infinity && row.id <= 300
+
+        // // },{
+        // //     label: 'alone',
+        // //     grouper: (row) => row.id >= -Infinity
         }],
         // ungroupedLabel: 'Un-grouped',
         groupHeader: {

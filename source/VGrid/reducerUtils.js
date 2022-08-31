@@ -165,6 +165,7 @@ export const trakTime = ({ what, time, opts }) =>
      * looping on each entry and find the first filter get it (if any)
      */
     __getGrouped = ({ data, groups, elementsPerLine, opts = {} }) => {
+        console.log({groups})
         const trak = opts.trakTimes ? { start: +new Date() } : null,
             g = data.reduce((acc, d) => {
                 const filter = groups.find(({ grouper }) => grouper(d));
@@ -183,9 +184,8 @@ export const trakTime = ({ what, time, opts }) =>
                 }, {}),
                 [opts.ungroupedLabel]: []
             });
-
-        if (groups.length && g[opts.ungroupedLabel].entries.length) {
-            doWarn({ message: `${g[opts.ungroupedLabel].entries.length} elements are ungrouped`, opts });
+        if (groups.length && g[opts.ungroupedLabel].length) {
+            doWarn({ message: `${g[opts.ungroupedLabel].length} elements are ungrouped`, opts });
         }
         if (opts.trakTimes) {
             trak.end = +new Date();
@@ -196,7 +196,8 @@ export const trakTime = ({ what, time, opts }) =>
             if (groupEntries.length) {
                 acc[name] = {
                     entries: groupEntries,
-                    lines: getLines({ entries: groupEntries, elementsPerLine })
+                    lines: getLines({ entries: groupEntries, elementsPerLine }),
+                    
                 };
             } else {
                 doWarn({ message: `group named \`${name}\` is empty thus ignored`, opts });
@@ -248,12 +249,27 @@ export const trakTime = ({ what, time, opts }) =>
         console.log('grouping: ', grouping);
         console.log('check groups name order: ', Object.keys(grouped));
         console.log(dimensions);
-        // common things
+
+
         const trak = opts.trakTimes ? { start: +new Date() } : null,
             { contentHeight, itemHeight, height } = dimensions,
             { groupHeader, groups } = grouping,
-            { height: headerHeight } = groupHeader,
+            { ungroupedLabel } = grouping,
+            
             // groupHeader = grouping.group,
+            groupKeys = Object.keys(grouped),
+
+            /**
+             * flag to spot the case no named groups are set
+             * in that case there will be only the the `ungroupedLabel` labelled group
+             * and the header should be ignored
+             */
+            onlyUngrouped = groupKeys.length === 1 && groupKeys[0] === ungroupedLabel,
+
+            headerHeight = onlyUngrouped ? 0 : groupHeader.height,
+            /**
+             * cumpute each group dimension including the header and sum up to get the carpetHeight
+             */
             groupingDimensions = Object.entries(grouped).reduce((acc, [groupName, group]) => {
                 /**
                  * if there is no data then we should skip it, but
@@ -264,7 +280,7 @@ export const trakTime = ({ what, time, opts }) =>
                  * if (!groupData.entries.length) return acc;
                  */
 
-                const groupHeight = group.lines * itemHeight + groupHeader.height;
+                const groupHeight = group.lines * itemHeight + headerHeight;
 
                 acc.carpetHeight += groupHeight;
                 acc.groupsHeights[groupName] = groupHeight;
@@ -278,7 +294,13 @@ export const trakTime = ({ what, time, opts }) =>
             range = { from: scrollTop, to: scrollTop + contentHeight },
             headerHeight2 =  headerHeight/2,
             itemHeight2 = itemHeight/2,
-            allocation = Object.entries(grouped).reduce((acc, [label, group]) => {
+            topGap = lineGap,
+            bottomGap = lineGap,
+
+            
+
+            allocation = Object.entries(grouped).reduce((acc, [label, group], groupKey) => {
+                // console.log(' G ', label, {groupKey,contentHeight, topGap, bottomGap});
                 // console.log(' G ', label, {contentHeight})
                 /** 
                  * Here we can be sure that all the groups will have a
@@ -300,16 +322,54 @@ export const trakTime = ({ what, time, opts }) =>
                  * thus is the choosen option
                  */
 
-                let { cursor } = acc;
+                let { cursor, firstRender, firstNotRender } = acc;
+                const headerRenders = onlyUngrouped ? false : inRange({n: cursor + headerHeight2, ...range}),
+                    groupHeight = groupingDimensions.groupsHeights[label];
+                
                 acc.alloc[label] = {
                     header: {
                         from: cursor,
                         to: cursor + headerHeight,
-                        renders:  inRange({n: cursor + headerHeight2, ...range}),
+                        renders: headerRenders,
                     },
                     lines: Array.from({length: group.lines}, (_, i) => {
                         const from = cursor + headerHeight + i * itemHeight,
                             renders = inRange({n: from + itemHeight2, ...range});
+
+                        if (!firstRender && renders) {
+                            firstRender = {
+                                group: label,
+                                line: i
+                            };
+                            /**
+                             * now we could get
+                             * //   acc.dataFrom = from - (headerRenders ? headerHeight : 0);
+                             * but this would ignore the lineGap
+                             */
+                            
+                        }
+
+                        /**
+                         * if the firrst render has been tracked
+                         * then check for the first non render
+                         **/
+                        if (firstRender && !firstNotRender && !renders) {
+                            firstNotRender = {
+                                group: label,
+                                line: i
+                            };
+                            /** 
+                             * same here we could
+                             * //   acc.dataTo = from - (headerRenders ? headerHeight : 0); 
+                             * and then get 
+                             * //   allocation.topFillerHeight = allocation.dataFrom;
+                             * //   allocation.bottomFillerHeight = carpetHeight - allocation.dataTo;
+                             * but this would ignore the lineGap
+                             * 
+                             * once we consider the lineGap, and get dataFrom and dataTowe can still use the same logic
+                             */
+                            
+                        }
                         return {
                             renders,
                             from,
@@ -317,26 +377,54 @@ export const trakTime = ({ what, time, opts }) =>
                         };
                     })
                 };
-
-                const groupHeight = groupingDimensions.groupsHeights[label];
                 
+                acc.firstRender = firstRender;
+                acc.firstNotRender = firstNotRender;
                 acc.cursor += groupHeight;
                 return acc;
             }, {
-                alloc: {}, // label : [{h: bool}, {lines: num}, {h: bool}, {lines: num}, .....],
-                cursor: 0
+                alloc: {}, 
+                cursor: 0,
+                firstRender: null,
+                firstNotRender: null,
+                //dataFrom: null, // the starting pixel in the carpet for the rendering area
+                                // dataHeight here
+                //dataTo: null,   // the ending pixel in the carpet for the rendering area
+                                // will be used to calculate topFillerHeight and bottomFillerHeight
             });
 
+        /**
+         * now we need still to do a small thing on allocation cause we need to
+         * - use lineGap and firstRender and firstNotRender
+         *   to turn true the rendering of the right elements
+         * - calculate topFillerHeight and bottomFillerHeight
+         * 
+         * notice that after doing the right thing with lineGap, we can cleanup allocation
+         * removing all elements that do not render 
+         **/
+
+
+
+
+
+
+
+
+
+
+
+        
         if (opts.trakTimes) {
             trak.end = +new Date();
             trakTime({ what: '__getVirtualGroup', time: trak.end - trak.start, opts });
         }
-        // console.log(renderingGroups)
+        
         return {
             groupingDimensions,
-            allocation,
-            topFillerHeight: 0,
-            bottomFillerHeight: 0,
+            allocation: {
+                ...allocation,
+                // alloc: gappedAllocation
+            }
         };
     },
 

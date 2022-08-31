@@ -12,7 +12,7 @@ import {
     CMPNAME, LINE_GAP, WIDTH, HEIGHT, ITEM_HEIGHT, ITEM_WIDTH,
     RHG_ID, DEBOUNCE_SCROLLING, DEBOUNCE_FILTERING,
     NO_FILTER_DATA_MESSAGE, GROUP_COMPONENT_HEIGHT,
-    UNGROUPED, FILTERS
+    UNGROUPED_LABEL, FILTERS
 } from './constants';
 
 const lib = CMPNAME,
@@ -273,7 +273,7 @@ const lib = CMPNAME,
                         Component: GroupComponent = n => n,
                         height : groupComponentHeight = GROUP_COMPONENT_HEIGHT
                     } = {},
-                    ungroupedLabel = UNGROUPED
+                    ungroupedLabel = UNGROUPED_LABEL,
                 } = {},
                 
                 header: {
@@ -310,7 +310,8 @@ const lib = CMPNAME,
                 groupHeader: {
                     Component: GroupComponent,
                     height : groupComponentHeight
-                }
+                },
+                ungroupedLabel,
             },
 
             dimensions = {

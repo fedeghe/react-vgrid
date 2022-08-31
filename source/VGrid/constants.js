@@ -27,10 +27,8 @@ export const CMPNAME = 'react-vgrid',
     // no data message
     NO_FILTER_DATA_MESSAGE = 'no data',
 
-    // ungrouped group key
-    UNGROUPED = '__UNGROUPED__',
     // ungrouped group label
-    UNGROUPED_LABEL = 'Ungrouped',
+    UNGROUPED_LABEL = 'ungrouped',
 
     // unfilter families
     FILTERS = {
