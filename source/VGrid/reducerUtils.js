@@ -200,8 +200,8 @@ export const trakTime = ({ what, time, opts }) =>
                     
                 };
             } else {
-                if (name !== opts.ungroupedLabel)
-                    doWarn({ message: `group named \`${name}\` is empty thus ignored`, opts });
+                name !== opts.ungroupedLabel
+                && doWarn({ message: `group named \`${name}\` is empty thus ignored`, opts });
             }
             return acc;
         }, {});
