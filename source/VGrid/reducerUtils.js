@@ -200,7 +200,8 @@ export const trakTime = ({ what, time, opts }) =>
                     
                 };
             } else {
-                doWarn({ message: `group named \`${name}\` is empty thus ignored`, opts });
+                if (name !== opts.ungroupedLabel)
+                    doWarn({ message: `group named \`${name}\` is empty thus ignored`, opts });
             }
             return acc;
         }, {});
@@ -336,10 +337,10 @@ export const trakTime = ({ what, time, opts }) =>
                         const from = cursor + headerHeight + i * itemHeight,
                             renders = inRange({n: from + itemHeight2, ...range});
 
-                        if (!firstRender && renders) {
+                        if (!firstRender && (renders || headerRenders)) {
                             firstRender = {
                                 group: label,
-                                line: i
+                                type: headerRenders ? 'header' : i
                             };
                             /**
                              * now we could get
@@ -353,10 +354,10 @@ export const trakTime = ({ what, time, opts }) =>
                          * if the firrst render has been tracked
                          * then check for the first non render
                          **/
-                        if (firstRender && !firstNotRender && !renders) {
+                        if (firstRender && !firstNotRender && (!renders || !headerRenders)){
                             firstNotRender = {
                                 group: label,
-                                line: i
+                                type: headerRenders ? i : 'header'
                             };
                             /** 
                              * same here we could

@@ -34,13 +34,17 @@ export default {
         },{
             label: 'high',
             grouper: (row) => row.id >=100 && row.id <= 300
-        },{
-            label: 'impossible',
-            grouper: (row) => row.id >= Infinity && row.id <= 300
 
-        // // },{
-        // //     label: 'alone',
-        // //     grouper: (row) => row.id >= -Infinity
+        //the impossible
+        // },{
+        //     label: 'impossible',
+        //     grouper: (row) => row.id >= Infinity && row.id <= 300
+
+        // the alone, or the remainder collector
+        // },{
+        //     label: 'alone',
+        //     grouper: (row) => row.id >= -Infinity
+
         }],
         // ungroupedLabel: 'Un-grouped',
         groupHeader: {

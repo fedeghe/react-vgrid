@@ -216,17 +216,17 @@ const lib = CMPNAME,
                     /**
                      * 
                      */
-                     console.log('new on scroll : ',
-                     __getVirtualGroup({
-                         dimensions,
-                         lineGap,
-                         grouping,
-                         grouped: filteredGroupedData,
-                         scrollTop,
-                         elementsPerLine,
-                         opts: {trakTimes, lib}
-                     })
-                 );
+                     console.log('new on scroll : ',{scrollTop},
+                        __getVirtualGroup({
+                            dimensions,
+                            lineGap,
+                            grouping,
+                            grouped: filteredGroupedData,
+                            scrollTop,
+                            elementsPerLine,
+                            opts: {trakTimes, lib}
+                        })
+                    );
                     /**
                      * 
                      */
