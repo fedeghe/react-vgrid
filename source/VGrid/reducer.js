@@ -45,14 +45,7 @@ const lib = CMPNAME,
 
             actions = {
 
-                
-                loading: () => ({
-                    virtual: {
-                        ...virtual,
-                        loading: true
-                    }
-                }),
-
+                loading: () => ({virtual: {...virtual, loading: true}}),
 
                 filter: () => {
                     const { value, field } = payload,
@@ -147,7 +140,6 @@ const lib = CMPNAME,
                     };
                 },
 
-
                 unFilterFields: () => {
                     let _globalFilterValue = globalFilterValue,
                         _newFilters = {...filters},
@@ -216,7 +208,6 @@ const lib = CMPNAME,
                         filteredGroupedData
                     };
                 },
-
                 
                 unFilter: () => {                    
                     let _globalFilterValue = globalFilterValue,
@@ -289,7 +280,6 @@ const lib = CMPNAME,
                     };
 
                 },
-
 
                 scroll: () => {
                     const scrollTop = parseInt(payload, 10),
