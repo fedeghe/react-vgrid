@@ -334,7 +334,7 @@ const lib = CMPNAME,
                 ...oldState,
                 ...actions[type]()
             };
-            console.log({newState})
+            console.log({newState});
             return newState;
         }
         return oldState;

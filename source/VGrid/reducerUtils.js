@@ -4,7 +4,7 @@ let count = 0;
 const prefix = 'HYG_',
     getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / elementsPerLine),
     inRange = ({ n, from, to }) => n >= from && n <= to,
-    fixLineGap = ({allocation, groupKeys, lineGap}) => {    
+    fixLineGap = ({allocation, groupKeys, lineGap, carpetHeight}) => {    
         const {alloc, firstRender, firstNotRender} = allocation;
         let lineGapCursor = lineGap,
             preIndex = firstRender.cursor,
@@ -15,6 +15,7 @@ const prefix = 'HYG_',
         while(lineGapCursor--) {
             // Pre
             // maybe we need to seek for the previous group
+            preIndex--;
             if (preIndex < 0) {
                 preTargetGroupLabel = groupCloseby({groupKeys, label: preTargetGroupLabel, versus: -1});
                 if (preTargetGroupLabel) {
@@ -23,7 +24,7 @@ const prefix = 'HYG_',
             }
             if (preTargetGroupLabel) {
                 alloc[preTargetGroupLabel][preIndex].renders = true;
-                firstRender.at= alloc[preTargetGroupLabel][preIndex].from;
+                firstRender.at = alloc[preTargetGroupLabel][preIndex].from;
             }
 
             // Post
@@ -42,6 +43,8 @@ const prefix = 'HYG_',
             }
         }
         allocation.alloc = alloc;
+        allocation.topFillerHeight = firstRender.at;
+        allocation.bottomFillerHeight = carpetHeight - firstNotRender.at;
         return allocation;
     },
 
@@ -305,6 +308,7 @@ export const trakTime = ({ what, time, opts }) =>
     __getVirtualGroup = ({ dimensions, lineGap, grouping, grouped, scrollTop, elementsPerLine, opts = {} }) => {
         console.log('grouped: ', grouped);
         console.log('grouping: ', grouping);
+        console.log('lineGap: ', lineGap);
         console.log('check groups name order: ', Object.keys(grouped));
         console.log(dimensions);
 
@@ -441,6 +445,7 @@ export const trakTime = ({ what, time, opts }) =>
                             from,
                             to: from + itemHeight,
                             renders,
+                            index: i,
                             row: grouped[label].entries[i], // is a line
                         };
                     })
@@ -475,7 +480,7 @@ export const trakTime = ({ what, time, opts }) =>
              * notice that after doing the right thing with lineGap, we can cleanup allocation
              * removing all elements that do not render 
              **/
-            gappedAllocationUnfiltered = fixLineGap({allocation, groupKeys, lineGap}),
+            gappedAllocationUnfiltered = fixLineGap({allocation, groupKeys, lineGap, carpetHeight}),
             filteredAlloc = Object.entries(gappedAllocationUnfiltered.alloc).reduce((acc, [label, entries]) => {
                 const e = entries.filter(e => e.renders);
                 if (e.length) acc[label] = e;
