@@ -106,30 +106,26 @@ const lib = CMPNAME,
                         { fromItem, toItem } = newVirtual,
 
 
-                    /**
-                     * GROUPED
-                     */
-                     filteredGroupedData = __applyFilter({
-                        globalValue: _globalFilterValue,
-                        groupedData: originalGroupedData,
-                        gFilter: ret.theDoFilterGlobal,
-                        filter: theDoFilter,
-                        elementsPerLine,
-                        opts: {trakTimes, lib}
-                    });
-
-
-                    console.log('filter new : ',
-                        __getVirtualGroup({
+                        /**
+                         * GROUPED
+                         */
+                        gData = __applyFilter({
+                            globalValue: _globalFilterValue,
+                            groupedData: originalGroupedData,
+                            gFilter: ret.theDoFilterGlobal,
+                            filter: theDoFilter,
+                            elementsPerLine,
+                            opts: {trakTimes, lib}
+                        }),
+                        filteredGroupedData = __getVirtualGroup({
                             dimensions,
                             lineGap,
                             grouping,
-                            grouped: filteredGroupedData,
+                            grouped: gData,
                             scrollTop,
                             elementsPerLine,
                             opts: {trakTimes, lib}
-                        })
-                    );
+                        });
 
                     return {
                         ...ret,
@@ -155,22 +151,27 @@ const lib = CMPNAME,
                 unFilterFields: () => {
                     let _globalFilterValue = globalFilterValue,
                         _newFilters = {...filters},
-                        _filteredData = [...originalData];
+                        _filteredData = [...originalData],
+                        theDoFilterGlobal;
 
                     const filteringFields = payload.filter(f => columns.includes(f));
                     
                     filteringFields.forEach(f => {_newFilters[f].value = '';});
                     
                     // eslint-disable-next-line one-var
-                    const doFilter = __getFilterFactory({
-                        columns,
-                        filters: _newFilters
-                    });
-
-                    _filteredData = _filteredData.filter(doFilter());
+                    const filterFactory = __getFilterFactory({
+                            columns,
+                            filters: _newFilters, opts: {trakTimes, lib}
+                        }),
+                        theDoFilter = filterFactory();
+            
+                        
+                    _filteredData = _filteredData.filter(theDoFilter);
 
                     if (_globalFilterValue) {
-                        _filteredData = _filteredData.filter(doFilter(_globalFilterValue));
+                        // this needs to be recreated every time the global filter changes
+                        theDoFilterGlobal = filterFactory(_globalFilterValue);
+                        _filteredData = _filteredData.filter(theDoFilterGlobal);
                     }
                     
                     // eslint-disable-next-line one-var
@@ -181,7 +182,25 @@ const lib = CMPNAME,
                             lineGap,
                             grouping
                         }),
-                        { fromItem, toItem } = newVirtual;
+                        { fromItem, toItem } = newVirtual,
+                        gData = __applyFilter({
+                            globalValue: _globalFilterValue,
+                            groupedData: originalGroupedData,
+                            gFilter: theDoFilterGlobal,
+                            filter: theDoFilter,
+                            elementsPerLine,
+                            opts: {trakTimes, lib}
+                        }),
+            
+                        filteredGroupedData = __getVirtualGroup({
+                            dimensions,
+                            lineGap,
+                            grouping,
+                            grouped: gData,
+                            scrollTop: 0,
+                            elementsPerLine,
+                            opts: {trakTimes, lib}
+                        });
                         
                     return {
                         filters: _newFilters,
@@ -193,7 +212,8 @@ const lib = CMPNAME,
                             ...virtual,
                             ...newVirtual,
                         },
-                        filtered: _filteredData.length
+                        filtered: _filteredData.length,
+                        filteredGroupedData
                     };
                 },
 
@@ -201,10 +221,13 @@ const lib = CMPNAME,
                 unFilter: () => {                    
                     let _globalFilterValue = globalFilterValue,
                         _newFilters = {...filters},
-                        _filteredData = [...originalData];
+                        _filteredData = [...originalData],
+                        theDoFilter,
+                        theDoFilterGlobal;
 
-                    const doFilter = __getFilterFactory ({columns, filters: _newFilters});
-                            
+                    const filterFactory = __getFilterFactory ({columns, filters: _newFilters, opts: {trakTimes, lib}});
+                        
+
                     switch (payload) {
                         case FILTERS.ALL:
                             _globalFilterValue = '';
@@ -212,11 +235,13 @@ const lib = CMPNAME,
                             break;
                         case FILTERS.GLOBAL:
                             _globalFilterValue = '';
-                            _filteredData = _filteredData.filter(doFilter());
+                            theDoFilter = filterFactory();
+                            _filteredData = _filteredData.filter(theDoFilter);
                             break;
                         case FILTERS.FIELDS:
                             _newFilters = __cleanFilters(filters);
-                            _filteredData = _filteredData.filter(doFilter(_globalFilterValue));
+                            theDoFilterGlobal = filterFactory(_globalFilterValue);
+                            _filteredData = _filteredData.filter(theDoFilterGlobal);
                             break;
                     }
 
@@ -228,7 +253,25 @@ const lib = CMPNAME,
                             lineGap,
                             grouping
                         }),
-                        { fromItem, toItem } = newVirtual;
+                        { fromItem, toItem } = newVirtual,
+                        gData = __applyFilter({
+                            globalValue: _globalFilterValue,
+                            groupedData: originalGroupedData,
+                            gFilter: theDoFilterGlobal,
+                            filter: theDoFilter,
+                            elementsPerLine,
+                            opts: {trakTimes, lib}
+                        }),
+            
+                        filteredGroupedData = __getVirtualGroup({
+                            dimensions,
+                            lineGap,
+                            grouping,
+                            grouped: gData,
+                            scrollTop: 0,
+                            elementsPerLine,
+                            opts: {trakTimes, lib}
+                        });
                         
                     return {
                         filters: _newFilters,
@@ -240,7 +283,9 @@ const lib = CMPNAME,
                             ...virtual,
                             ...newVirtual,
                         },
-                        filtered: _filteredData.length
+                        filtered: _filteredData.length,
+
+                        filteredGroupedData
                     };
 
                 },
@@ -263,15 +308,14 @@ const lib = CMPNAME,
                      */
                     // eslint-disable-next-line one-var
                     const gData = __applyFilter({
-                        globalValue: globalFilterValue,
-                        groupedData: filteredGroupedData,
-                        gFilter: theDoFilterGlobal,
-                        filter: theDoFilter,
-                        elementsPerLine,
-                        opts: {trakTimes, lib}
-                    });
-                    console.log('new on scroll : ',{scrollTop},
-                        __getVirtualGroup({
+                            globalValue: globalFilterValue,
+                            groupedData: originalGroupedData,
+                            gFilter: theDoFilterGlobal,
+                            filter: theDoFilter,
+                            elementsPerLine,
+                            opts: {trakTimes, lib}
+                        }),
+                        filteredGroupedData = __getVirtualGroup({
                             dimensions,
                             lineGap,
                             grouping,
@@ -279,14 +323,14 @@ const lib = CMPNAME,
                             scrollTop,
                             elementsPerLine,
                             opts: {trakTimes, lib}
-                        })
-                    );
+                        });
                     /**
                      * 
                      */
 
                     return {
                         data: filteredData.slice(fromItem, toItem),
+                        filteredGroupedData, 
                         virtual: {
                             ...virtual,
                             ...newVirtual,
@@ -295,14 +339,19 @@ const lib = CMPNAME,
                 }
             };
 
-        if (type in actions)
-            return {
+        if (type in actions) {
+            const newState = {
                 ...oldState,
                 ...actions[type]()
             };
+            console.log({newState})
+            return newState;
+        }
         return oldState;
     },
+
     init = (cnf = {}) => {
+        if ('lineGap' in cnf && cnf.lineGap < 0) doThrow({message: 'The parameter `lineGap` cannot be negative',opts:{lib}});
         const trak = {start: +new Date},
             {
                 trakTimes = false,
@@ -377,8 +426,7 @@ const lib = CMPNAME,
 
             elementsPerLine = Math.floor(width / itemWidth),
 
-            // *************************************************************************
-            /**
+            /***************************************************************************
              * starting from specified groups, separate the data and create the groups
              */
             originalGroupedData = __getGrouped({data, groups, elementsPerLine, opts: {ungroupedLabel, lib, trakTimes}}),
@@ -401,8 +449,19 @@ const lib = CMPNAME,
                 elementsPerLine,
                 opts: {trakTimes, lib}
             }),
-            // *************************************************************************
 
+            filteredGroupedData = __getVirtualGroup({
+                dimensions,
+                lineGap: lineGapPlus,
+                grouping,
+                grouped: gData,
+                scrollTop: 0,
+                elementsPerLine,
+                opts: {trakTimes, lib}
+            }),
+            /**
+             * 
+             ****************************************************************************/
             
             originalData = data.map(item => ({ [rhgID]: `${uniqueID}`, ...item })),
 
@@ -410,8 +469,6 @@ const lib = CMPNAME,
                 dimensions,
                 size: originalData.length,
                 lineGap: lineGapPlus,
-                grouping,
-                grouped: gData,
                 scrollTop: 0
             }),
 
@@ -427,20 +484,6 @@ const lib = CMPNAME,
                 ? originalData.filter(theDoFilterGlobal)
                 : originalData
             ).filter(theDoFilter);
-        
-        if (lineGapPlus < 1) doThrow({message: 'The parameter `lineGap` cannot be negative',opts:{lib}});
-
-        console.log('new : ',
-            __getVirtualGroup({
-                dimensions,
-                lineGap: lineGapPlus,
-                grouping,
-                grouped: gData,
-                scrollTop: 0,
-                elementsPerLine,
-                opts: {trakTimes, lib}
-            })
-        );
         
         // console.log('originalGroupedData', originalGroupedData);
         // console.log('originalGroupedData0', originalGroupedData0)
@@ -480,7 +523,9 @@ const lib = CMPNAME,
 
             //grouped
             originalGroupedData,
-            filteredGroupedData: {...gData},
+            
+            filteredGroupedData,
+
             elementsPerLine,
             theDoFilterGlobal,
             

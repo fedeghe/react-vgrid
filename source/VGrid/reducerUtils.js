@@ -261,7 +261,7 @@ export const trakTime = ({ what, time, opts }) =>
     },
 
 
-    __getVirtual = ({ dimensions, size, lineGap, grouping, grouped, scrollTop = 0 }) => {
+    __getVirtual = ({ dimensions, size, lineGap, scrollTop = 0 }) => {
 
         const { height, itemHeight, width, itemWidth } = dimensions,
             columns = Math.floor(width / itemWidth),
@@ -308,8 +308,6 @@ export const trakTime = ({ what, time, opts }) =>
         console.log('check groups name order: ', Object.keys(grouped));
         console.log(dimensions);
 
-        let topGap = lineGap,
-            bottomGap = lineGap;
         const trak = opts.trakTimes ? { start: +new Date() } : null,
             { contentHeight, itemHeight, height } = dimensions,
             { groupHeader, groups } = grouping,
@@ -440,10 +438,10 @@ export const trakTime = ({ what, time, opts }) =>
                              */
                         }
                         return {
-                            header: false, // is line
                             from,
                             to: from + itemHeight,
                             renders,
+                            row: grouped[label].entries[i], // is a line
                         };
                     })
                 ];
@@ -479,7 +477,8 @@ export const trakTime = ({ what, time, opts }) =>
              **/
             gappedAllocationUnfiltered = fixLineGap({allocation, groupKeys, lineGap}),
             filteredAlloc = Object.entries(gappedAllocationUnfiltered.alloc).reduce((acc, [label, entries]) => {
-                acc[label] = entries.filter(e => e.renders);
+                const e = entries.filter(e => e.renders);
+                if (e.length) acc[label] = e;
                 return acc;
             }, {}),
             ret = {
