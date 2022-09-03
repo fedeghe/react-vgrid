@@ -115,7 +115,7 @@ const lib = CMPNAME,
                             lineGap,
                             grouping,
                             grouped: gData,
-                            scrollTop,
+                            scrollTop: 0,
                             elementsPerLine,
                             opts: {trakTimes, lib}
                         });
@@ -242,7 +242,7 @@ const lib = CMPNAME,
                     const newVirtual = __getVirtual({
                             dimensions,
                             size: _filteredData.length,
-                            scrollTop,
+                            scrollTop: 0,
                             lineGap,
                             grouping
                         }),
@@ -323,6 +323,10 @@ const lib = CMPNAME,
                     /**
                      * 
                      */
+                    console.log({
+                        topFillerHeight: filteredGroupedData.allocation.topFillerHeight,
+                        bottomFillerHeight: filteredGroupedData.allocation.bottomFillerHeight,
+                    })
 
                     return {
                         data: filteredData.slice(fromItem, toItem),

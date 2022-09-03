@@ -19,7 +19,7 @@ export default {
         // { key: 'entityid3', type: 'int' },
         // { key: 'name3', type: 'str' },
         // { key: 'date3', type: 'date' },
-    ], 5e2),
+    ], 1e2),
 
     // each gouper must exclusively select an element,
     // if two grouper let the same row pass then a specific
@@ -78,7 +78,7 @@ export default {
         width: 1000,
         height: 800
     },
-    lineGap : 0,
+    lineGap : 5,
     NoFilterData: ({total}) => <div>no data out of {total}</div>,
 
     debounceTimes: {

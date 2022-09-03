@@ -44,8 +44,8 @@ const prefix = 'HYG_',
             }
         }
         allocation.alloc = alloc;
-        allocation.topFillerHeight = firstRender.at;
-        allocation.bottomFillerHeight = carpetHeight - firstNotRender.at;
+        allocation.topFillerHeight = firstRender.at || 0;
+        allocation.bottomFillerHeight = carpetHeight - firstNotRender.at || 0;
         return allocation;
     },
 
@@ -308,11 +308,11 @@ export const trakTime = ({ what, time, opts }) =>
      * still considering the lineGap
      */
     __getVirtualGroup = ({ dimensions, lineGap, grouping, grouped, scrollTop, elementsPerLine, opts = {} }) => {
-        console.log('grouped: ', grouped);
-        console.log('grouping: ', grouping);
-        console.log('lineGap: ', lineGap);
-        console.log('check groups name order: ', Object.keys(grouped));
-        console.log(dimensions);
+        // console.log('grouped: ', grouped);
+        // console.log('grouping: ', grouping);
+        // console.log('lineGap: ', lineGap);
+        // console.log('check groups name order: ', Object.keys(grouped));
+        // console.log(dimensions);
         let cardinality = 0;
         const trak = opts.trakTimes ? { start: +new Date() } : null,
             { contentHeight, itemHeight, height } = dimensions,
@@ -359,7 +359,7 @@ export const trakTime = ({ what, time, opts }) =>
             itemHeight2 = itemHeight/2,
             
 
-            allocation = Object.entries(grouped).reduce((acc, [label, group], groupKey) => {
+            allocation = Object.entries(grouped).reduce((acc, [label, group]) => {
                 // console.log(' G ', label, {groupKey,contentHeight, topGap, bottomGap});
                 // console.log(' G ', label, {contentHeight})
                 /** 
@@ -381,7 +381,6 @@ export const trakTime = ({ what, time, opts }) =>
                  * the second option might do the whole 'inRange' check on average in half the time
                  * thus is the choosen option
                  */
-
                 let { cursor, firstRender, firstNotRender } = acc;
                 const headerRenders = onlyUngrouped ? false : inRange({n: cursor + headerHeight2, ...range}),
                     groupHeight = groupingDimensions.groupsHeights[label];
@@ -484,7 +483,7 @@ export const trakTime = ({ what, time, opts }) =>
             gappedAllocationUnfiltered = fixLineGap({allocation, groupKeys, lineGap, carpetHeight}),
             
             filteredAlloc = Object.entries(gappedAllocationUnfiltered.alloc).reduce((acc, [label, entries]) => {
-                const e = entries.filter(e => e.renders);
+                const e = entries; //.filter(e => e.renders);
 
                 if (e.length) {
                     acc[label] = e;

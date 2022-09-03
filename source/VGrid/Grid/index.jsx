@@ -18,8 +18,8 @@ const Grid = () => {
             },
             Item,
             virtual: {
-                topFillerHeight,
-                bottomFillerHeight,
+                // topFillerHeight,
+                // bottomFillerHeight,
                 dataHeight,
                 scrollTop,
                 loading,
@@ -52,7 +52,19 @@ const Grid = () => {
                 HeaderCaptionCls,
                 FooterCaptionCls
             },
-            filteredGroupedData
+            filteredGroupedData: {
+                allocation : {
+                    alloc,
+                    topFillerHeight,
+                    bottomFillerHeight,
+                }
+            },
+            grouping: {
+                groupHeader : {
+                    height: groupHeaderHeight,
+                    Component: GroupHeaderComponent
+                }
+            }
         } = state,
         classes = useStyles({
             width, height,
@@ -175,7 +187,8 @@ const Grid = () => {
         if (ref && ref.current && scrollTop === 0) {
             ref.current.scrollTo(0, 0);
         }
-    }, [scrollTop, ref]);    
+    }, [scrollTop, ref]);   
+    
 
     return <div>
         {Boolean(headerCaptionHeight) && (
@@ -186,13 +199,31 @@ const Grid = () => {
         {filtered ? (
         <div className={classes.GridContainer} ref={ref} onScroll={onScroll}>
             <Filler width="100%" height={topFillerHeight} />
-            {data.map(item =>
+
+            {Object.entries(alloc).map(([label, renderables]) => {
+                return renderables.map(renderable => {
+                    if (!renderable.renders) return null;
+                    return renderable.header
+                        ? <GroupHeaderComponent groupName={label} groupHeaderHeight={groupHeaderHeight}/>
+                        : renderable.rows.map(row =>
+                            <div key={row[rhgID]} className={classes.Item}
+                                {...getHandlers(row)}
+                            >
+                                <Item {...row}/>
+                            </div>
+                        );
+                });
+            })}
+
+            {/* {data.map(item =>
                 <div key={item[rhgID]} className={classes.Item}
                     {...getHandlers(item)}
                 >
                     <Item {...item}/>
                 </div>
-            )}
+            )} */}
+
+
             <Filler width="100%" height={bottomFillerHeight} />
         </div>) : <NoData/>}
         {Boolean(footerCaptionHeight) && (
