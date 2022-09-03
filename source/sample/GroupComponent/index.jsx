@@ -2,11 +2,12 @@ import React from 'react';
 import useStyles from './style';
 
 const GroupComponent = ({
-    groupName
+    groupName,
+    cls
 }) => {
     const classes = useStyles();
     return (
-        <div className={classes.Group}>{groupName}</div>
+        <div className={[classes.Group, cls].join(' ')}>{groupName}</div>
     );
 };
 export default GroupComponent;

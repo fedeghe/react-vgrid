@@ -4,6 +4,7 @@ import {
     __getFilterFactory,  __cleanFilters,
     __getVirtual, __getVirtualGroup,
     __getGrouped0, __getGrouped, __composeFilters,
+    __getFilteredCount,
     __applyFilter,
     uniqueID, trakTime,
     doWarn, doThrow
@@ -22,7 +23,6 @@ const lib = CMPNAME,
                 dimensions,
                 originalData,
                 filteredData,
-                filteredGroupedData,
                 virtual,
                 virtual: {
                     lineGap,
@@ -110,6 +110,7 @@ const lib = CMPNAME,
                             elementsPerLine,
                             opts: {trakTimes, lib}
                         }),
+                        filtered = __getFilteredCount({gData}),
                         filteredGroupedData = __getVirtualGroup({
                             dimensions,
                             lineGap,
@@ -125,7 +126,7 @@ const lib = CMPNAME,
                         data: _newData.slice(fromItem, toItem),
                         filters: _newFilters,
                         filteredData: _newData,
-                        filtered: _newData.length,
+                        filtered,
                         virtual: {
                             ...virtual,
                             ...newVirtual,
@@ -192,7 +193,8 @@ const lib = CMPNAME,
                             scrollTop: 0,
                             elementsPerLine,
                             opts: {trakTimes, lib}
-                        });
+                        }),
+                        filtered = __getFilteredCount({gData});
                         
                     return {
                         filters: _newFilters,
@@ -204,7 +206,7 @@ const lib = CMPNAME,
                             ...virtual,
                             ...newVirtual,
                         },
-                        filtered: _filteredData.length,
+                        filtered,
                         filteredGroupedData
                     };
                 },
@@ -262,7 +264,8 @@ const lib = CMPNAME,
                             scrollTop: 0,
                             elementsPerLine,
                             opts: {trakTimes, lib}
-                        });
+                        }),
+                        filtered = __getFilteredCount({gData});
                         
                     return {
                         filters: _newFilters,
@@ -274,7 +277,7 @@ const lib = CMPNAME,
                             ...virtual,
                             ...newVirtual,
                         },
-                        filtered: _filteredData.length,
+                        filtered,
 
                         filteredGroupedData
                     };
@@ -313,14 +316,19 @@ const lib = CMPNAME,
                             scrollTop,
                             elementsPerLine,
                             opts: {trakTimes, lib}
-                        });
+                        }),
+                        
+                        filtered = __getFilteredCount({gData}),
+                        rendering = filteredGroupedData.allocation.cardinality;
                     /**
                      * 
                      */
 
                     return {
                         data: filteredData.slice(fromItem, toItem),
-                        filteredGroupedData, 
+                        filteredGroupedData,
+                        rendering, 
+                        filtered,
                         virtual: {
                             ...virtual,
                             ...newVirtual,

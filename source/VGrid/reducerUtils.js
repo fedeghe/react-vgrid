@@ -6,6 +6,7 @@ const prefix = 'HYG_',
     inRange = ({ n, from, to }) => n >= from && n <= to,
     fixLineGap = ({allocation, groupKeys, lineGap, carpetHeight}) => {    
         const {alloc, firstRender, firstNotRender} = allocation;
+        if (!firstRender || !firstNotRender) return allocation;
         let lineGapCursor = lineGap,
             preIndex = firstRender.cursor,
             postIndex = firstNotRender.cursor,
@@ -214,6 +215,7 @@ export const trakTime = ({ what, time, opts }) =>
         return g;
     },
 
+    __getFilteredCount = ({gData}) => Object.values(gData).reduce((acc, v) => acc + v.entries.length, 0),
 
     /**
      * If we loop over filters and for each filter we loop over all data (even skipping the entries
@@ -311,7 +313,7 @@ export const trakTime = ({ what, time, opts }) =>
         console.log('lineGap: ', lineGap);
         console.log('check groups name order: ', Object.keys(grouped));
         console.log(dimensions);
-
+        let cardinality = 0;
         const trak = opts.trakTimes ? { start: +new Date() } : null,
             { contentHeight, itemHeight, height } = dimensions,
             { groupHeader, groups } = grouping,
@@ -445,8 +447,7 @@ export const trakTime = ({ what, time, opts }) =>
                             from,
                             to: from + itemHeight,
                             renders,
-                            index: i,
-                            row: grouped[label].entries[i], // is a line
+                            rows: grouped[label].entries.slice(i * elementsPerLine, (i + 1)* elementsPerLine) // is a line
                         };
                     })
                 ];
@@ -481,16 +482,26 @@ export const trakTime = ({ what, time, opts }) =>
              * removing all elements that do not render 
              **/
             gappedAllocationUnfiltered = fixLineGap({allocation, groupKeys, lineGap, carpetHeight}),
+            
             filteredAlloc = Object.entries(gappedAllocationUnfiltered.alloc).reduce((acc, [label, entries]) => {
                 const e = entries.filter(e => e.renders);
-                if (e.length) acc[label] = e;
+
+                if (e.length) {
+                    acc[label] = e;
+                    
+                    cardinality += e.reduce((inacc, c) => {
+                        if (!c.header) inacc += c.rows.length;
+                        return inacc;
+                    }, 0);
+                }
                 return acc;
             }, {}),
             ret = {
                 groupingDimensions,
                 allocation: {
                     ... gappedAllocationUnfiltered,
-                    alloc: filteredAlloc
+                    alloc: filteredAlloc,
+                    cardinality
                 }
             };
            

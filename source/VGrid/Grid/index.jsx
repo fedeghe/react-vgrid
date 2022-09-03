@@ -51,7 +51,8 @@ const Grid = () => {
             cls: {
                 HeaderCaptionCls,
                 FooterCaptionCls
-            }
+            },
+            filteredGroupedData
         } = state,
         classes = useStyles({
             width, height,
