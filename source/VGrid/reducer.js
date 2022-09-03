@@ -97,8 +97,7 @@ const lib = CMPNAME,
                             grouping
                         }),
                         { fromItem, toItem } = newVirtual,
-
-
+                        newTheDoFilter = doFilter(),
                         /**
                          * GROUPED
                          */
@@ -106,7 +105,7 @@ const lib = CMPNAME,
                             globalValue: _globalFilterValue,
                             groupedData: originalGroupedData,
                             gFilter: ret.theDoFilterGlobal,
-                            filter: theDoFilter,
+                            filter: newTheDoFilter,
                             elementsPerLine,
                             opts: {trakTimes, lib}
                         }),
@@ -120,13 +119,14 @@ const lib = CMPNAME,
                             elementsPerLine,
                             opts: {trakTimes, lib}
                         });
-
+                    
                     return {
                         ...ret,
                         data: _newData.slice(fromItem, toItem),
                         filters: _newFilters,
                         filteredData: _newData,
                         filtered,
+                        theDoFilter: newTheDoFilter,
                         virtual: {
                             ...virtual,
                             ...newVirtual,
