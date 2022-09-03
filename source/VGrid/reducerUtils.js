@@ -316,10 +316,8 @@ export const trakTime = ({ what, time, opts }) =>
         let cardinality = 0;
         const trak = opts.trakTimes ? { start: +new Date() } : null,
             { contentHeight, itemHeight, height } = dimensions,
-            { groupHeader, groups } = grouping,
-            { ungroupedLabel } = grouping,
+            { groupHeader, groups, ungroupedLabel } = grouping,
             
-            // groupHeader = grouping.group,
             groupKeys = Object.keys(grouped),
 
             /**
