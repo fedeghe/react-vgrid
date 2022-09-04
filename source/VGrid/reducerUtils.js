@@ -3,17 +3,24 @@ import { isFunction } from './utils';
 let count = 0;
 const prefix = 'HYG_',
     getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / elementsPerLine),
-    inRange = ({ n, from, to }) => n >= from && n <= to,
-    fixLineGap = ({allocation, groupKeys, lineGap, carpetHeight}) => {    
+    inRange = ({ n, from, to }) => n > from && n < to,
+    fixLineGap = ({allocation, groupKeys, lineGap}) => {    
         const {alloc, firstRender, firstNotRender} = allocation;
+        console.log('PRE')
+        console.log(JSON.parse(JSON.stringify({alloc, firstRender, firstNotRender})))
         if (!firstRender || !firstNotRender) return allocation;
-        let lineGapCursor = lineGap,
+        let preGapCursor = lineGap,
+            postGapCursor = lineGap,
             preIndex = firstRender.cursor,
             postIndex = firstNotRender.cursor,
+
             preTargetGroupLabel = firstRender.group,
             postTargetGroupLabel = firstNotRender.group,
-            postGroupLength = alloc[postTargetGroupLabel].length;
-        while(lineGapCursor--) {
+
+            postGroupLastIndex = alloc[postTargetGroupLabel].length - 1;
+        
+        while(preTargetGroupLabel && preGapCursor--) {
+        
             // Pre
             // maybe we need to seek for the previous group
             preIndex--;
@@ -25,27 +32,46 @@ const prefix = 'HYG_',
             }
             if (preTargetGroupLabel) {
                 alloc[preTargetGroupLabel][preIndex].renders = true;
-                firstRender.at = alloc[preTargetGroupLabel][preIndex].from;
+                console.log(`set ${preTargetGroupLabel} ${preIndex}`)
+                allocation.firstRender.at = alloc[preTargetGroupLabel][preIndex].from;
+                
             }
+        }
 
+        while(postTargetGroupLabel && postGapCursor--) {
             // Post
             // again maybe we need to move to the following group
-            if (postIndex === postGroupLength) {
+            
+            if (postIndex > postGroupLastIndex) {
                 postTargetGroupLabel = groupCloseby({groupKeys, label: postTargetGroupLabel, versus: 1});
                 if (postTargetGroupLabel) {
                     postIndex = 0;
-                    postGroupLength = alloc[postTargetGroupLabel].length;
+                    postGroupLastIndex = alloc[postTargetGroupLabel].length - 1;
                 }
             }
             if (postTargetGroupLabel) {
+                
                 alloc[postTargetGroupLabel][postIndex].renders = true;
-                firstNotRender.at = alloc[postTargetGroupLabel][postIndex].to;
+                console.log(`set ${postTargetGroupLabel} ${postIndex}`)
+                allocation.firstNotRender.at = alloc[postTargetGroupLabel][postIndex].to;
                 postIndex++;
             }
+            
         }
+
+
+
         allocation.alloc = alloc;
-        allocation.topFillerHeight = firstRender.at || 0;
-        allocation.bottomFillerHeight = carpetHeight - firstNotRender.at || 0;
+        console.log('POST')
+        console.log(JSON.parse(JSON.stringify({alloc, firstRender, firstNotRender})))
+        return allocation;
+    },
+    addFillers = ({allocation, carpetHeight}) => {
+        console.log({allocation, carpetHeight})
+        // allocation.topFillerHeight = allocation.firstRender?.at || 0;
+        allocation.topFillerHeight = allocation.firstRender?.at ? allocation.firstRender?.at :  0;
+        allocation.bottomFillerHeight = allocation.firstNotRender?.at ? carpetHeight - allocation.firstNotRender?.at :  0;
+        console.log({topFillerHeight: allocation.topFillerHeight, bottomFillerHeight: allocation.bottomFillerHeight})
         return allocation;
     },
 
@@ -223,7 +249,7 @@ export const trakTime = ({ what, time, opts }) =>
      * looping on each entry and find the first filter get it (if any)
      */
     __getGrouped = ({ data, groups, elementsPerLine, opts = {} }) => {
-        console.log({groups});
+        // console.log({groups});
         const trak = opts.trakTimes ? { start: +new Date() } : null,
             g = data.reduce((acc, d) => {
                 const filter = groups.find(({ grouper }) => grouper(d));
@@ -308,11 +334,11 @@ export const trakTime = ({ what, time, opts }) =>
      * still considering the lineGap
      */
     __getVirtualGroup = ({ dimensions, lineGap, grouping, grouped, scrollTop, elementsPerLine, opts = {} }) => {
-        // console.log('grouped: ', grouped);
+        console.log({grouped, grouping, dimensions, scrollTop});
         // console.log('grouping: ', grouping);
         // console.log('lineGap: ', lineGap);
         // console.log('check groups name order: ', Object.keys(grouped));
-        // console.log(dimensions);
+        // console.log({scrollTop});
         let cardinality = 0;
         const trak = opts.trakTimes ? { start: +new Date() } : null,
             { contentHeight, itemHeight, height } = dimensions,
@@ -379,10 +405,11 @@ export const trakTime = ({ what, time, opts }) =>
                  * the second option might do the whole 'inRange' check on average in half the time
                  * thus is the choosen option
                  */
+                // console.log({groupingDimensions})
                 let { cursor, firstRender, firstNotRender } = acc;
-                const headerRenders = onlyUngrouped ? false : inRange({n: cursor + headerHeight2, ...range}),
+                const headerRenders = inRange({n: cursor + headerHeight2, ...range}),
                     groupHeight = groupingDimensions.groupsHeights[label];
-
+                
                 /**
                  * here flattening can be excluded despite it would make a way easier
                  * to apply after the lineGap logic
@@ -390,10 +417,10 @@ export const trakTime = ({ what, time, opts }) =>
                  * the reason is that group label hash is needed cause afterward 
                  * the group elements sorting turn straightforward,
                  * instead if flattened would be quite a nightmare
-                 */
+                 */                
                 acc.alloc[label] = [
                     {
-                        header: true, //is header
+                        header: true, //is a header
                         from: cursor,
                         to: cursor + headerHeight,
                         renders: headerRenders,
@@ -401,22 +428,16 @@ export const trakTime = ({ what, time, opts }) =>
                     ...Array.from({length: group.lines}, (_, i) => {
                         const from = cursor + headerHeight + i * itemHeight,
                             renders = inRange({n: from + itemHeight2, ...range});
-
-
+                        
                         /**
                          * cursor tracks that is a line (>=0) or a header (-1)
                          */
-                        if (!firstRender && (renders || headerRenders)) {
+                        if (!firstRender && renders) {
                             firstRender = {
                                 group: label,
                                 cursor: headerRenders ? 0 : i + 1 // account the header at index 0
                             };
                             acc.firstRender = firstRender;
-                            /**
-                             * now we could get
-                             * //   acc.dataFrom = from - (headerRenders ? headerHeight : 0);
-                             * but this would ignore the lineGap
-                             */
                         }
 
                         /**
@@ -426,19 +447,9 @@ export const trakTime = ({ what, time, opts }) =>
                         if (firstRender && !firstNotRender && (!renders)){
                             firstNotRender = {
                                 group: label,
-                                cursor: i + 1 // consider the header at index 0
+                                cursor: headerRenders ? i + 1 : 0 // consider the header at index 0
                             };
                             acc.firstNotRender = firstNotRender;
-                            /** 
-                             * same here we could
-                             * //   acc.dataTo = from - (headerRenders ? headerHeight : 0); 
-                             * and then get 
-                             * //   allocation.topFillerHeight = allocation.dataFrom;
-                             * //   allocation.bottomFillerHeight = carpetHeight - allocation.dataTo;
-                             * but this would ignore the lineGap
-                             * 
-                             * once we consider the lineGap, and get dataFrom and dataTowe can still use the same logic
-                             */
                         }
                         return {
                             from,
@@ -478,9 +489,9 @@ export const trakTime = ({ what, time, opts }) =>
              * notice that after doing the right thing with lineGap, we can cleanup allocation
              * removing all elements that do not render 
              **/
-            gappedAllocationUnfiltered = fixLineGap({allocation, groupKeys, lineGap, carpetHeight}),
-            
-            filteredAlloc = Object.entries(gappedAllocationUnfiltered.alloc).reduce((acc, [label, entries]) => {
+            gappedAllocationUnfiltered = fixLineGap({allocation, groupKeys, lineGap}),
+            withFillersAllocation  = addFillers({allocation: gappedAllocationUnfiltered, carpetHeight}),
+            filteredAlloc = Object.entries(withFillersAllocation.alloc).reduce((acc, [label, entries]) => {
                 const e = entries; //.filter(e => e.renders);
 
                 if (e.length) {
@@ -496,11 +507,12 @@ export const trakTime = ({ what, time, opts }) =>
             ret = {
                 groupingDimensions,
                 allocation: {
-                    ... gappedAllocationUnfiltered,
+                    ... withFillersAllocation,
                     alloc: filteredAlloc,
                     cardinality
                 }
             };
+        
            
         if (opts.trakTimes) {
             trak.end = +new Date();

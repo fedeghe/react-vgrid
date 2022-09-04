@@ -151,13 +151,14 @@ const lib = CMPNAME,
                     
                     filteringFields.forEach(f => {_newFilters[f].value = '';});
                     
+                    
                     // eslint-disable-next-line one-var
                     const filterFactory = __getFilterFactory({
                             columns,
-                            filters: _newFilters, opts: {trakTimes, lib}
+                            filters: _newFilters,
+                            opts: {trakTimes, lib}
                         }),
                         theDoFilter = filterFactory();
-            
                         
                     _filteredData = _filteredData.filter(theDoFilter);
 
@@ -237,7 +238,7 @@ const lib = CMPNAME,
                             _filteredData = _filteredData.filter(theDoFilterGlobal);
                             break;
                     }
-
+                    
                     // eslint-disable-next-line one-var
                     const newVirtual = __getVirtual({
                             dimensions,
@@ -246,7 +247,9 @@ const lib = CMPNAME,
                             lineGap,
                             grouping
                         }),
+                        
                         { fromItem, toItem } = newVirtual,
+
                         gData = __applyFilter({
                             globalValue: _globalFilterValue,
                             groupedData: originalGroupedData,
@@ -302,7 +305,7 @@ const lib = CMPNAME,
                     // eslint-disable-next-line one-var
                     const gData = __applyFilter({
                             globalValue: globalFilterValue,
-                            groupedData: originalGroupedData,
+                            groupedData: originalGroupedData, // this needs to be the filtered data
                             gFilter: theDoFilterGlobal,
                             filter: theDoFilter,
                             elementsPerLine,
@@ -323,10 +326,10 @@ const lib = CMPNAME,
                     /**
                      * 
                      */
-                    console.log({
-                        topFillerHeight: filteredGroupedData.allocation.topFillerHeight,
-                        bottomFillerHeight: filteredGroupedData.allocation.bottomFillerHeight,
-                    })
+                    // console.log({
+                    //     topFillerHeight: filteredGroupedData.allocation.topFillerHeight,
+                    //     bottomFillerHeight: filteredGroupedData.allocation.bottomFillerHeight,
+                    // })
 
                     return {
                         data: filteredData.slice(fromItem, toItem),
@@ -342,11 +345,12 @@ const lib = CMPNAME,
             };
 
         if (type in actions) {
+            // console.log({type})
             const newState = {
                 ...oldState,
                 ...actions[type]()
             };
-            console.log({newState});
+            // console.log({newState});
             return newState;
         }
         return oldState;
@@ -493,13 +497,13 @@ const lib = CMPNAME,
         // console.log(originalGroupedData);
         // console.log(initialGroupedData);
         // what about order?
-        /**/for (var g in originalGroupedData) {
-        /**/    console.log(g, originalGroupedData[g].entries.length);
-        /**/}
+        // for (var g in originalGroupedData) {
+        //     console.log(g, originalGroupedData[g].entries.length);
+        // }
         // every group must have a grouper
-        /**/if (groups.length && groups.some(group => typeof group.grouper !== 'function')) {
-        /**/    throw 'Every defined group must have a grouper function';
-        /**/}
+        if (groups.length && groups.some(group => typeof group.grouper !== 'function')) {
+            throw 'Every defined group must have a grouper function';
+        }
         /////////////////////////////////////////////////////////////////////
         if (trakTimes) {
             trak.end = +new Date;

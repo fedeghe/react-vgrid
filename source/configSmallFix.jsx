@@ -1,25 +1,12 @@
 import React from 'react';
-import generateRowData from './utils';
+
 import Item from './sample/Item';
 import HeaderCaption from './sample/HeaderCaption';
 import FooterCaption from './sample/FooterCaption';
 import GroupComponent from './sample/GroupComponent';
+import data from './sample/dataFixed.json';
 export default {
-    data: generateRowData([
-        { key: 'id', type: 'int' },
-        { key: 'entityid', type: 'id' },
-        { key: 'name', type: 'str' },
-        // { key: 'date', type: 'date' },
-        // { key: 'actions', type: 'str' },
-        // { key: 'id2', type: 'int' },
-        // { key: 'entityid2', type: 'int' },
-        // { key: 'name2', type: 'str' },
-        // { key: 'date2', type: 'date' },
-        // { key: 'id3', type: 'id' },
-        // { key: 'entityid3', type: 'int' },
-        // { key: 'name3', type: 'str' },
-        // { key: 'date3', type: 'date' },
-    ], 1e2),
+    data,
 
     // each gouper must exclusively select an element,
     // if two grouper let the same row pass then a specific

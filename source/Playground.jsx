@@ -2,7 +2,7 @@ import React from 'react';
 import VGrid from './VGrid';
 
 
-import config from './configSmall';
+import config from './configSmallFix';
 
 import './sample/user.css';
 
