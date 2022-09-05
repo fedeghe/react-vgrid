@@ -61,7 +61,7 @@ export default {
     Loader: () => (<div className="Loading">loading</div>),
     dimensions: {
         itemWidth: 250  ,
-        itemHeight: 230,
+        itemHeight: 250,
         width: 1000,
         height: 800
     },

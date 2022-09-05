@@ -204,7 +204,7 @@ const Grid = () => {
                 return renderables.map(renderable => {
                     if (!renderable.renders) return null;
                     return renderable.header
-                        ? <GroupHeaderComponent groupName={label} groupHeaderHeight={groupHeaderHeight}/>
+                        ? <GroupHeaderComponent key={label} groupName={label} groupHeaderHeight={groupHeaderHeight}/>
                         : renderable.rows.map(row =>
                             <div key={row[rhgID]} className={classes.Item}
                                 {...getHandlers(row)}

@@ -4,10 +4,11 @@ let count = 0;
 const prefix = 'HYG_',
     getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / elementsPerLine),
     inRange = ({ n, from, to }) => n > from && n < to,
-    fixLineGap = ({allocation, groupKeys, lineGap}) => {    
+    fixLineGap = ({allocation, groupKeys, lineGap, groupingDimensions}) => {    
         const {alloc, firstRender, firstNotRender} = allocation;
         console.log('PRE')
         console.log(JSON.parse(JSON.stringify({alloc, firstRender, firstNotRender})))
+        console.log({groupingDimensions})
         if (!firstRender || !firstNotRender) return allocation;
         let preGapCursor = lineGap,
             postGapCursor = lineGap,
@@ -53,7 +54,10 @@ const prefix = 'HYG_',
                 
                 alloc[postTargetGroupLabel][postIndex].renders = true;
                 console.log(`set ${postTargetGroupLabel} ${postIndex}`)
-                allocation.firstNotRender.at = alloc[postTargetGroupLabel][postIndex].to;
+                
+                if (postGapCursor === 0)
+                    allocation.firstNotRender.at = alloc[postTargetGroupLabel][postIndex].to;
+                
                 postIndex++;
             }
             
@@ -69,9 +73,10 @@ const prefix = 'HYG_',
     addFillers = ({allocation, carpetHeight}) => {
         console.log({allocation, carpetHeight})
         // allocation.topFillerHeight = allocation.firstRender?.at || 0;
-        allocation.topFillerHeight = allocation.firstRender?.at ? allocation.firstRender?.at :  0;
-        allocation.bottomFillerHeight = allocation.firstNotRender?.at ? carpetHeight - allocation.firstNotRender?.at :  0;
+        allocation.topFillerHeight = allocation.firstRender?.at ? allocation.firstRender.at :  0;
+        allocation.bottomFillerHeight = allocation.firstNotRender?.at ? carpetHeight - allocation.firstNotRender.at :  0;
         console.log({topFillerHeight: allocation.topFillerHeight, bottomFillerHeight: allocation.bottomFillerHeight})
+        console.log('----------------------------------')
         return allocation;
     },
 
@@ -345,6 +350,7 @@ export const trakTime = ({ what, time, opts }) =>
             { groupHeader, groups, ungroupedLabel } = grouping,
             
             groupKeys = Object.keys(grouped),
+            
 
             /**
              * flag to spot the case no named groups are set
@@ -444,12 +450,15 @@ export const trakTime = ({ what, time, opts }) =>
                          * if the first render has been tracked
                          * then check for the first non render
                          **/
+                        
                         if (firstRender && !firstNotRender && (!renders)){
-                            firstNotRender = {
-                                group: label,
-                                cursor: headerRenders ? i + 1 : 0 // consider the header at index 0
-                            };
-                            acc.firstNotRender = firstNotRender;
+                            // if (label !== lastGroup || i < group.lines.length-1) {
+                                firstNotRender = {
+                                    group: label,
+                                    cursor: headerRenders ? i + 1 : 0 // consider the header at index 0
+                                };
+                                acc.firstNotRender = firstNotRender;
+                            // }
                         }
                         return {
                             from,
@@ -489,10 +498,10 @@ export const trakTime = ({ what, time, opts }) =>
              * notice that after doing the right thing with lineGap, we can cleanup allocation
              * removing all elements that do not render 
              **/
-            gappedAllocationUnfiltered = fixLineGap({allocation, groupKeys, lineGap}),
+            gappedAllocationUnfiltered = fixLineGap({allocation, groupKeys, lineGap, groupingDimensions}),
             withFillersAllocation  = addFillers({allocation: gappedAllocationUnfiltered, carpetHeight}),
             filteredAlloc = Object.entries(withFillersAllocation.alloc).reduce((acc, [label, entries]) => {
-                const e = entries; //.filter(e => e.renders);
+                const e = entries;//.filter(e => e.renders);
 
                 if (e.length) {
                     acc[label] = e;
