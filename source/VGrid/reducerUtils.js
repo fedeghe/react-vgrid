@@ -4,11 +4,8 @@ let count = 0;
 const prefix = 'HYG_',
     getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / elementsPerLine),
     inRange = ({ n, from, to }) => n > from && n < to,
-    fixLineGap = ({allocation, groupKeys, lineGap, groupingDimensions}) => {    
+    fixLineGap = ({allocation, groupKeys, lineGap}) => {    
         const {alloc, firstRender, firstNotRender} = allocation;
-        console.log('PRE')
-        console.log(JSON.parse(JSON.stringify({alloc, firstRender, firstNotRender})))
-        console.log({groupingDimensions})
 
         // might still be firstNotRender is null, when we reach the bottom
         // but still we need the firstRender.at to compute correctly the topFillerHeight
@@ -31,7 +28,6 @@ const prefix = 'HYG_',
             postGroupLastIndex = alloc[postTargetGroupLabel].length - 1;
         
         while(preTargetGroupLabel && preGapCursor--) {
-        
             // Pre
             // maybe we need to seek for the previous group
             preIndex--;
@@ -43,17 +39,13 @@ const prefix = 'HYG_',
             }
             if (preTargetGroupLabel) {
                 alloc[preTargetGroupLabel][preIndex].renders = true;
-                console.log(`set pre ${preTargetGroupLabel} ${preIndex}`)
-                
                 allocation.firstRender.at = alloc[preTargetGroupLabel][preIndex].from;
-                
             }
         }
 
         while(postTargetGroupLabel && postGapCursor--) {
             // Post
             // again maybe we need to move to the following group
-            // debugger
             if (postIndex > postGroupLastIndex) {
                 postTargetGroupLabel = groupCloseby({groupKeys, label: postTargetGroupLabel, versus: 1});
                 if (postTargetGroupLabel) {
@@ -62,32 +54,19 @@ const prefix = 'HYG_',
                 }
             }
             if (postTargetGroupLabel && postIndex <= postGroupLastIndex) {
-                
-                alloc[postTargetGroupLabel][postIndex].renders = true;
-                console.log(`set post ${postTargetGroupLabel} ${postIndex}`)
-                
+                alloc[postTargetGroupLabel][postIndex].renders = true;                
                 allocation.firstNotRender.at = alloc[postTargetGroupLabel][postIndex].to;
-                
             }
             postIndex++;
-            
         }
 
-
-
         allocation.alloc = alloc;
-        console.log('POST')
-        console.log(JSON.parse(JSON.stringify({alloc, firstRender, firstNotRender})))
         return allocation;
     },
+
     addFillers = ({allocation, carpetHeight}) => {
-        console.log({allocation, carpetHeight})
-        // allocation.topFillerHeight = allocation.firstRender?.at || 0;
         allocation.topFillerHeight = allocation.firstRender?.at ? allocation.firstRender.at :  0;
-        
         allocation.bottomFillerHeight = allocation.firstNotRender?.at ? carpetHeight - allocation.firstNotRender.at :  0;
-        console.log({topFillerHeight: allocation.topFillerHeight, bottomFillerHeight: allocation.bottomFillerHeight})
-        console.log('----------------------------------')
         return allocation;
     },
 
@@ -350,18 +329,12 @@ export const trakTime = ({ what, time, opts }) =>
      * still considering the lineGap
      */
     __getVirtualGroup = ({ dimensions, lineGap, grouping, grouped, scrollTop, elementsPerLine, opts = {} }) => {
-        console.log({grouped, grouping, dimensions, scrollTop});
-        // console.log('grouping: ', grouping);
-        // console.log('lineGap: ', lineGap);
-        // console.log('check groups name order: ', Object.keys(grouped));
-        // console.log({scrollTop});
         let cardinality = 0;
         const trak = opts.trakTimes ? { start: +new Date() } : null,
             { contentHeight, itemHeight, height } = dimensions,
             { groupHeader, groups, ungroupedLabel } = grouping,
             
             groupKeys = Object.keys(grouped),
-            lastGroup = groupKeys[groupKeys.length - 1],
 
             /**
              * flag to spot the case no named groups are set
@@ -401,8 +374,6 @@ export const trakTime = ({ what, time, opts }) =>
             
 
             allocation = Object.entries(grouped).reduce((acc, [label, group]) => {
-                // console.log(' G ', label, {groupKey,contentHeight, topGap, bottomGap});
-                // console.log(' G ', label, {contentHeight})
                 /** 
                  * Here we can be sure that all the groups will have a
                  * positive height at least equal to one line (itemHeight)
@@ -485,10 +456,6 @@ export const trakTime = ({ what, time, opts }) =>
                 cursor: 0,
                 firstRender: null,
                 firstNotRender: null,
-                //dataFrom: null, // the starting pixel in the carpet for the rendering area
-                                // dataHeight here
-                //dataTo: null,   // the ending pixel in the carpet for the rendering area
-                                // will be used to calculate topFillerHeight and bottomFillerHeight
             }),
             
             /**
@@ -500,21 +467,21 @@ export const trakTime = ({ what, time, opts }) =>
              * notice that after doing the right thing with lineGap, we can cleanup allocation
              * removing all elements that do not render 
              **/
-            gappedAllocationUnfiltered = fixLineGap({allocation, groupKeys, lineGap, groupingDimensions}),
+            gappedAllocationUnfiltered = fixLineGap({allocation, groupKeys, lineGap }),
             withFillersAllocation  = addFillers({allocation: gappedAllocationUnfiltered, carpetHeight}),
-            filteredAlloc = Object.entries(withFillersAllocation.alloc).reduce((acc, [label, entries]) => {
-                const e = entries;//.filter(e => e.renders);
-
-                if (e.length) {
-                    acc[label] = e;
-                    
-                    cardinality += e.reduce((inacc, c) => {
-                        if (!c.header) inacc += c.rows.length;
-                        return inacc;
-                    }, 0);
-                }
-                return acc;
-            }, {}),
+            filteredAlloc = Object.entries(withFillersAllocation.alloc)
+                .reduce((acc, [label, entries]) => {
+                    const e = entries; //.filter(z => z.renders);
+                    console.log(e)
+                    if (e.length > 1) {
+                        acc[label] = e;
+                        cardinality += e.reduce((inacc, c) => {
+                            if (!c.header) inacc += c.rows.length;
+                            return inacc;
+                        }, 0);
+                    }
+                    return acc;
+                }, {}),
             ret = {
                 groupingDimensions,
                 allocation: {

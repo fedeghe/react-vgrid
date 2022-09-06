@@ -221,9 +221,6 @@ const lib = CMPNAME,
                         theDoFilterGlobal = () => true,
                         filterFactory = __getFilterFactory ({columns, filters: _newFilters, opts: {trakTimes, lib}});
 
-                    
-                        
-
                     switch (payload) {
                         case FILTERS.ALL:
                             _globalFilterValue = '';
@@ -474,7 +471,7 @@ const lib = CMPNAME,
                 lineGap: lineGapPlus,
                 ...innerVirtual
             },
-            { fromItem, toItem } = innerVirtual,
+            // { fromItem, toItem } = innerVirtual,
             
             initialData = (
                 globalPreFilter
@@ -514,7 +511,7 @@ const lib = CMPNAME,
             filteredData: [...initialData],
             
             // others data related fields which need a grouped correspondence
-            data: initialData.slice(fromItem, toItem),
+            // data: initialData.slice(fromItem, toItem),
             filtered: initialData.length,
             total: originalData.length,
 

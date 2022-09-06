@@ -18,8 +18,6 @@ const Grid = () => {
             },
             Item,
             virtual: {
-                // topFillerHeight,
-                // bottomFillerHeight,
                 dataHeight,
                 scrollTop,
                 loading,
@@ -200,21 +198,20 @@ const Grid = () => {
         <div className={classes.GridContainer} ref={ref} onScroll={onScroll}>
             <Filler width="100%" height={topFillerHeight} />
 
-            {Object.entries(alloc).map(([label, renderables]) => {
-                return renderables.map(renderable => {
-                    
+            {Object.entries(alloc).map(
+                ([label, renderables]) => renderables.map(renderable => {
                     if (!renderable.renders) return null;
                     return renderable.header
                         ? <GroupHeaderComponent key={label} groupName={label} groupHeaderHeight={groupHeaderHeight}/>
-                        : renderable.rows.map(row =>
-                            <div key={row[rhgID]} className={classes.Item}
+                        : renderable.rows.map((row, i) =>
+                            <div key={`${row[rhgID]}_${i}`} className={classes.Item}
                                 {...getHandlers(row)}
                             >
                                 <Item {...row}/>
                             </div>
                         );
-                });
-            })}
+                })
+            )}
             <Filler width="100%" height={bottomFillerHeight} />
         </div>) : <NoData/>}
         {Boolean(footerCaptionHeight) && (

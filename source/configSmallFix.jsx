@@ -65,11 +65,11 @@ export default {
         width: 1000,
         height: 800
     },
-    lineGap : 0,
+    lineGap : 0, // 3
     NoFilterData: ({total}) => <div>no data out of {total}</div>,
 
     debounceTimes: {
-        // scrolling: 20,
+        scrolling: 20,
         // filtering: 200,
     },
 
