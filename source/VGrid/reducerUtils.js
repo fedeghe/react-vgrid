@@ -81,7 +81,7 @@ const prefix = 'HYG_',
         console.log({allocation, carpetHeight})
         // allocation.topFillerHeight = allocation.firstRender?.at || 0;
         allocation.topFillerHeight = allocation.firstRender?.at ? allocation.firstRender.at :  0;
-        debugger
+        
         allocation.bottomFillerHeight = allocation.firstNotRender?.at ? carpetHeight - allocation.firstNotRender.at :  0;
         console.log({topFillerHeight: allocation.topFillerHeight, bottomFillerHeight: allocation.bottomFillerHeight})
         console.log('----------------------------------')
@@ -431,17 +431,19 @@ export const trakTime = ({ what, time, opts }) =>
                  * the reason is that group label hash is needed cause afterward 
                  * the group elements sorting turn straightforward,
                  * instead if flattened would be quite a nightmare
-                 */                
-                acc.alloc[label] = [
-                    {
-                        header: true, //is a header
-                        from: cursor,
-                        to: cursor + headerHeight,
-                        renders: headerRenders,
-                    },
+                 */   
+                 acc.alloc[label] = onlyUngrouped ? [] : [{
+                    header: true, //is a header
+                    from: cursor,
+                    to: cursor + headerHeight,
+                    renders: headerRenders,
+                }];  
+                
+                acc.alloc[label].push(
                     ...Array.from({length: group.lines}, (_, i) => {
                         const from = cursor + headerHeight + i * itemHeight,
-                            renders = inRange({n: from + itemHeight2, ...range});
+                            renders = inRange({n: from + itemHeight2, ...range}),
+                            j = onlyUngrouped ? i : i+1;
                         
                         /**
                          * cursor tracks that is a line (>=0) or a header (-1)
@@ -449,7 +451,7 @@ export const trakTime = ({ what, time, opts }) =>
                         if (!firstRender && renders) {
                             firstRender = {
                                 group: label,
-                                cursor: headerRenders ? 0 : i + 1 // account the header at index 0
+                                cursor: headerRenders ? 0 : j // account the header at index 0
                             };
                             acc.firstRender = firstRender;
                         }
@@ -458,24 +460,21 @@ export const trakTime = ({ what, time, opts }) =>
                          * if the first render has been tracked
                          * then check for the first non render
                          **/
-                        
                         if (firstRender && !firstNotRender && (!renders)){
-                            
                                 firstNotRender = {
                                     group: label,
-                                    cursor: !headerRenders && !i ? 0: i + 1 // consider the header at index 0
+                                    cursor: !headerRenders && !i ? 0: j // consider the header at index 0
                                 };
                                 acc.firstNotRender = firstNotRender;
-                            
                         }
                         return {
                             from,
                             to: from + itemHeight,
                             renders,
-                            rows: grouped[label].entries.slice(i * elementsPerLine, (i + 1)* elementsPerLine) // is a line
+                            rows: grouped[label].entries.slice(i * elementsPerLine, (i+1)* elementsPerLine) // is a line
                         };
                     })
-                ];
+                );
                 
                 /**
                  * 

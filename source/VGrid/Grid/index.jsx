@@ -202,6 +202,7 @@ const Grid = () => {
 
             {Object.entries(alloc).map(([label, renderables]) => {
                 return renderables.map(renderable => {
+                    
                     if (!renderable.renders) return null;
                     return renderable.header
                         ? <GroupHeaderComponent key={label} groupName={label} groupHeaderHeight={groupHeaderHeight}/>
@@ -214,16 +215,6 @@ const Grid = () => {
                         );
                 });
             })}
-
-            {/* {data.map(item =>
-                <div key={item[rhgID]} className={classes.Item}
-                    {...getHandlers(item)}
-                >
-                    <Item {...item}/>
-                </div>
-            )} */}
-
-
             <Filler width="100%" height={bottomFillerHeight} />
         </div>) : <NoData/>}
         {Boolean(footerCaptionHeight) && (
