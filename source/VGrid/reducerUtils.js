@@ -461,11 +461,11 @@ export const trakTime = ({ what, time, opts }) =>
                          * then check for the first non render
                          **/
                         if (firstRender && !firstNotRender && (!renders)){
-                                firstNotRender = {
-                                    group: label,
-                                    cursor: !headerRenders && !i ? 0: j // consider the header at index 0
-                                };
-                                acc.firstNotRender = firstNotRender;
+                            firstNotRender = {
+                                group: label,
+                                cursor: !headerRenders && !i ? 0: j // consider the header at index 0
+                            };
+                            acc.firstNotRender = firstNotRender;
                         }
                         return {
                             from,
@@ -474,15 +474,7 @@ export const trakTime = ({ what, time, opts }) =>
                             rows: grouped[label].entries.slice(i * elementsPerLine, (i+1)* elementsPerLine) // is a line
                         };
                     })
-                );
-                
-                /**
-                 * 
-                 *
-                 * 
-                 * 
-                 *  
-                 */                
+                );        
                 acc.cursor += groupHeight;
                 return acc;
             }, {
