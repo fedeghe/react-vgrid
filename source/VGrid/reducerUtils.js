@@ -474,7 +474,8 @@ export const trakTime = ({ what, time, opts }) =>
                     const e = entries; //.filter(z => z.renders);
 
                     // do not render groups with only the header
-                    if (e.length > 1) {
+                    if (e.length > 1 || onlyUngrouped) {
+                        
                         acc[label] = e;
                         cardinality += e.reduce((inacc, c) => {
                             if (!c.header) inacc += c.rows.length;
