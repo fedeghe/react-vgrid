@@ -212,45 +212,40 @@ const lib = CMPNAME,
                     };
                 },
                 
-                unFilter: () => {                    
+                unFilter: () => {        
+                    // debugger            
                     let _globalFilterValue = globalFilterValue,
                         _newFilters = {...filters},
                         _filteredData = [...originalData],
-                        theDoFilter,
-                        theDoFilterGlobal;
+                        theDoFilter =() => true,
+                        theDoFilterGlobal = () => true,
+                        filterFactory = __getFilterFactory ({columns, filters: _newFilters, opts: {trakTimes, lib}});
 
-                    const filterFactory = __getFilterFactory ({columns, filters: _newFilters, opts: {trakTimes, lib}});
+                    
                         
 
                     switch (payload) {
                         case FILTERS.ALL:
                             _globalFilterValue = '';
                             _newFilters = __cleanFilters(filters);
+                            filterFactory = __getFilterFactory ({columns, filters: _newFilters, opts: {trakTimes, lib}});
+                            theDoFilter = filterFactory();
                             break;
                         case FILTERS.GLOBAL:
                             _globalFilterValue = '';
                             theDoFilter = filterFactory();
-                            _filteredData = _filteredData.filter(theDoFilter);
+                            // _filteredData = _filteredData.filter(theDoFilter);
                             break;
                         case FILTERS.FIELDS:
                             _newFilters = __cleanFilters(filters);
                             theDoFilterGlobal = filterFactory(_globalFilterValue);
+                            filterFactory = __getFilterFactory ({columns, filters: _newFilters, opts: {trakTimes, lib}});
                             _filteredData = _filteredData.filter(theDoFilterGlobal);
                             break;
                     }
                     
                     // eslint-disable-next-line one-var
-                    const newVirtual = __getVirtual({
-                            dimensions,
-                            size: _filteredData.length,
-                            scrollTop: 0,
-                            lineGap,
-                            grouping
-                        }),
-                        
-                        { fromItem, toItem } = newVirtual,
-
-                        gData = __applyFilter({
+                    const gData = __applyFilter({
                             globalValue: _globalFilterValue,
                             groupedData: originalGroupedData,
                             gFilter: theDoFilterGlobal,
@@ -269,19 +264,15 @@ const lib = CMPNAME,
                             opts: {trakTimes, lib}
                         }),
                         filtered = __getFilteredCount({gData});
-                        
+                    // debugger
                     return {
                         filters: _newFilters,
 
                         filteredData: _filteredData,
-                        data: _filteredData.slice(fromItem, toItem),
                         globalFilterValue: _globalFilterValue,
-                        virtual: {
-                            ...virtual,
-                            ...newVirtual,
-                        },
                         filtered,
-
+                        theDoFilterGlobal,
+                        theDoFilter,
                         filteredGroupedData
                     };
 

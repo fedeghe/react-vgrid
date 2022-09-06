@@ -12,6 +12,9 @@ const prefix = 'HYG_',
 
         // might still be firstNotRender is null, when we reach the bottom
         // but still we need the firstRender.at to compute correctly the topFillerHeight
+        if (!firstRender) {
+            return allocation;
+        }
         if (!firstNotRender) {
             allocation.firstRender.at = alloc[firstRender.group][firstRender.cursor].from;
             return allocation;
