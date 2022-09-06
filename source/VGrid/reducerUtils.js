@@ -9,7 +9,14 @@ const prefix = 'HYG_',
         console.log('PRE')
         console.log(JSON.parse(JSON.stringify({alloc, firstRender, firstNotRender})))
         console.log({groupingDimensions})
-        if (!firstRender || !firstNotRender) return allocation;
+
+        // might still be firstNotRender is null, when we reach the bottom
+        // but still we need the firstRender.at to compute correctly the topFillerHeight
+        if (!firstNotRender) {
+            allocation.firstRender.at = alloc[firstRender.group][firstRender.cursor].from;
+            return allocation;
+        }
+
         let preGapCursor = lineGap,
             postGapCursor = lineGap,
             preIndex = firstRender.cursor,
@@ -33,7 +40,8 @@ const prefix = 'HYG_',
             }
             if (preTargetGroupLabel) {
                 alloc[preTargetGroupLabel][preIndex].renders = true;
-                console.log(`set ${preTargetGroupLabel} ${preIndex}`)
+                console.log(`set pre ${preTargetGroupLabel} ${preIndex}`)
+                
                 allocation.firstRender.at = alloc[preTargetGroupLabel][preIndex].from;
                 
             }
@@ -42,7 +50,7 @@ const prefix = 'HYG_',
         while(postTargetGroupLabel && postGapCursor--) {
             // Post
             // again maybe we need to move to the following group
-            
+            // debugger
             if (postIndex > postGroupLastIndex) {
                 postTargetGroupLabel = groupCloseby({groupKeys, label: postTargetGroupLabel, versus: 1});
                 if (postTargetGroupLabel) {
@@ -50,16 +58,15 @@ const prefix = 'HYG_',
                     postGroupLastIndex = alloc[postTargetGroupLabel].length - 1;
                 }
             }
-            if (postTargetGroupLabel) {
+            if (postTargetGroupLabel && postIndex <= postGroupLastIndex) {
                 
                 alloc[postTargetGroupLabel][postIndex].renders = true;
-                console.log(`set ${postTargetGroupLabel} ${postIndex}`)
+                console.log(`set post ${postTargetGroupLabel} ${postIndex}`)
                 
-                if (postGapCursor === 0)
-                    allocation.firstNotRender.at = alloc[postTargetGroupLabel][postIndex].to;
+                allocation.firstNotRender.at = alloc[postTargetGroupLabel][postIndex].to;
                 
-                postIndex++;
             }
+            postIndex++;
             
         }
 
@@ -74,6 +81,7 @@ const prefix = 'HYG_',
         console.log({allocation, carpetHeight})
         // allocation.topFillerHeight = allocation.firstRender?.at || 0;
         allocation.topFillerHeight = allocation.firstRender?.at ? allocation.firstRender.at :  0;
+        debugger
         allocation.bottomFillerHeight = allocation.firstNotRender?.at ? carpetHeight - allocation.firstNotRender.at :  0;
         console.log({topFillerHeight: allocation.topFillerHeight, bottomFillerHeight: allocation.bottomFillerHeight})
         console.log('----------------------------------')
@@ -350,7 +358,7 @@ export const trakTime = ({ what, time, opts }) =>
             { groupHeader, groups, ungroupedLabel } = grouping,
             
             groupKeys = Object.keys(grouped),
-            
+            lastGroup = groupKeys[groupKeys.length - 1],
 
             /**
              * flag to spot the case no named groups are set
@@ -452,13 +460,13 @@ export const trakTime = ({ what, time, opts }) =>
                          **/
                         
                         if (firstRender && !firstNotRender && (!renders)){
-                            // if (label !== lastGroup || i < group.lines.length-1) {
+                            
                                 firstNotRender = {
                                     group: label,
-                                    cursor: headerRenders ? i + 1 : 0 // consider the header at index 0
+                                    cursor: !headerRenders && !i ? 0: i + 1 // consider the header at index 0
                                 };
                                 acc.firstNotRender = firstNotRender;
-                            // }
+                            
                         }
                         return {
                             from,
