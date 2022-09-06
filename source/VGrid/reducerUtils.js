@@ -472,7 +472,8 @@ export const trakTime = ({ what, time, opts }) =>
             filteredAlloc = Object.entries(withFillersAllocation.alloc)
                 .reduce((acc, [label, entries]) => {
                     const e = entries; //.filter(z => z.renders);
-                    console.log(e)
+
+                    // do not render groups with only the header
                     if (e.length > 1) {
                         acc[label] = e;
                         cardinality += e.reduce((inacc, c) => {
