@@ -4,7 +4,8 @@ let count = 0;
 const prefix = 'HYG_',
     getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / elementsPerLine),
     inRange = ({ n, from, to }) => n > from && n < to,
-    fixLineGap = ({allocation, groupKeys, lineGap}) => {    
+    fixLineGap = ({allocation, groupKeys, lineGap}) => { 
+        console.log('pre', allocation)   
         const {alloc, firstRender, firstNotRender} = allocation;
 
         // might still be firstNotRender is null, when we reach the bottom
@@ -65,6 +66,7 @@ const prefix = 'HYG_',
     },
 
     addFillers = ({allocation, carpetHeight}) => {
+        console.log(allocation)
         allocation.topFillerHeight = allocation.firstRender?.at ? allocation.firstRender.at :  0;
         allocation.bottomFillerHeight = allocation.firstNotRender?.at ? carpetHeight - allocation.firstNotRender.at :  0;
         return allocation;
@@ -356,8 +358,9 @@ export const trakTime = ({ what, time, opts }) =>
                  * 
                  * if (!groupData.entries.length) return acc;
                  */
-
-                const groupHeight = group.lines * itemHeight + headerHeight;
+                
+                // the header should have no height for groups with no lines
+                const groupHeight = group.lines ? group.lines * itemHeight + headerHeight : 0;
 
                 acc.carpetHeight += groupHeight;
                 acc.groupsHeights[groupName] = groupHeight;
@@ -397,7 +400,7 @@ export const trakTime = ({ what, time, opts }) =>
                 let { cursor, firstRender, firstNotRender } = acc;
                 const headerRenders = inRange({n: cursor + headerHeight2, ...range}),
                     groupHeight = groupingDimensions.groupsHeights[label];
-                
+                console.log(groupingDimensions)
                 /**
                  * here flattening can be excluded despite it would make a way easier
                  * to apply after the lineGap logic
@@ -418,7 +421,7 @@ export const trakTime = ({ what, time, opts }) =>
                         const from = cursor + headerHeight + i * itemHeight,
                             renders = inRange({n: from + itemHeight2, ...range}),
                             j = onlyUngrouped ? i : i+1;
-                        
+                        console.log(label, i, from)
                         /**
                          * cursor tracks that is a line (>=0) or a header (-1)
                          */
@@ -471,7 +474,8 @@ export const trakTime = ({ what, time, opts }) =>
             withFillersAllocation  = addFillers({allocation: gappedAllocationUnfiltered, carpetHeight}),
             filteredAlloc = Object.entries(withFillersAllocation.alloc)
                 .reduce((acc, [label, entries]) => {
-                    const e = entries; //.filter(z => z.renders);
+                    // somehow the filter breaks
+                    const e = entries;//.filter(z => z.renders);
 
                     // do not render groups with only the header
                     if (e.length > 1 || onlyUngrouped) {
