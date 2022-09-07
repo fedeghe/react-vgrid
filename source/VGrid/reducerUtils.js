@@ -245,7 +245,7 @@ export const trakTime = ({ what, time, opts }) =>
         dimensions, size, lineGap, scrollTop = 0,
         elementsPerLine
     }) => {
-        console.log({originalGroupedData, gData, filteredGroupedData})
+
         const { height, itemHeight, width, itemWidth } = dimensions,
             {
                 groupingDimensions: {carpetHeight },
