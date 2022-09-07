@@ -239,7 +239,7 @@ export const trakTime = ({ what, time, opts }) =>
         }, {});
     },
 
-
+    // most of those params will be removed
     __getVirtual = ({
         originalGroupedData, gData, filteredGroupedData,
         dimensions, size, lineGap, scrollTop = 0,
