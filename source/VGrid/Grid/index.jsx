@@ -6,6 +6,7 @@ import {FILTERS} from './../constants';
 import GridContext from './../Context';
 import { debounce, asXsv, asJson } from './../utils';
 import useStyles from './style.js';
+import { ACTION_TYPES } from '../reducer';
 
 const Grid = () => {
     const ref = useRef(),
@@ -74,7 +75,7 @@ const Grid = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
         globalFilter = useCallback(debounce(({value, field}) => {
             dispatch({
-                type: 'filter',
+                type: ACTION_TYPES.FILTER,
                 payload: {value, field}
             });
         }, filteringDebounceTime), []),
@@ -85,7 +86,7 @@ const Grid = () => {
             e.stopPropagation();
             const payload = e.target.scrollTop;
             dispatch({
-                type: 'scroll',
+                type: ACTION_TYPES.SCROLL,
                 payload: payload > 0 ? payload : 0
             });
         }, scrollingDebounceTime), []),
@@ -93,7 +94,7 @@ const Grid = () => {
         onScroll = useCallback(e => {
             if (Math.abs(e.target.scrollTop - scrollTop) > (dataHeight / 4)) {
 
-                dispatch({ type: 'loading' });
+                dispatch({ type: ACTION_TYPES.LOADING });
             }
             doOnScroll(e);
         }, [dataHeight, dispatch, doOnScroll, scrollTop]),
@@ -103,33 +104,33 @@ const Grid = () => {
             if(onItemEnter) {
                 handlers.onMouseEnter = e => {
                     onItemEnter.call(e, e, {item});
-                    dispatch({
-                        type: 'itemEnter',
-                        payload: {item}
-                    });
+                    // dispatch({
+                    //     type: 'itemEnter',
+                    //     payload: {item}
+                    // });
                 };
             }
             if (onItemLeave){
                 handlers.onMouseLeave = e => {
                     onItemLeave.call(e, e, {item});
-                    dispatch({
-                        type: 'itemLeave',
-                        payload: {item}
-                    });
+                    // dispatch({
+                    //     type: 'itemLeave',
+                    //     payload: {item}
+                    // });
                 };
             }
             if (onItemClick) {
                 handlers.onClick = e => onItemClick.call(e, e, {item});
             }
             return handlers;
-        }, [dispatch, onItemClick, onItemEnter, onItemLeave]),
+        }, [onItemClick, onItemEnter, onItemLeave]),
 
         resetFilters = useCallback((what = FILTERS.ALL) => {
             let actionType = null;
             if (Array.isArray(what) && what.every(w => columns.includes(w))) { // is array and all in fields
-                actionType = 'unFilterFields';
+                actionType = ACTION_TYPES.UNFILTER_FIELDS;
             } else if (what in FILTERS) {
-                actionType = 'unFilter';
+                actionType = ACTION_TYPES.UNFILTER;
             }
             actionType && dispatch({
                 type: actionType,
@@ -186,8 +187,7 @@ const Grid = () => {
             ref.current.scrollTo(0, 0);
         }
     }, [scrollTop, ref]);   
-    
-
+    debugger;
     return <div>
         {Boolean(headerCaptionHeight) && (
             <div className={[classes.HeaderCaption, HeaderCaptionCls].join(' ')}>
@@ -197,7 +197,6 @@ const Grid = () => {
         {filtered ? (
         <div className={classes.GridContainer} ref={ref} onScroll={onScroll}>
             <Filler width="100%" height={topFillerHeight} />
-
             {Object.entries(alloc).map(
                 ([label, renderables]) => renderables.map(renderable => {
                     if (!renderable.renders) return null;
