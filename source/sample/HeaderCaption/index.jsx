@@ -3,7 +3,7 @@ import useStyles from './style';
 
 const HeaderCaption = ({
     globalFilter, globalFilterValue,
-    filtered, maxRenderedItems,
+    filtered, renderedItems, total,
     filters, resetFilters,
     loading,
     downloadJson,
@@ -53,7 +53,7 @@ const HeaderCaption = ({
                     <input placeholder="name search" value={filters.name.value} type="text"
                         onChange={e => globalFilter({value: e.target.value, field: 'name'})}/>
                 </div>
-                <div>listing {filtered} elements ({maxRenderedItems} max rendered)</div> 
+                <div>virt. {filtered} out of {total} ({renderedItems} rendered)</div> 
             </div>
         </div>
     );

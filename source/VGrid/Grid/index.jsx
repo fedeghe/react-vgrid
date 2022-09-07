@@ -13,6 +13,7 @@ const Grid = () => {
         { state, dispatch } = useContext(GridContext),
         {
             data,
+            total,
             dimensions: {
                 height, width,
                 itemHeight, itemWidth
@@ -20,43 +21,28 @@ const Grid = () => {
             Item,
             virtual: {
                 dataHeight,
+                carpetHeight,
+                contentHeight,
                 scrollTop,
                 loading,
-                fromItem, toItem,
-                maxRenderedItems,
+                renderedItems,
+                cardinality
             },
             debounceTimes: {
                 scrolling: scrollingDebounceTime,
                 filtering: filteringDebounceTime,
             },
-            header: {
-                HeaderCaptionComponent,
-                headerCaptionHeight
-            },
-            footer: {
-                FooterCaptionComponent,
-                footerCaptionHeight
-            },
+            header: { HeaderCaptionComponent, headerCaptionHeight },
+            footer: { FooterCaptionComponent, footerCaptionHeight },
             rhgID,
-            events: {
-                onItemEnter,
-                onItemLeave,
-                onItemClick,
-            },
+            events: {onItemEnter, onItemLeave, onItemClick },
             globalFilterValue,
             filtered,
             filters,
             columns,
-            cls: {
-                HeaderCaptionCls,
-                FooterCaptionCls
-            },
+            cls: { HeaderCaptionCls, FooterCaptionCls },
             filteredGroupedData: {
-                allocation : {
-                    alloc,
-                    topFillerHeight,
-                    bottomFillerHeight,
-                }
+                allocation: { alloc, topFillerHeight, bottomFillerHeight }
             },
             grouping: {
                 groupHeader : {
@@ -65,6 +51,7 @@ const Grid = () => {
                 }
             }
         } = state,
+
         classes = useStyles({
             width, height,
             itemHeight, itemWidth,
@@ -73,55 +60,44 @@ const Grid = () => {
         }),
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        globalFilter = useCallback(debounce(({value, field}) => {
-            dispatch({
-                type: ACTION_TYPES.FILTER,
-                payload: {value, field}
-            });
-        }, filteringDebounceTime), []),
+        globalFilter = useCallback(
+            debounce(
+                ({value, field}) => dispatch({
+                    type: ACTION_TYPES.FILTER,
+                    payload: {value, field}
+                }),
+                filteringDebounceTime
+            ),[]
+        ),
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        doOnScroll = useCallback(debounce(e => {
-            e.preventDefault();
-            e.stopPropagation();
-            const payload = e.target.scrollTop;
-            dispatch({
-                type: ACTION_TYPES.SCROLL,
-                payload: payload > 0 ? payload : 0
-            });
-        }, scrollingDebounceTime), []),
+        doOnScroll = useCallback(
+            debounce(
+                e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const payload = e.target.scrollTop;
+                    dispatch({
+                        type: ACTION_TYPES.SCROLL,
+                        payload: payload > 0 ? payload : 0
+                    });
+                },
+                scrollingDebounceTime
+            ), []
+        ),
 
         onScroll = useCallback(e => {
-            if (Math.abs(e.target.scrollTop - scrollTop) > (dataHeight / 4)) {
-
-                dispatch({ type: ACTION_TYPES.LOADING });
-            }
+            Math.abs(e.target.scrollTop - scrollTop) > (dataHeight / 4) && dispatch({
+                type: ACTION_TYPES.LOADING
+            });
             doOnScroll(e);
         }, [dataHeight, dispatch, doOnScroll, scrollTop]),
 
         getHandlers = useCallback(item => {
             const handlers = {};
-            if(onItemEnter) {
-                handlers.onMouseEnter = e => {
-                    onItemEnter.call(e, e, {item});
-                    // dispatch({
-                    //     type: 'itemEnter',
-                    //     payload: {item}
-                    // });
-                };
-            }
-            if (onItemLeave){
-                handlers.onMouseLeave = e => {
-                    onItemLeave.call(e, e, {item});
-                    // dispatch({
-                    //     type: 'itemLeave',
-                    //     payload: {item}
-                    // });
-                };
-            }
-            if (onItemClick) {
-                handlers.onClick = e => onItemClick.call(e, e, {item});
-            }
+            onItemEnter && (handlers.onMouseEnter = e => onItemEnter.call(e, e, {item}));
+            onItemLeave && (handlers.onMouseLeave = e => onItemLeave.call(e, e, {item}));
+            onItemClick && (handlers.onClick = e => onItemClick.call(e, e, {item}));
             return handlers;
         }, [onItemClick, onItemEnter, onItemLeave]),
 
@@ -139,13 +115,14 @@ const Grid = () => {
         }, [dispatch, columns]),
 
         filterDataFields = useCallback(({fields}) => 
-            fields ? data.map(e => {
-                const o = fields.reduce((acc, f) => {
-                    if (f in e) acc[f] = e[f];
+            fields
+            ? data.map(e => fields.reduce(
+                (acc, f) => {
+                    f in e && (acc[f] = e[f]);
                     return acc;
-                }, {});
-                return o;
-            }) : data
+                }, {})
+            )
+            : data
         , [data]),
 
         downloadJson = useCallback(({fields} = {}) => {
@@ -174,18 +151,21 @@ const Grid = () => {
             globalFilterValue,
             filtered,
             loading,
-            maxRenderedItems,
+            renderedItems,
+            total,
+            cardinality,
             filters,
             resetFilters,
-            fromItem, toItem,
             downloadJson,
-            downloadXsv
+            downloadXsv,
+            dataHeight,
+            carpetHeight,
+            contentHeight,
         };
 
     useEffect(() => {
-        if (ref && ref.current && scrollTop === 0) {
-            ref.current.scrollTo(0, 0);
-        }
+        ref && ref.current
+        && scrollTop === 0 && ref.current.scrollTo(0, 0);
     }, [scrollTop, ref]);   
     
     return <div>

@@ -74,16 +74,16 @@ export default {
     Item,
     Loader: () => (<div className="Loading">loading</div>),
     dimensions: {
-        itemWidth: 250  ,
-        itemHeight: 230,
+        itemWidth: 250,
+        itemHeight: 200,
         width: 1000,
         height: 800
     },
-    lineGap : 10,
+    lineGap : 3,
     NoFilterData: ({total}) => <div>no data out of {total}</div>,
 
     debounceTimes: {
-        // scrolling: 20,
+        scrolling: 20,
         // filtering: 200,
     },
 

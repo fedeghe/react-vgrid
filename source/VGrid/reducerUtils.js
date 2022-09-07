@@ -189,53 +189,6 @@ export const trakTime = ({ what, time, opts }) =>
         return ret;
     },
 
-    /**
-     * NOT PERFORMING BETTER
-     */
-    __getGrouped0 = ({ data, groups, elementsPerLine, opts = {} }) => {
-        const trak = opts.trakTimes ? { start: +new Date() } : null,
-
-            tmpGroupFlags = Array.from({ length: data.length }, () => true),
-
-            g = groups.reduce((acc, { label, grouper }) => {
-                const entries = data.filter((row, i) => {
-                    if (!tmpGroupFlags[i]) return false;
-                    if (grouper && grouper(row)) {
-                        tmpGroupFlags[i] = false;
-                        return true;
-                    }
-                    return false;
-                });
-
-                // skip empties and warn
-                if (entries.length) {
-                    acc[label] = {
-                        entries,
-                        lines: getLines({ entries, elementsPerLine })
-                    };
-                } else {
-                    doWarn({ message: `group named \`${label}\` is empty thus ignored`, opts });
-                }
-                return acc;
-            }, {}),
-            // might be` some data does not belong to any group
-            outcasts = data.filter((row, i) => tmpGroupFlags[i]);
-
-        // out outcasts in the right place and warn
-        if (outcasts.length) {
-            g[opts.ungroupedLabel] = {
-                entries: outcasts,
-                lines: getLines({ entries: outcasts, elementsPerLine })
-            };
-            doWarn({ message: `${outcasts.length} elements are ungrouped`, opts });
-        }
-        if (opts.trakTimes) {
-            trak.end = +new Date();
-            trakTime({ what: '__getGrouped', time: trak.end - trak.start, opts });
-        }
-        return g;
-    },
-
     __getFilteredCount = ({gData}) => Object.values(gData).reduce((acc, v) => acc + v.entries.length, 0),
 
     /**
@@ -287,39 +240,33 @@ export const trakTime = ({ what, time, opts }) =>
     },
 
 
-    __getVirtual = ({ dimensions, size, lineGap, scrollTop = 0 }) => {
-
+    __getVirtual = ({
+        originalGroupedData, gData, filteredGroupedData,
+        dimensions, size, lineGap, scrollTop = 0,
+        elementsPerLine
+    }) => {
+        console.log({originalGroupedData, gData, filteredGroupedData})
         const { height, itemHeight, width, itemWidth } = dimensions,
-            columns = Math.floor(width / itemWidth),
-            lines = Math.ceil(size / columns),
-            carpetHeight = lines * itemHeight,
-            //take into accounts groups-1 * groupComponentHeight
-            // + (grouping.groups.length - 1) * grouping.group.height,
-            trigger = scrollTop > (lineGap + 1) * itemHeight,
+            {
+                groupingDimensions: {carpetHeight },
+                allocation: {
+                    cardinality,
+                    renderedItems
+                }
+            } = filteredGroupedData,
 
-            topLinesSkipped = Math.max(0, Math.floor(scrollTop / itemHeight) - lineGap),
-
-            topFillerHeight = topLinesSkipped * itemHeight,
             linesToRender = 2 * lineGap + Math.ceil(height / itemHeight),
-            dataHeight = linesToRender * itemHeight,
-            maxRenderedItems = columns * linesToRender,
-            bottomFillerHeight = Math.max(carpetHeight - topFillerHeight - dataHeight, 0),
-            fromItem = trigger
-                ? topLinesSkipped * columns
-                : 0,
-            toItem = trigger ? fromItem + maxRenderedItems : linesToRender * columns;
+            dataHeight = linesToRender * itemHeight;
         return {
-            fromItem,
-            toItem,
             carpetHeight,
-            topFillerHeight,
-            bottomFillerHeight,
             linesToRender,
+            
             dataHeight,
-            maxRenderedItems,
+
+            cardinality,
+            renderedItems,
+
             loading: false,
-            lines,
-            columns,
             scrollTop,
         };
     },
@@ -329,7 +276,8 @@ export const trakTime = ({ what, time, opts }) =>
      * still considering the lineGap
      */
     __getVirtualGroup = ({ dimensions, lineGap, grouping, grouped, scrollTop, elementsPerLine, opts = {} }) => {
-        let cardinality = 0;
+        let renderedItems = 0,
+            dataHeight = 0;
         const trak = opts.trakTimes ? { start: +new Date() } : null,
             { contentHeight, itemHeight, height } = dimensions,
             { groupHeader, groups, ungroupedLabel } = grouping,
@@ -475,12 +423,19 @@ export const trakTime = ({ what, time, opts }) =>
 
                     // do not render groups with only the header
                     if (e.length > 1 || onlyUngrouped) {
-                        
                         acc[label] = e;
-                        cardinality += e.reduce((inacc, c) => {
-                            if (!c.header) inacc += c.rows.length;
-                            return inacc;
-                        }, 0);
+                        // renderedItems += e.reduce((acc, c) => (
+                        //      acc + ((c.renders && !c.header) ? c.rows.length : 0)
+                        // ), 0);
+                        e.forEach(c => {
+                            // renderedItems
+                            renderedItems += ((c.renders && !c.header) ? c.rows.length : 0);
+
+                            // dataHeight
+                            dataHeight += c.renders ? (c.header ? headerHeight : (itemHeight * c.rows.length)) : 0;
+                        });
+
+
                     }
                     return acc;
                 }, {}),
@@ -489,7 +444,8 @@ export const trakTime = ({ what, time, opts }) =>
                 allocation: {
                     ... withFillersAllocation,
                     alloc: filteredAlloc,
-                    cardinality
+                    renderedItems,
+                    dataHeight,
                 }
             };
         

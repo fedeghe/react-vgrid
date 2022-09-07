@@ -1,16 +1,24 @@
 import React from 'react'
-
+import useStyles from './style';
 const FooterCaption = ({
     globalFilter, globalFilterValue,
-    filtered, maxRenderedItems,
+    filtered, renderedItems,
     loading,
     filters,
-    fromItem, toItem
-}) =>(
-    <div className="FooterCaption">
-        [{fromItem}, {toItem}] 
-        footer caption ({filtered} filtered)
-        {loading && ' loading'}
-    </div>
-);
+    dataHeight,
+            carpetHeight,
+            contentHeight,
+}) => {
+    const classes = useStyles();
+    return (
+        <div className={["FooterCaption", classes.Container].join(' ')}>
+            <div>
+                footer caption ({filtered} filtered) {loading && ' loading'}
+            </div>
+            <div>
+                content: {contentHeight} | data: {dataHeight} | carpet: {carpetHeight}
+            </div>
+        </div>
+    );
+};
 export default FooterCaption;
