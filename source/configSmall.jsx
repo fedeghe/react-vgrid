@@ -50,7 +50,8 @@ export default {
         groupHeader: {
             Component: GroupComponent,
             height:50
-        }
+        },
+        collapsible: true
     },
 
     headers: [{
