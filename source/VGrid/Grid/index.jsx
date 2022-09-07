@@ -187,7 +187,7 @@ const Grid = () => {
             ref.current.scrollTo(0, 0);
         }
     }, [scrollTop, ref]);   
-    debugger;
+    
     return <div>
         {Boolean(headerCaptionHeight) && (
             <div className={[classes.HeaderCaption, HeaderCaptionCls].join(' ')}>
