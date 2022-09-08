@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { isFunction } from './utils';
 import {
     __getFilterFactory, __cleanFilters,
