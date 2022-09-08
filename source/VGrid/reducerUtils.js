@@ -251,12 +251,14 @@ export const trakTime = ({ what, time, opts }) =>
                 groupingDimensions: {carpetHeight },
                 allocation: {
                     cardinality,
-                    renderedItems
+                    renderedItems,
+                    renderedHeaders,
+                    headerHeight
                 }
             } = filteredGroupedData,
 
-            linesToRender = 2 * lineGap + Math.ceil(height / itemHeight),
-            dataHeight = linesToRender * itemHeight;
+            linesToRender = Math.ceil(renderedItems / elementsPerLine),
+            dataHeight = linesToRender * itemHeight + renderedHeaders * headerHeight;
         return {
             carpetHeight,
             linesToRender,
@@ -277,6 +279,7 @@ export const trakTime = ({ what, time, opts }) =>
      */
     __getVirtualGroup = ({ dimensions, lineGap, grouping, grouped, scrollTop, elementsPerLine, opts = {} }) => {
         let renderedItems = 0,
+            renderedHeaders = 0,
             dataHeight = 0;
         const trak = opts.trakTimes ? { start: +new Date() } : null,
             { contentHeight, itemHeight, height } = dimensions,
@@ -428,6 +431,9 @@ export const trakTime = ({ what, time, opts }) =>
                         //      acc + ((c.renders && !c.header) ? c.rows.length : 0)
                         // ), 0);
                         e.forEach(c => {
+                            // renderedHeaders
+                            renderedHeaders += ~~(c.header && c.renders);
+
                             // renderedItems
                             renderedItems += ((c.renders && !c.header) ? c.rows.length : 0);
 
@@ -445,7 +451,9 @@ export const trakTime = ({ what, time, opts }) =>
                     ... withFillersAllocation,
                     alloc: filteredAlloc,
                     renderedItems,
+                    renderedHeaders,
                     dataHeight,
+                    headerHeight
                 }
             };
         
