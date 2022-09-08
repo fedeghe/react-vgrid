@@ -5,12 +5,12 @@ import { ACTION_TYPES } from '../reducer';
 import useStyles from './style.js';
 
 const Item = data => {
-    const classes = useStyles(),
-        {state, dispatch} = useContext(SampleContext),
-        value = useMemo(() => state.data.find(
-            r => r.entityid === data.entityid
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        ).name, [data.name]);
+    const classes = useStyles();
+        // {state, dispatch} = useContext(SampleContext),
+        // value = useMemo(() => state.data.find(
+        //     r => r.entityid === data.entityid
+        // // eslint-disable-next-line react-hooks/exhaustive-deps
+        // ).name, [data.name]);
         
     return <div className={classes.Item}>
         <div className={classes.Inner}>
@@ -20,7 +20,7 @@ const Item = data => {
                         <b>{fk}</b> : {data[fk]}
                     </li>
                 ))}
-                <li>
+                {/* <li>
                     <input
                         type="text"
                         value={value}
@@ -32,7 +32,7 @@ const Item = data => {
                             }
                         })}
                     />
-                </li>
+                </li> */}
             </ul>
         </div>
     </div>;
