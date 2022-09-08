@@ -1,7 +1,8 @@
 import React from 'react';
 
 import { createRoot } from 'react-dom/client';
-import Playground from './Playground';
+
+import Sample from './sample';
 import 'web-page-monitor';
 
 if(location.host.match(/^localhost/)) {
@@ -25,4 +26,4 @@ if(location.host.match(/^localhost/)) {
 
 const container = document.getElementById('root'),
     root = createRoot(container);
-root.render(<Playground/>);
+root.render(<Sample/>);
