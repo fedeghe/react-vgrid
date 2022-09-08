@@ -8,9 +8,9 @@ export const ACTION_TYPES = {
 const actions = {
         [ACTION_TYPES.UPDATEFIELD]: ({data, payload}) => {
             
-            const {id ,value} = payload,
+            const {entityid ,value} = payload,
                 ret = {...data},
-                index = data.findIndex(r =>r.id === id);
+                index = data.findIndex(r =>r.entityid === entityid);
             ret[index].name = value;
             return ret;
         },

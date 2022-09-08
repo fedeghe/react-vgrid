@@ -7,10 +7,10 @@ import useStyles from './style.js';
 const Item = data => {
     const classes = useStyles(),
         {state, dispatch} = useContext(SampleContext),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         value = useMemo(() => state.data.find(
-            r => r.id === data.id
-        ).name, [data.name, data]);
+            r => r.entityid === data.entityid
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        ).name, [data.name]);
         
     return <div className={classes.Item}>
         <div className={classes.Inner}>
@@ -27,7 +27,7 @@ const Item = data => {
                         onChange={e => dispatch({
                             type: ACTION_TYPES.UPDATEFIELD,
                             payload: {
-                                id: data.id,
+                                entityid: data.entityid,
                                 value: e.target.value
                             }
                         })}
