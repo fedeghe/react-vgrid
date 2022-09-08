@@ -7,7 +7,6 @@ export const ACTION_TYPES = {
 // eslint-disable-next-line one-var
 const actions = {
         [ACTION_TYPES.UPDATEFIELD]: ({data, payload}) => {
-            
             const {entityid ,value} = payload,
                 ret = {...data},
                 index = data.findIndex(r =>r.entityid === entityid);
@@ -24,7 +23,6 @@ const actions = {
             }[type] || {};
 
         if (type in actions) {
-            
             const newState = {
                 ...oldState,
                 ...actions[type](params)
