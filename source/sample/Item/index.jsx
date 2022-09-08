@@ -6,7 +6,11 @@ import useStyles from './style.js';
 
 const Item = data => {
     const classes = useStyles(),
-        {state, dispatch} = useContext(SampleContext);
+        {state, dispatch} = useContext(SampleContext),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        value = useMemo(() => state.data.find(
+            r => r.id === data.id
+        ).name, [data.name, data]);
         
     return <div className={classes.Item}>
         <div className={classes.Inner}>
@@ -19,17 +23,14 @@ const Item = data => {
                 <li>
                     <input
                         type="text"
-                        value={state.data.find(r => r.id === data.id).name}
-                        onChange={e => {
-
-                            dispatch({
-                                type: ACTION_TYPES.UPDATEFIELD,
-                                payload: {
-                                    id: data.id,
-                                    value: e.target.value
-                                }
-                            });
-                        }}
+                        value={value}
+                        onChange={e => dispatch({
+                            type: ACTION_TYPES.UPDATEFIELD,
+                            payload: {
+                                id: data.id,
+                                value: e.target.value
+                            }
+                        })}
                     />
                 </li>
             </ul>
