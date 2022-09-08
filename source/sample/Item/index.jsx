@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useContext, useMemo } from 'react';
+import SampleContext from '../Context';
+import { ACTION_TYPES } from '../reducer';
 
 import useStyles from './style.js';
 
 const Item = data => {
-    const classes = useStyles();
+    const classes = useStyles(),
+        {state, dispatch} = useContext(SampleContext);
+        
     return <div className={classes.Item}>
         <div className={classes.Inner}>
             <ul>
@@ -12,6 +16,22 @@ const Item = data => {
                         <b>{fk}</b> : {data[fk]}
                     </li>
                 ))}
+                <li>
+                    <input
+                        type="text"
+                        value={state.data.find(r => r.id === data.id).name}
+                        onChange={e => {
+
+                            dispatch({
+                                type: ACTION_TYPES.UPDATEFIELD,
+                                payload: {
+                                    id: data.id,
+                                    value: e.target.value
+                                }
+                            });
+                        }}
+                    />
+                </li>
             </ul>
         </div>
     </div>;

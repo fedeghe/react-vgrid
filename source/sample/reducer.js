@@ -7,7 +7,12 @@ export const ACTION_TYPES = {
 // eslint-disable-next-line one-var
 const actions = {
         [ACTION_TYPES.UPDATEFIELD]: ({data, payload}) => {
-            return {};
+            
+            const {id ,value} = payload,
+                ret = {...data},
+                index = data.findIndex(r =>r.id === id);
+            ret[index].name = value;
+            return ret;
         },
     },
     
@@ -19,6 +24,7 @@ const actions = {
             }[type] || {};
 
         if (type in actions) {
+            
             const newState = {
                 ...oldState,
                 ...actions[type](params)
@@ -28,9 +34,7 @@ const actions = {
         return oldState;
     },
 
-    init = (data = {}) => ({
-        data
-    });
+    init = d => d;
 
 export default () => ({
     reducer,
