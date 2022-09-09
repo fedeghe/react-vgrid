@@ -4,76 +4,67 @@ let count = 0;
 const prefix = 'HYG_',
     getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / elementsPerLine),
     inRange = ({ n, from, to }) => n > from && n < to,
-    fixLineGap = ({allocation, groupKeys, lineGap}) => { 
-        const {alloc, firstRender, firstNotRender} = allocation;
 
-        // might still be firstNotRender is null, when we reach the bottom
-        // but still we need the firstRender.at to compute correctly the topFillerHeight
-        if (!firstRender) {
-            return allocation;
-        }
+    /**
+     * in both the functions do not destructure alloc
+     * so to be able to not return anything but just update the referenced items
+     */
+    fixTopLineGap = ({allocation, groupKeys, lineGap}) => {
+        
+        const {firstRender} = allocation;
 
         let preIndex = firstRender.cursor,
             preGapCursor = lineGap,
-            postGapCursor = lineGap;
-        
-        if (!firstNotRender) {
-            
-            while(preGapCursor--) {
-                preIndex--;
-                if (preIndex >=0){
-                    firstRender.cursor = preIndex;
-                    alloc[firstRender.group][preIndex].renders = true;
-                }
-            }
-            allocation.firstRender.at = alloc[firstRender.group][firstRender.cursor].from;
-            return allocation;
-        }
-        
-
-        // eslint-disable-next-line one-var
-        let postIndex = firstNotRender.cursor,
-
-            preTargetGroupLabel = firstRender.group,
-            postTargetGroupLabel = firstNotRender.group,
-
-            postGroupLastIndex = alloc[postTargetGroupLabel].length - 1;
-
-        
+            preTargetGroupLabel = firstRender.group;
         while(preTargetGroupLabel && preGapCursor--) {
-            // Pre
             // maybe we need to seek for the previous group
             preIndex--;
             if (preIndex < 0) {
                 preTargetGroupLabel = groupCloseby({groupKeys, label: preTargetGroupLabel, versus: -1});
                 if (preTargetGroupLabel) {
-                    preIndex = alloc[preTargetGroupLabel].length - 1;
+                    preIndex = allocation.alloc[preTargetGroupLabel].length - 1;
                 }
             }
             if (preTargetGroupLabel) {
-                alloc[preTargetGroupLabel][preIndex].renders = true;
-                allocation.firstRender.at = alloc[preTargetGroupLabel][preIndex].from;
+                allocation.alloc[preTargetGroupLabel][preIndex].renders = true;
+                allocation.firstRender.at = allocation.alloc[preTargetGroupLabel][preIndex].from;
             }
         }
+    },
+    /**
+     * in both the functions do not destructure alloc
+     * so to be able to not return anything but just update the referenced items
+     */
+    fixBottomLineGap = ({allocation, groupKeys, lineGap}) => {
+        const {firstNotRender} = allocation;
+        let postIndex = firstNotRender.cursor,    
+            postTargetGroupLabel = firstNotRender.group,
+            postGapCursor = lineGap,
+            postGroupLastIndex = allocation.alloc[postTargetGroupLabel].length - 1;
 
         while(postTargetGroupLabel && postGapCursor--) {
-            // Post
-            // again maybe we need to move to the following group
+            // maybe we need to seek for the next group
             if (postIndex > postGroupLastIndex) {
                 postTargetGroupLabel = groupCloseby({groupKeys, label: postTargetGroupLabel, versus: 1});
                 if (postTargetGroupLabel) {
                     postIndex = 0;
-                    postGroupLastIndex = alloc[postTargetGroupLabel].length - 1;
+                    postGroupLastIndex = allocation.alloc[postTargetGroupLabel].length - 1;
                 }
             }
             if (postTargetGroupLabel && postIndex <= postGroupLastIndex) {
-                alloc[postTargetGroupLabel][postIndex].renders = true;                
-                allocation.firstNotRender.at = alloc[postTargetGroupLabel][postIndex].to;
+                allocation.alloc[postTargetGroupLabel][postIndex].renders = true;                
+                allocation.firstNotRender.at = allocation.alloc[postTargetGroupLabel][postIndex].to;
             }
             postIndex++;
         }
-
-        allocation.alloc = alloc;
+    },
+    
+    fixLineGap = ({allocation, groupKeys, lineGap}) => { 
+        const {firstRender, firstNotRender} = allocation;
+        if (!firstRender){ return allocation;}
+        fixTopLineGap({allocation, groupKeys, lineGap});
+        if (!firstNotRender) return allocation;
+        fixBottomLineGap({allocation, groupKeys, lineGap});
         return allocation;
     },
 

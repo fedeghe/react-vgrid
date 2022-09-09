@@ -25,15 +25,15 @@ export default {
     // if two grouper let the same row pass then a specific
     // exception will be thrown
     grouping: {
-        // groups: [{
-        //     label: 'lower',
-        //     grouper: (row) => row.id <= 100
-        // },{
-        //     label: 'mid',
-        //     grouper: (row) => row.id >100 && row.id <= 200
-        // },{
-        //     label: 'high',
-        //     grouper: (row) => row.id >200 && row.id <= 400
+        groups: [{
+            label: 'lower',
+            grouper: (row) => row.id <= 100
+        },{
+            label: 'mid',
+            grouper: (row) => row.id >100 && row.id <= 200
+        },{
+            label: 'high',
+            grouper: (row) => row.id >200 && row.id <= 400
 
         //the impossible
         // },{
@@ -45,7 +45,7 @@ export default {
         //     label: 'alone',
         //     grouper: (row) => row.id >= -Infinity
 
-        // }],
+        }],
         // ungroupedLabel: 'Un-grouped',
         groupHeader: {
             Component: GroupComponent,
