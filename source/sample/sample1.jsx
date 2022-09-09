@@ -5,7 +5,7 @@ import './user.css';
 
 const Page = () => (
     <>
-        <p>something</p>
+        <p>something in the way</p>
         <VGrid config={config} />
     </>
 );

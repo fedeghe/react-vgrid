@@ -13,6 +13,7 @@ const reducer = reducerFactory(),
         const [state, dispatch] = useReducer(reducer.reducer, config, reducer.init);
         return (
             <SampleContext.Provider value={{state, dispatch}}>
+                <p>you know you`re right</p>
                 <VGrid config={config} />
             </SampleContext.Provider>
         );
