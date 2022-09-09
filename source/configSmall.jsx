@@ -1,6 +1,6 @@
 import React from 'react';
 import generateRowData from './utils';
-import Item from './sample/Item';
+import Item from './sample/Item/item1';
 import HeaderCaption from './sample/HeaderCaption';
 import FooterCaption from './sample/FooterCaption';
 import GroupComponent from './sample/GroupComponent';
@@ -19,21 +19,21 @@ export default {
         // { key: 'entityid3', type: 'int' },
         // { key: 'name3', type: 'str' },
         // { key: 'date3', type: 'date' },
-    ], 1e5),
+    ], 1e2+1),
 
     // each gouper must exclusively select an element,
     // if two grouper let the same row pass then a specific
     // exception will be thrown
     grouping: {
-        groups: [{
-            label: 'lower',
-            grouper: (row) => row.id <= 100
-        },{
-            label: 'mid',
-            grouper: (row) => row.id >100 && row.id <= 200
-        },{
-            label: 'high',
-            grouper: (row) => row.id >200 && row.id <= 400
+        // groups: [{
+        //     label: 'lower',
+        //     grouper: (row) => row.id <= 100
+        // },{
+        //     label: 'mid',
+        //     grouper: (row) => row.id >100 && row.id <= 200
+        // },{
+        //     label: 'high',
+        //     grouper: (row) => row.id >200 && row.id <= 400
 
         //the impossible
         // },{
@@ -45,7 +45,7 @@ export default {
         //     label: 'alone',
         //     grouper: (row) => row.id >= -Infinity
 
-        }],
+        // }],
         // ungroupedLabel: 'Un-grouped',
         groupHeader: {
             Component: GroupComponent,
