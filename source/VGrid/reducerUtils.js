@@ -12,20 +12,33 @@ const prefix = 'HYG_',
         if (!firstRender) {
             return allocation;
         }
+
+        let preIndex = firstRender.cursor,
+            preGapCursor = lineGap,
+            postGapCursor = lineGap;
+        
         if (!firstNotRender) {
+            
+            while(preGapCursor--) {
+                preIndex--;
+                if (preIndex >=0){
+                    firstRender.cursor = preIndex;
+                    alloc[firstRender.group][preIndex].renders = true;
+                }
+            }
             allocation.firstRender.at = alloc[firstRender.group][firstRender.cursor].from;
             return allocation;
         }
+        
 
-        let preGapCursor = lineGap,
-            postGapCursor = lineGap,
-            preIndex = firstRender.cursor,
-            postIndex = firstNotRender.cursor,
+        // eslint-disable-next-line one-var
+        let postIndex = firstNotRender.cursor,
 
             preTargetGroupLabel = firstRender.group,
             postTargetGroupLabel = firstNotRender.group,
 
             postGroupLastIndex = alloc[postTargetGroupLabel].length - 1;
+
         
         while(preTargetGroupLabel && preGapCursor--) {
             // Pre
