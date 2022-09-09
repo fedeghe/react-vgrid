@@ -1,4 +1,6 @@
-const isFunction = f => typeof f === 'function',
+let count = 0;
+const prefix = 'RVG_',
+    isFunction = f => typeof f === 'function',
     debounce = (func, wait) => {
         let timeout,
             enabled = true;
@@ -27,11 +29,31 @@ const isFunction = f => typeof f === 'function',
         });
         return lines.join("\n");
     },
-    asJson = removeID;
+    asJson = removeID,
+    trakTime = ({ what, time, opts }) =>
+        console.info(`%c${opts.lib.toUpperCase()} 🐢 ${what} spent ${time}ms`, 'color:DodgerBlue'),
+    doWarn = ({ message, opts }) =>
+        console.warn(`${opts.lib.toUpperCase()} 🙉 ${message}`),
+    doThrow = ({ message, opts }) => {
+        throw `${opts.lib.toUpperCase()} 🚨 ${message}`;
+    },
+    throwIf = ({ condition, message, opts }) => {
+        if (condition) {
+            throw `${opts.lib.toUpperCase()} 🚨 ${message}`;
+        }
+    },
+    uniqueID = {
+        toString: () => {
+            count += 1;
+            return prefix + count;
+        }
+    };
+    
 
 export {
     isFunction,
     debounce,
     asXsv,
-    asJson
+    asJson,
+    trakTime, doWarn, doThrow, throwIf, uniqueID
 };

@@ -1,6 +1,4 @@
-// default values
-
-
+import React from 'react'
 // the name of the component
 export const CMPNAME = 'react-vgrid',
     // how many lines extra viewport up and down before virtualization ? 
@@ -23,6 +21,8 @@ export const CMPNAME = 'react-vgrid',
     // debouning values
     DEBOUNCE_SCROLLING = 50,
     DEBOUNCE_FILTERING = 50,
+
+    DEFAULT_LOADER = () => (<div>loading</div>),
 
     // no data message
     NO_FILTER_DATA_MESSAGE = 'no data',

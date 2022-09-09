@@ -1,8 +1,6 @@
-import { isFunction } from './utils';
+import { isFunction, trakTime, doWarn } from './utils';
 
-let count = 0;
-const prefix = 'HYG_',
-    getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / elementsPerLine),
+const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / elementsPerLine),
     inRange = ({ n, from, to }) => n > from && n < to,
 
     /**
@@ -88,14 +86,7 @@ const prefix = 'HYG_',
     };
 
 // eslint-disable-next-line one-var
-export const trakTime = ({ what, time, opts }) =>
-    console.info(`%c${opts.lib.toUpperCase()} 🐢 ${what} spent ${time}ms`, 'color:DodgerBlue'),
-    doWarn = ({ message, opts }) =>
-        console.warn(`${opts.lib.toUpperCase()} 🙉 ${message}`),
-    doThrow = ({ message, opts }) => {
-        throw `${opts.lib.toUpperCase()} 🚨 ${message}`;
-    },
-    __getFilterFactory = ({ columns, filters, opts = {} }) => {
+export const __getFilterFactory = ({ columns, filters, opts = {} }) => {
 
         const trak = opts.trakTimes ? { start: +new Date() } : null,
             { funcFilteredFields, valueFilteredFields } = columns.reduce((acc, f) => {
@@ -467,11 +458,4 @@ export const trakTime = ({ what, time, opts }) =>
             trakTime({ what: '__getVirtualGroup', time: trak.end - trak.start, opts });
         }
         return ret;
-    },
-
-    uniqueID = {
-        toString: () => {
-            count += 1;
-            return prefix + count;
-        }
     };

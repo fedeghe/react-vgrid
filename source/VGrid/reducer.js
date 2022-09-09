@@ -1,27 +1,33 @@
 
-import { isFunction } from './utils';
 import {
-    __getFilterFactory, __cleanFilters,
-    __getVirtual, __getVirtualGroup,
-    __getGrouped, __composeFilters,
-    __getFilteredCount,
-    __applyFilter,
-    uniqueID, trakTime,
-    doWarn, doThrow
+    doThrow, uniqueID, trakTime,
+    doWarn, throwIf, isFunction
+} from './utils';
+import {
+    __getFilterFactory, __cleanFilters, __getVirtual, __getVirtualGroup,
+    __getGrouped, __composeFilters, __getFilteredCount, __applyFilter
 } from './reducerUtils';
 import {
     CMPNAME, LINE_GAP, WIDTH, HEIGHT, ITEM_HEIGHT, ITEM_WIDTH,
     RHG_ID, DEBOUNCE_SCROLLING, DEBOUNCE_FILTERING,
     NO_FILTER_DATA_MESSAGE, GROUP_COMPONENT_HEIGHT,
-    UNGROUPED_LABEL, FILTERS
+    UNGROUPED_LABEL, FILTERS, DEFAULT_LOADER
 } from './constants';
 
+const LOADING = Symbol(),
+    FILTER = Symbol(),
+    UNFILTER_FIELDS = Symbol(),
+    UNFILTER = Symbol(),
+    SCROLL = Symbol();
+
+
+// eslint-disable-next-line one-var
 export const ACTION_TYPES = {
-    LOADING: "LOADING",
-    FILTER: "FILTER",
-    UNFILTER_FIELDS: "UNFILTER_FIELDS",
-    UNFILTER: "UNFILTER",
-    SCROLL: "SCROLL",
+    LOADING,
+    FILTER,
+    UNFILTER_FIELDS,
+    UNFILTER,
+    SCROLL,
 };
 
 // eslint-disable-next-line one-var
@@ -128,9 +134,6 @@ const actions = {
                     scrollTop: 0
                 },
 
-                /**
-                 * GROUP
-                 */
                 filteredGroupedData,
                 theDoFilterGlobal: ret.theDoFilterGlobal
             };
@@ -406,7 +409,7 @@ const actions = {
                 trakTimes = false,
                 data = [],
                 lineGap = LINE_GAP,
-                Loader = () => (<div>loading</div>),
+                Loader = DEFAULT_LOADER,
                 dimensions: {
                     width = WIDTH,
                     height = HEIGHT,
