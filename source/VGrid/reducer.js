@@ -108,16 +108,10 @@ const actions = {
                     opts: { trakTimes, lib }
                 }),
                 newVirtual = __getVirtual({
-                    originalGroupedData,
-                    gData,
                     filteredGroupedData,
                     elementsPerLine,
-
                     dimensions,
-                    size: _newData.length,
-                    scrollTop,
-                    lineGap,
-                    grouping
+                    scrollTop
                 }),
                 { fromItem, toItem } = newVirtual;
 
@@ -193,15 +187,9 @@ const actions = {
                 filtered = __getFilteredCount({ gData }),
                 newVirtual = __getVirtual({
                     filteredGroupedData,
-                    gData,
-                    originalGroupedData,
                     elementsPerLine,
-
                     dimensions,
-                    size: _filteredData.length,
-                    scrollTop,
-                    lineGap,
-                    grouping
+                    scrollTop
                 }),
                     { fromItem, toItem } = newVirtual;
 
@@ -315,16 +303,10 @@ const actions = {
                     opts: { trakTimes, lib }
                 }),
                 newVirtual = __getVirtual({
-                    originalGroupedData,
-                    gData,
                     filteredGroupedData,
                     elementsPerLine,
-
                     dimensions,
-                    size: filteredData.length,
-                    scrollTop,
-                    lineGap,
-                    grouping
+                    scrollTop
                 }),
                 { fromItem, toItem } = newVirtual,
                 
@@ -518,14 +500,9 @@ const actions = {
             originalData = data.map(item => ({ [rhgID]: `${uniqueID}`, ...item })),
 
             innerVirtual = __getVirtual({
-                originalGroupedData,
-                gData,
                 filteredGroupedData,
                 elementsPerLine,
-
                 dimensions,
-                size: originalData.length,
-                lineGap: lineGapPlus,
                 scrollTop: 0
             }),
 

@@ -236,8 +236,8 @@ export const __getFilterFactory = ({ columns, filters, opts = {} }) => {
 
     // most of those params will be removed
     __getVirtual = ({
-        originalGroupedData, gData, filteredGroupedData,
-        dimensions, size, lineGap, scrollTop = 0,
+        filteredGroupedData,
+        dimensions, scrollTop = 0,
         elementsPerLine
     }) => {
 
