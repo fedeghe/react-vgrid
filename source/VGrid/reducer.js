@@ -185,13 +185,14 @@ const actions = {
                     opts: { trakTimes, lib }
                 }),
                 filtered = __getFilteredCount({ gData }),
+
                 newVirtual = __getVirtual({
                     filteredGroupedData,
                     elementsPerLine,
                     dimensions,
                     scrollTop
                 }),
-                    { fromItem, toItem } = newVirtual;
+                { fromItem, toItem } = newVirtual;
 
             return {
                 filters: _newFilters,
