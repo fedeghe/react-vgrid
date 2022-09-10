@@ -1,58 +1,64 @@
 import React, { useCallback, useContext, useEffect, useRef } from 'react';
 import NoData from './NoData';
 import Filler from './Filler';
-
+import {FILTERS} from './../constants';
 
 import GridContext from './../Context';
-import { debounce } from './../utils';
+import { debounce, asXsv, asJson } from './../utils';
 import useStyles from './style.js';
+import { ACTION_TYPES } from '../reducer';
 
 const Grid = () => {
     const ref = useRef(),
         { state, dispatch } = useContext(GridContext),
         {
-            data,
+            filteredData,
+            total,
             dimensions: {
                 height, width,
-                itemHeight, itemWidth
+                itemHeight, itemWidth,
+                contentHeight
             },
             Item,
             virtual: {
-                topFillerHeight,
-                bottomFillerHeight,
                 dataHeight,
+                carpetHeight,
                 scrollTop,
                 loading,
-                fromItem, toItem,
-                maxRenderedItems,
+                
             },
             debounceTimes: {
                 scrolling: scrollingDebounceTime,
                 filtering: filteringDebounceTime,
             },
-            header: {
-                HeaderCaptionComponent,
-                headerCaptionHeight
-            },
-            footer: {
-                FooterCaptionComponent,
-                footerCaptionHeight
-            },
-            rhgID,
-            events: {
-                onItemEnter,
-                onItemLeave,
-                onItemClick,
-            },
+            header: { caption: { Component: HeaderCaptionComponent, height: headerCaptionHeight }},
+            footer: { caption: { Component: FooterCaptionComponent, height: footerCaptionHeight }},
+            rvgID,
+            events: {onItemEnter, onItemLeave, onItemClick },
             globalFilterValue,
             filtered,
             filters,
-            fields,
-            cls: {
-                HeaderCaptionCls,
-                FooterCaptionCls
-            }
+            columns,
+            cls: { HeaderCaptionCls, FooterCaptionCls },
+            filteredGroupedData: {
+                allocation: {
+                    alloc,
+                    topFillerHeight,
+                    bottomFillerHeight,
+                    renderedHeaders,
+                    renderedItems
+                }
+            },
+            grouping: {
+                groupHeader : {
+                    height: groupHeaderHeight,
+                    Component: GroupHeaderComponent
+                }
+            },
+            elementsPerLine,
+            uie
         } = state,
+
         classes = useStyles({
             width, height,
             itemHeight, itemWidth,
@@ -61,110 +67,152 @@ const Grid = () => {
         }),
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        globalFilter = useCallback(debounce(({value, field}) => {
-            dispatch({
-                type: 'filter',
-                payload: {value, field}
-            });
-        }, filteringDebounceTime), []),
+        globalFilter = useCallback(
+            debounce(
+                ({value, field}) => dispatch({
+                    type: ACTION_TYPES.FILTER,
+                    payload: {value, field}
+                }),
+                filteringDebounceTime
+            ),[]
+        ),
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        doOnScroll = useCallback(debounce(e => {
-            e.preventDefault();
-            e.stopPropagation();
-            const payload = e.target.scrollTop;
-            dispatch({
-                type: 'scroll',
-                payload: payload > 0 ? payload : 0
-            });
-        }, scrollingDebounceTime), []),
+        doOnScroll = useCallback(
+            debounce(
+                e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const payload = e.target.scrollTop;
+                    dispatch({
+                        type: ACTION_TYPES.SCROLL,
+                        payload: payload > 0 ? payload : 0
+                    });
+                },
+                scrollingDebounceTime
+            ), []
+        ),
 
         onScroll = useCallback(e => {
-            if (Math.abs(e.target.scrollTop - scrollTop) > (dataHeight / 4)) {
-
-                dispatch({ type: 'loading' });
-            }
+            Math.abs(e.target.scrollTop - scrollTop) > (dataHeight / 4) && dispatch({
+                type: ACTION_TYPES.LOADING
+            });
             doOnScroll(e);
         }, [dataHeight, dispatch, doOnScroll, scrollTop]),
 
         getHandlers = useCallback(item => {
             const handlers = {};
-            if(onItemEnter) {
-                handlers.onMouseEnter = e => {
-                    onItemEnter.call(e, e, {item});
-                    dispatch({
-                        type: 'itemEnter',
-                        payload: {item}
-                    });
-                };
-            }
-            if (onItemLeave){
-                handlers.onMouseLeave = e => {
-                    onItemLeave.call(e, e, {item});
-                    dispatch({
-                        type: 'itemLeave',
-                        payload: {item}
-                    });
-                };
-            }
-            if (onItemClick) {
-                handlers.onClick = e => onItemClick.call(e, e, {item});
-            }
+            onItemEnter && (handlers.onMouseEnter = e => onItemEnter.call(e, e, {item}));
+            onItemLeave && (handlers.onMouseLeave = e => onItemLeave.call(e, e, {item}));
+            onItemClick && (handlers.onClick = e => onItemClick.call(e, e, {item}));
             return handlers;
-        }, [dispatch, onItemClick, onItemEnter, onItemLeave]),
+        }, [onItemClick, onItemEnter, onItemLeave]),
 
-        resetFilters = useCallback((what = '_ALL_') => {
+        getItemUie = useCallback((i, j) => (uie ? {[uie]: `item-${i}-${j}`} : {}), [uie]),
+        getHeaderUie = useCallback(i => (uie ? {[uie]: `header-${i}`} : {}), [uie]),
+
+        resetFilters = useCallback((what = FILTERS.ALL) => {
             let actionType = null;
-            if (Array.isArray(what) && what.every(w => fields.includes(w))) { // is array and all in fields
-                actionType = 'unFilterFields';
-            } else if (what.match(/_ALL_|_GLOBAL_|_FIELDS_/)) {
-                actionType = 'unFilter';
+            if (Array.isArray(what) && what.every(w => columns.includes(w))) { // is array and all in fields
+                actionType = ACTION_TYPES.UNFILTER_FIELDS;
+            } else if (what in FILTERS) {
+                actionType = ACTION_TYPES.UNFILTER;
             }
             actionType && dispatch({
                 type: actionType,
                 payload: what
             });
-        }, [dispatch, fields]),
+        }, [dispatch, columns]),
+
+        filterDataFields = useCallback(({fields}) => 
+            fields
+            ? filteredData.map(e => fields.reduce(
+                (acc, f) => {
+                    f in e && (acc[f] = e[f]);
+                    return acc;
+                }, {})
+            )
+            : filteredData
+        , [filteredData]),
+
+        downloadJson = useCallback(({fields} = {}) => {
+            const a = document.createElement('a'),
+                d = filterDataFields({fields}),
+                blob = new Blob([JSON.stringify(asJson(d, rvgID))]);
+            a.href = URL.createObjectURL(blob);
+            a.target = '_blank';
+            a.download = 'extract.json';                     //filename to download
+            a.click();
+        }, [filterDataFields, rvgID]),
+
+        downloadXsv = useCallback(({separator = ',', fields} = {}) => {
+            const a = document.createElement('a'),
+                d = filterDataFields({fields}),
+                xsv = asXsv((fields || columns).map(f => ({key: f})) , d, rvgID, separator),
+                blob = new Blob([xsv], { type: 'text/csv' });
+            a.href = URL.createObjectURL(blob);
+            a.target = '_blank';
+            a.download = 'extract.csv';                     //filename to download
+            a.click();
+        }, [columns, filterDataFields, rvgID]),
 
         captionProps = {
             globalFilter, 
             globalFilterValue,
             filtered,
             loading,
-            maxRenderedItems,
+            renderedHeaders,
+            renderedItems,
+            total,
             filters,
             resetFilters,
-            fromItem, toItem
-        };
+            downloadJson,
+            downloadXsv,
+            dataHeight,
+            carpetHeight,
+            contentHeight,
+        },
+        headerCaptionMoreProps = uie ? {uie: 'headerCaption'} : {},
+        footerCaptionMoreProps = uie ? {uie: 'footerCaption'} : {};
 
     useEffect(() => {
-        if (ref && ref.current && scrollTop === 0) {
-            // ref.current.scrollTo(ref.current.scrollLeft, 0);
-            ref.current.scrollTop = 0;
-        }
-    }, [scrollTop, ref]);    
+        if (
+            ref && ref.current
+            && scrollTop === 0
+            && ref.current.scrollTo
+        ) ref.current.scrollTo(0, 0);
+    }, [scrollTop, ref]);   
+    
 
     return <div>
         {Boolean(headerCaptionHeight) && (
             <div className={[classes.HeaderCaption, HeaderCaptionCls].join(' ')}>
-                <HeaderCaptionComponent {...captionProps}/>
+                <HeaderCaptionComponent {...captionProps} {...headerCaptionMoreProps}/>
             </div>
         )}
         {filtered ? (
         <div className={classes.GridContainer} ref={ref} onScroll={onScroll}>
             <Filler width="100%" height={topFillerHeight} />
-            {data.map(item =>
-                <div key={item[rhgID]} className={classes.Item}
-                    {...getHandlers(item)}
-                >
-                    <Item {...item}/>
-                </div>
+            {Object.entries(alloc).map(
+                ([label, renderables]) => renderables.map((renderable, j) => {
+                    if (!renderable.renders) return null;
+                    return renderable.header
+                        ? <GroupHeaderComponent key={label} groupName={label} groupHeaderHeight={groupHeaderHeight} {...getHeaderUie(label)}/>
+                        : renderable.rows.map((row, i) =>
+                            <div key={`${row[rvgID]}_${i}`} className={classes.Item}
+                                {...getHandlers(row)}
+                                {...getItemUie(label, j*elementsPerLine + i)}
+                            >
+                                <Item {...row}/>
+                            </div>
+                        );
+                })
             )}
             <Filler width="100%" height={bottomFillerHeight} />
         </div>) : <NoData/>}
         {Boolean(footerCaptionHeight) && (
             <div className={[classes.FooterCaption, FooterCaptionCls].join(' ')}>
-                <FooterCaptionComponent {...captionProps}/>
+                <FooterCaptionComponent {...captionProps} {...footerCaptionMoreProps}/>
             </div>
         )}
     </div>;

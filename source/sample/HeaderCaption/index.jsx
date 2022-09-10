@@ -3,9 +3,11 @@ import useStyles from './style';
 
 const HeaderCaption = ({
     globalFilter, globalFilterValue,
-    filtered, maxRenderedItems,
+    filtered, renderedItems, total,
     filters, resetFilters,
-    loading
+    loading,
+    downloadJson,
+    downloadXsv
 }) => {
     const classes = useStyles();
     return (
@@ -20,14 +22,18 @@ const HeaderCaption = ({
                 {loading && <div className="spinner-grow spinner-grow-sm text-light" role="status">
                     <span className="visually-hidden">Loading...</span>
                 </div>}&nbsp;
+                <button type="button" className="btn btn-secondary btn-sm" onClick={downloadJson}>▼ json</button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => downloadXsv()}>▼ csv</button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => downloadXsv({separator: "\t"})}>▼ tsv</button>
+            
                     <button title="reset global filter only" type="button" className="btn btn-secondary btn-sm"
-                        onClick={()=>resetFilters('_GLOBAL_')}>&times; global</button>
+                        onClick={()=>resetFilters('GLOBAL')}>&times; global</button>
                     &nbsp;
                     <button title="reset all fields filter only" type="button" className="btn btn-secondary btn-sm"
-                        onClick={()=>resetFilters('_FIELDS_')}>&times; filters</button>
+                        onClick={()=>resetFilters('FIELDS')}>&times; filters</button>
                     &nbsp;
                     <button title="reset all filters" type="button" className="btn btn-secondary btn-sm"
-                        onClick={()=>resetFilters('_ALL_')}>&times; all</button>
+                        onClick={()=>resetFilters('ALL')}>&times; all</button>
                     &nbsp;
                     <button title="reset id & name filters" type="button" className="btn btn-secondary btn-sm"
                         onClick={()=>resetFilters(['id','name'])}>&times; id, name</button>
@@ -47,7 +53,7 @@ const HeaderCaption = ({
                     <input placeholder="name search" value={filters.name.value} type="text"
                         onChange={e => globalFilter({value: e.target.value, field: 'name'})}/>
                 </div>
-                <div>listing {filtered} elements ({maxRenderedItems} max rendered)</div> 
+                <div>virt. {filtered} out of {total} ({renderedItems} rendered)</div> 
             </div>
         </div>
     );

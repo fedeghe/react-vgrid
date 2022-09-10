@@ -1,375 +1,557 @@
-import React from 'react';
-import { isFunction } from './utils';
-let count = 0;
-const prefix = 'HYG_',
-    uniqueID = {
-        toString: () => {
-            count += 1;
-            return prefix + count;
+
+import {
+    doThrow, uniqueID, trakTime,
+    doWarn, throwIf, isFunction
+} from './utils';
+import {
+    __getFilterFactory, __cleanFilters, __getVirtual, __getVirtualGroup,
+    __getGrouped, __composeFilters, __getFilteredCount, __applyFilter
+} from './reducerUtils';
+import {
+    CMPNAME, GAP, WIDTH, HEIGHT, ITEM_HEIGHT, ITEM_WIDTH,
+    RVG_ID, DEBOUNCE_SCROLLING, DEBOUNCE_FILTERING,
+    NO_FILTER_DATA_MESSAGE, GROUP_COMPONENT_HEIGHT,
+    UNGROUPED_LABEL, FILTERS, DEFAULT_LOADER, UIE
+} from './constants';
+
+const LOADING = Symbol(),
+    FILTER = Symbol(),
+    UNFILTER_FIELDS = Symbol(),
+    UNFILTER = Symbol(),
+    SCROLL = Symbol();
+
+
+// eslint-disable-next-line one-var
+export const ACTION_TYPES = {
+    LOADING,
+    FILTER,
+    UNFILTER_FIELDS,
+    UNFILTER,
+    SCROLL,
+};
+
+// eslint-disable-next-line one-var
+const actions = {
+        [ACTION_TYPES.LOADING]: ({virtual}) => ({ virtual: { ...virtual, loading: true } }),
+
+        [ACTION_TYPES.FILTER]: ({
+            payload, originalData, globalFilterValue, filters,
+            columns, filterFactory, dimensions, 
+            grouping,  originalGroupedData, elementsPerLine, trakTimes,
+            theDoFilterGlobal,
+            virtual
+        }) => {
+            const {scrollTop, gap,} = virtual,
+                { value, field } = payload,
+                // must start from everything
+                base = [...originalData],
+                isGlobalSearch = !field,
+                ret = {
+                    theDoFilterGlobal
+                };
+            let _filteredData = base,
+                _globalFilterValue = globalFilterValue,
+                _newFilters = { ...filters };
+
+            // first maybe update filter value
+            if (!isGlobalSearch && field in _newFilters) {
+                _newFilters = {
+                    ..._newFilters,
+                    [field]: {
+                        ..._newFilters[field],
+                        value
+                    }
+                };
+            }
+            // eslint-disable-next-line one-var
+            const doFilter = __getFilterFactory({ columns, filters: _newFilters });
+
+            // global ? 
+            if (isGlobalSearch || _globalFilterValue) {
+                if (isGlobalSearch) {
+                    ret.globalFilterValue = value;
+                    _globalFilterValue = value;
+
+                    /**
+                     * GROUPS
+                     */
+                    ret.theDoFilterGlobal = filterFactory(value);
+                    //////////////////
+                }
+
+                _filteredData = _filteredData.filter(doFilter(_globalFilterValue));
+            }
+            //then use all available filters on their value (that is updated)
+            _filteredData = _filteredData.filter(doFilter());
+
+            // eslint-disable-next-line one-var
+            const newTheDoFilter = doFilter(),
+                /**
+                 * GROUPED
+                 */
+                gData = __applyFilter({
+                    globalValue: _globalFilterValue,
+                    groupedData: originalGroupedData,
+                    gFilter: ret.theDoFilterGlobal,
+                    filter: newTheDoFilter,
+                    elementsPerLine,
+                    opts: { trakTimes, lib }
+                }),
+                filtered = __getFilteredCount({ gData }),
+                filteredGroupedData = __getVirtualGroup({
+                    dimensions,
+                    gap,
+                    grouping,
+                    grouped: gData,
+                    scrollTop: 0,
+                    elementsPerLine,
+                    opts: { trakTimes, lib }
+                }),
+                newVirtual = __getVirtual({
+                    filteredGroupedData,
+                    elementsPerLine,
+                    dimensions,
+                    scrollTop
+                });
+            return {
+                ...ret,
+                filters: _newFilters,
+                filteredData: _filteredData,
+                filtered,
+                theDoFilter: newTheDoFilter,
+                virtual: {
+                    ...virtual,
+                    ...newVirtual,
+                    scrollTop: 0
+                },
+                filteredGroupedData,
+                theDoFilterGlobal: ret.theDoFilterGlobal
+            };
+        },
+
+        [ACTION_TYPES.UNFILTER_FIELDS]: ({
+            payload, globalFilterValue, filters, originalData, columns,
+            trakTimes, dimensions, grouping,
+            originalGroupedData, elementsPerLine, virtual
+        }) => {
+            let _globalFilterValue = globalFilterValue,
+                _newFilters = { ...filters },
+                _filteredData = [...originalData],
+                theDoFilterGlobal;
+
+            const filteringFields = payload.filter(f => columns.includes(f)),
+                {scrollTop, gap} = virtual;
+
+            filteringFields.forEach(f => { _newFilters[f].value = ''; });
+
+
+            // eslint-disable-next-line one-var
+            const filterFactory = __getFilterFactory({
+                columns,
+                filters: _newFilters,
+                opts: { trakTimes, lib }
+                }),
+                theDoFilter = filterFactory();
+
+            if (_globalFilterValue) {
+                // this needs to be recreated every time the global filter changes
+                theDoFilterGlobal = filterFactory(_globalFilterValue);
+                _filteredData = _filteredData.filter(theDoFilterGlobal);
+            } else {
+                _filteredData = _filteredData.filter(theDoFilter);
+            }
+
+            // eslint-disable-next-line one-var
+            const gData = __applyFilter({
+                    globalValue: _globalFilterValue,
+                    groupedData: originalGroupedData,
+                    gFilter: theDoFilterGlobal,
+                    filter: theDoFilter,
+                    elementsPerLine,
+                    opts: { trakTimes, lib }
+                }),
+
+                filteredGroupedData = __getVirtualGroup({
+                    dimensions,
+                    gap,
+                    grouping,
+                    grouped: gData,
+                    scrollTop: 0,
+                    elementsPerLine,
+                    opts: { trakTimes, lib }
+                }),
+                filtered = __getFilteredCount({ gData }),
+                newVirtual = __getVirtual({
+                    filteredGroupedData,
+                    elementsPerLine,
+                    dimensions,
+                    scrollTop
+                });
+
+            return {
+                filters: _newFilters,
+                filteredData: _filteredData,
+                globalFilterValue: _globalFilterValue,
+                virtual: {
+                    ...virtual,
+                    ...newVirtual,
+                },
+                filtered,
+                filteredGroupedData
+            };
+        },
+
+        [ACTION_TYPES.UNFILTER]: ({
+            payload, globalFilterValue, filters, originalData, columns,
+            trakTimes, elementsPerLine, dimensions, originalGroupedData,
+            grouping, virtual
+        }) => {     
+            let _globalFilterValue = globalFilterValue,
+                _newFilters = { ...filters },
+                _filteredData = [...originalData],
+                theDoFilter = () => true,
+                theDoFilterGlobal = () => true,
+                filterFactory = __getFilterFactory({ columns, filters: _newFilters, opts: { trakTimes, lib } });
+            const {gap }  = virtual;
+            switch (payload) {
+                case FILTERS.ALL:
+                    _globalFilterValue = '';
+                    _newFilters = __cleanFilters(filters);
+                    filterFactory = __getFilterFactory({ columns, filters: _newFilters, opts: { trakTimes, lib } });
+                    theDoFilter = filterFactory();
+                    break;
+                case FILTERS.GLOBAL:
+                    _globalFilterValue = '';
+                    theDoFilter = filterFactory();
+                    // _filteredData = _filteredData.filter(theDoFilter);
+                    break;
+                case FILTERS.FIELDS:
+                    _newFilters = __cleanFilters(filters);
+                    theDoFilterGlobal = filterFactory(_globalFilterValue);
+                    filterFactory = __getFilterFactory({ columns, filters: _newFilters, opts: { trakTimes, lib } });
+                    _filteredData = _filteredData.filter(theDoFilterGlobal);
+                    break;
+            }
+
+            // eslint-disable-next-line one-var
+            const gData = __applyFilter({
+                globalValue: _globalFilterValue,
+                groupedData: originalGroupedData,
+                gFilter: theDoFilterGlobal,
+                filter: theDoFilter,
+                elementsPerLine,
+                opts: { trakTimes, lib }
+            }),
+
+                filteredGroupedData = __getVirtualGroup({
+                    dimensions,
+                    gap,
+                    grouping,
+                    grouped: gData,
+                    scrollTop: 0,
+                    elementsPerLine,
+                    opts: { trakTimes, lib }
+                }),
+                filtered = __getFilteredCount({ gData });
+            // debugger
+            return {
+                filters: _newFilters,
+                gData,
+                filteredData: _filteredData,
+                globalFilterValue: _globalFilterValue,
+                filtered,
+                theDoFilterGlobal,
+                theDoFilter,
+                filteredGroupedData,
+                virtual: {
+                    ...virtual,
+                    scrollTop: 0
+                }
+            };
+
+        },
+
+        [ACTION_TYPES.SCROLL]: ({
+            payload, dimensions, grouping,
+            globalFilterValue, originalGroupedData, theDoFilterGlobal, theDoFilter,
+            elementsPerLine, trakTimes, virtual
+        }) => {
+            const scrollTop = parseInt(payload, 10),
+                {gap} = virtual,
+                gData = __applyFilter({
+                    globalValue: globalFilterValue,
+                    groupedData: originalGroupedData, // this needs to be the filtered data
+                    gFilter: theDoFilterGlobal,
+                    filter: theDoFilter,
+                    elementsPerLine,
+                    opts: { trakTimes, lib }
+                }),
+                filteredGroupedData = __getVirtualGroup({
+                    dimensions,
+                    gap,
+                    grouping,
+                    grouped: gData,
+                    scrollTop,
+                    elementsPerLine,
+                    opts: { trakTimes, lib }
+                }),
+                newVirtual = __getVirtual({
+                    filteredGroupedData,
+                    elementsPerLine,
+                    dimensions,
+                    scrollTop
+                });
+            return {
+                filteredGroupedData,
+                virtual: {
+                    ...virtual,
+                    ...newVirtual,
+                }
+            };
         }
     },
-
-    __cleanFilters = _filters => Object.keys(_filters).reduce((acc, k) => {
-        acc[k] = {
-            filter: _filters[k].filter,
-            value: ''
-        };
-        return acc;
-    }, {}),
-
-    __getVirtual = ({ scrollTop, dimensions, size, lineGap }) => {
-        const { height, itemHeight, width, itemWidth } = dimensions,
-            columns = Math.floor(width / itemWidth),
-            lines = Math.ceil(size / columns),
-            carpetHeight = lines * itemHeight,
-            trigger = scrollTop > (lineGap + 1) * itemHeight,
-
-            topLinesSkipped = Math.max(0, Math.floor(scrollTop / itemHeight) - lineGap),
-            topFillerHeight = topLinesSkipped * itemHeight,
-            linesToRender = 2 * lineGap + Math.ceil(height / itemHeight),
-            dataHeight = linesToRender * itemHeight,
-            maxRenderedItems = columns * linesToRender,
-            bottomFillerHeight = Math.max(carpetHeight - topFillerHeight - dataHeight, 0),
-            fromItem = trigger
-                ? topLinesSkipped * columns
-                : 0,
-            toItem = trigger ? fromItem + maxRenderedItems : linesToRender * columns;
-        return {
-            fromItem,
-            toItem,
-            carpetHeight,
-            topFillerHeight,
-            bottomFillerHeight,
-            linesToRender,
-            dataHeight,
-            maxRenderedItems,
-            loading: false,
-            lines,
-            columns,
-            scrollTop,
-        };
-    },
-
-    __getDoFilter = ({fields, filters}) => {
-        const {funcFilteredFields, valueFilteredFields} = fields.reduce((acc, f) => {
-            acc[(f in filters)? 'funcFilteredFields' : 'valueFilteredFields'].push(f);
-            return acc;
-        }, {funcFilteredFields: [], valueFilteredFields: []});
-        return  v => row => 
-            funcFilteredFields[v ? 'some' : 'every'](fk => 
-                filters[fk].filter({
-                    userValue: v || filters[fk].value,
-                    row
-                })
-            )
-            ||
-            valueFilteredFields.some(f => `${row[f]}`.includes(v));
-    },
-
+    lib = CMPNAME,
     reducer = (oldState, action) => {
         const { payload = {}, type } = action,
             {
                 dimensions,
                 originalData,
-                filteredData,
                 virtual,
-                virtual: {
-                    lineGap,
-                    scrollTop
-                },
                 globalFilterValue,
                 filters,
-                fields,
+
+                columns,
+                theDoFilter,
+                theDoFilterGlobal,
+                filterFactory,
+
+                grouping,
+                trakTimes,
+                elementsPerLine,
+                originalGroupedData
                 // globalFilterValue
             } = oldState,
 
-            actions = {
-                loading: () => ({
-                    virtual: {
-                        ...virtual,
-                        loading: true
-                    }
-                }),
-
-                filter: () => {
-                    const { value, field } = payload,
-                        // must start from everything
-                        base = [...originalData],
-                        isGlobalSearch = !field,
-                        ret = {};
-                    let _newData = base,
-                        _globalFilterValue = globalFilterValue,
-                        _newFilters = {...filters};
-
-                    // first maybe update filter value
-                    if (!isGlobalSearch && field in _newFilters) {
-                        _newFilters = {
-                            ..._newFilters,
-                            [field]: {
-                                ..._newFilters[field],
-                                value
-                            }
-                        };
-                    }
-                    // eslint-disable-next-line one-var
-                    const doFilter = __getDoFilter({fields, filters: _newFilters});
-                        
-                    // global ? 
-                    if (isGlobalSearch || _globalFilterValue) {
-                        if(isGlobalSearch) {
-                            ret.globalFilterValue = value;
-                            _globalFilterValue = value;
-                        }
-                        
-                        _newData = _newData.filter(doFilter(_globalFilterValue));
-                    }
-                    //then use all available filters on their value (that is updated)
-                    _newData = _newData.filter(doFilter());
-                    
-                    // eslint-disable-next-line one-var
-                    const newVirtual = __getVirtual({ dimensions, size: _newData.length, scrollTop, lineGap }),
-                        { fromItem, toItem } = newVirtual;
-                    return {
-                        ...ret,
-                        data: _newData.slice(fromItem, toItem),
-                        filters: _newFilters,
-                        filteredData: _newData,
-                        filtered: _newData.length,
-                        virtual: {
-                            ...virtual,
-                            ...newVirtual,
-                            scrollTop: 0
-                        }
-                    };
+            params = {
+                [ACTION_TYPES.LOADING]: {virtual},
+                [ACTION_TYPES.FILTER]: {
+                    payload, originalData, globalFilterValue, filters,
+                    columns, filterFactory, dimensions,
+                    grouping,  originalGroupedData, elementsPerLine, trakTimes,
+                    virtual, theDoFilterGlobal
                 },
-
-                unFilterFields: () => {
-                    let _globalFilterValue = globalFilterValue,
-                        _newFilters = {...filters},
-                        _filteredData = [...originalData];
-
-                    const filteringFields = payload.filter(f => fields.includes(f));
-                    
-                    filteringFields.forEach(f => {_newFilters[f].value = '';});
-                    
-                    // eslint-disable-next-line one-var
-                    const doFilter = __getDoFilter({
-                        fields,
-                        filters: _newFilters
-                    });
-
-                    _filteredData = _filteredData.filter(doFilter());
-
-                    if (_globalFilterValue) {
-                        _filteredData = _filteredData.filter(doFilter(_globalFilterValue));
-                    }
-                    
-                    // eslint-disable-next-line one-var
-                    const newVirtual = __getVirtual({
-                            dimensions,
-                            size: _filteredData.length,
-                            scrollTop, lineGap
-                        }),
-                        { fromItem, toItem } = newVirtual;
-                        
-                    return {
-                        filters: _newFilters,
-
-                        filteredData: _filteredData,
-                        data: _filteredData.slice(fromItem, toItem),
-                        globalFilterValue: _globalFilterValue,
-                        virtual: {
-                            ...virtual,
-                            ...newVirtual,
-                        },
-                        filtered: _filteredData.length
-                    };
+                [ACTION_TYPES.UNFILTER_FIELDS]: {
+                    payload, globalFilterValue, filters, originalData, columns,
+                    trakTimes, dimensions, grouping,
+                    originalGroupedData, elementsPerLine, virtual
                 },
-                unFilter: () => {                    
-                    let _globalFilterValue = globalFilterValue,
-                        _newFilters = {...filters},
-                        _filteredData = [...originalData];
-
-                    const doFilter = __getDoFilter ({fields, filters: _newFilters});
-                            
-                    switch (payload) {
-                        case '_ALL_':
-                            _globalFilterValue = '';
-                            _newFilters = __cleanFilters(filters);
-                            break;
-                        case '_GLOBAL_':
-                            _globalFilterValue = '';
-                            _filteredData = _filteredData.filter(doFilter());
-                            break;
-                        case '_FIELDS_':
-                            _newFilters = __cleanFilters(filters);
-                            _filteredData = _filteredData.filter(doFilter(_globalFilterValue));
-                            break;
-                    }
-                    
-
-                    // eslint-disable-next-line one-var
-                    const newVirtual = __getVirtual({
-                            dimensions,
-                            size: _filteredData.length,
-                            scrollTop, lineGap
-                        }),
-                        { fromItem, toItem } = newVirtual;
-                        
-                    return {
-                        filters: _newFilters,
-
-                        filteredData: _filteredData,
-                        data: _filteredData.slice(fromItem, toItem),
-                        globalFilterValue: _globalFilterValue,
-                        virtual: {
-                            ...virtual,
-                            ...newVirtual,
-                        },
-                        filtered: _filteredData.length
-                    };
-
+                [ACTION_TYPES.UNFILTER]: {
+                    payload, globalFilterValue, filters, originalData, columns,
+                    trakTimes, elementsPerLine, dimensions, originalGroupedData,
+                    grouping, virtual
                 },
-                scroll: () => {
-                    const scrollTop = parseInt(payload, 10),
-                        newVirtual = __getVirtual({ dimensions, size: filteredData.length, scrollTop, lineGap }),
-                        { fromItem, toItem } = newVirtual;
-
-                    return {
-                        data: filteredData.slice(fromItem, toItem),
-                        virtual: {
-                            ...virtual,
-                            ...newVirtual,
-                        }
-                    };
+                [ACTION_TYPES.SCROLL]: {
+                    payload, dimensions, grouping,
+                    globalFilterValue, originalGroupedData, theDoFilterGlobal, theDoFilter,
+                    elementsPerLine, trakTimes, virtual
                 }
-            };
+            }[type] || {};
 
-        if (type in actions)
-            return {
+        if (type in actions) {
+            // console.log({type})
+            const newState = {
                 ...oldState,
-                ...actions[type]()
+                ...actions[type](params)
             };
+            // console.log({newState});
+            return newState;
+        }
         return oldState;
     },
+
     init = (cnf = {}) => {
-        const {
+        if ('gap' in cnf && cnf.gap < 0) doThrow({ message: 'The parameter `gap` cannot be negative', opts: { lib } });
+        const trak = { start: +new Date },
+            {
+                trakTimes = false,
                 data = [],
-                lineGap = 2,
-                Loader = () => (<div>loading</div>),
+                gap = GAP,
+                uie = UIE,
+                Loader = DEFAULT_LOADER,
                 dimensions: {
-                    width = 1200,
-                    height = 800,
-                    itemHeight = 150,
-                    itemWidth = 200
+                    width = WIDTH,
+                    height = HEIGHT,
+                    itemHeight = ITEM_HEIGHT,
+                    itemWidth = ITEM_WIDTH
                 } = {},
-                rhgID = '_ID',
+                rvgID = RVG_ID,
                 debounceTimes: {
-                    scrolling = 50,
-                    filtering = 50,
+                    scrolling = DEBOUNCE_SCROLLING,
+                    filtering = DEBOUNCE_FILTERING,
                 } = {},
-                
+
+                grouping: {
+                    groups = [],
+                    groupHeader: {
+                        Component: GroupComponent = n => n,
+                        height: groupComponentHeight = GROUP_COMPONENT_HEIGHT
+                    } = {},
+                    ungroupedLabel = UNGROUPED_LABEL,
+                } = {},
+
                 header: {
                     caption: {
-                        Component: HeaderCaptionComponent = null,
+                        Component: HeaderCaptionComponent = () => null,
                         height: headerCaptionHeight = 0
-                    }
+                    } = {}
                 } = {},
                 footer: {
-                    caption: {        
-                        Component: FooterCaptionComponent = null,
+                    caption: {
+                        Component: FooterCaptionComponent = () => null,
                         height: footerCaptionHeight = 0
-                    }
+                    } = {}
                 } = {},
 
                 events: {
-                    onItemEnter,
-                    onItemLeave,
-                    onItemClick,
+                    onItemEnter = null,
+                    onItemLeave = null,
+                    onItemClick = null,
                 } = {},
                 headers = {},
                 globalPreFilter = '',
-                NoFilterData = () => 'no data',
+                NoFilterData = () => NO_FILTER_DATA_MESSAGE,
                 cls: {
                     HeaderCaption: HeaderCaptionCls = null,
                     FooterCaption: FooterCaptionCls = null,
                 } = {}
             } = cnf,
+            /**
+             * to know why read the comment in __getVirtualGroup */
+            gapPlus = gap + 1,
+            grouping = {
+                groups,
+                groupHeader: {
+                    Component: GroupComponent,
+                    height: groupComponentHeight
+                },
+                ungroupedLabel,
+            },
 
             dimensions = {
                 width,
                 height,
-                itemHeight, itemWidth
+                itemHeight, itemWidth,
+                contentHeight: height - headerCaptionHeight - footerCaptionHeight
             },
 
-            originalData = data.map(item => ({ [rhgID]: `${uniqueID}`, ...item })),
-            innerVirtual = __getVirtual({ dimensions, size: originalData.length, scrollTop: 0, lineGap }),
+            elementsPerLine = Math.floor(width / itemWidth),
+
+            /***************************************************************************
+             * starting from specified groups, separate the data and create the groups
+             */
+            originalGroupedData = __getGrouped({ data, groups, elementsPerLine, opts: { ungroupedLabel, lib, trakTimes } }),
+            // originalGroupedData0 = __getGrouped({data, groups, elementsPerLine, opts: {ungroupedLabel, lib, trak: true}}),            
+            funcFilters = __composeFilters({ headers, opts: { trakTimes, lib } }),
+
+            // columns, filterFactory and theDoFilter can stay static in the state
+            columns = headers.map(h => h.key),
+            filterFactory = __getFilterFactory({ columns, filters: funcFilters, opts: { trakTimes, lib } }),
+            theDoFilter = filterFactory(),
+
+            // this needs to be recreated every time the global filter changes
+            theDoFilterGlobal = filterFactory(globalPreFilter),
+
+            gData = __applyFilter({
+                globalValue: globalPreFilter,
+                groupedData: originalGroupedData,
+                gFilter: theDoFilterGlobal,
+                filter: theDoFilter,
+                elementsPerLine,
+                opts: { trakTimes, lib }
+            }),
+
+            filteredGroupedData = __getVirtualGroup({
+                dimensions,
+                gap: gapPlus,
+                grouping,
+                grouped: gData,
+                scrollTop: 0,
+                elementsPerLine,
+                opts: { trakTimes, lib }
+            }),
+            /**
+             * 
+             ****************************************************************************/
+
+            originalData = data.map(item => ({ [rvgID]: `${uniqueID}`, ...item })),
+
+            innerVirtual = __getVirtual({
+                filteredGroupedData,
+                elementsPerLine,
+                dimensions,
+                scrollTop: 0
+            }),
             virtual = {
                 loading: false,
-                lineGap,
+                gap: gapPlus,
+                contentHeight: height - headerCaptionHeight - footerCaptionHeight,
                 ...innerVirtual
             },
-            { fromItem, toItem } = innerVirtual,
-            funcFilters = headers.reduce((acc, header) => {
-                if (isFunction(header.filter)) {
-                    acc[header.key] = {
-                        filter: header.filter,
-                        value: header.preFiltered || ''
-                    };
-                } else {
-                    acc[header.key] = {
-                        filter: () => true,
-                        value: ''
-                    };
-                }
-                return acc;
-            }, {}),
-            fields = headers.map(h => h.key),
-            doFilter = __getDoFilter({fields, filters: funcFilters}),
-            initialData = (
+            filteredData = (
                 globalPreFilter
-                ? originalData.filter(doFilter(globalPreFilter))
-                : originalData
-            ).filter(doFilter());
-        
+                    ? originalData.filter(theDoFilterGlobal)
+                    : originalData
+            ).filter(theDoFilter);
+
+
+        // every group must have a grouper
+        if (groups.length && groups.some(group => typeof group.grouper !== 'function')) {
+            throw 'Every defined group must have a grouper function';
+        }
+        /////////////////////////////////////////////////////////////////////
+        if (trakTimes) {
+            trak.end = +new Date;
+            trakTime({
+                what: 'reducer initialization',
+                time: trak.end - trak.start,
+                opts: { trakTimes, lib }
+            }
+            );
+        }
+
         return {
             ...cnf,
-            rhgID,
-            originalData: originalData,
-            filteredData: [...initialData],
-            filtered: initialData.length,
-            data: initialData.slice(fromItem, toItem),
-            total: originalData.length,
-            fields,
+
+            // somehow static 
+            uie,
+            rvgID,
+            trakTimes,
+            originalData,
+            elementsPerLine,
             Loader,
-            header: {
-                HeaderCaptionComponent,
-                headerCaptionHeight
-            },
-            footer: {
-                FooterCaptionComponent,
-                footerCaptionHeight
-            },
+            grouping,
+            header: { caption: { Component: HeaderCaptionComponent, height: headerCaptionHeight}},
+            footer: { caption: { Component: FooterCaptionComponent, height: footerCaptionHeight}},
             dimensions,
+            debounceTimes: { scrolling, filtering, },
+            events: { onItemEnter, onItemLeave, onItemClick,},
+            cls: { HeaderCaptionCls, FooterCaptionCls},
+            NoFilterData,
+            originalGroupedData,
+            gap: gapPlus,
+
+            // dynamic
+            filteredData,
+            filtered: filteredData.length,
+            total: originalData.length,
+            filteredGroupedData,
+            theDoFilterGlobal,
+            theDoFilter,
+            filterFactory,
+            columns,
             virtual,
-            debounceTimes: {
-                scrolling,
-                filtering,
-            },
-            events: {
-                onItemEnter,
-                onItemLeave,
-                onItemClick,
-            },
             filters: funcFilters,
-            globalFilterValue: globalPreFilter,
-            cls: {
-                HeaderCaptionCls,
-                FooterCaptionCls
-            },
-            NoFilterData
-            // filters: [],
-            // globalFilter: ''
+            globalFilterValue: globalPreFilter
         };
     };
 

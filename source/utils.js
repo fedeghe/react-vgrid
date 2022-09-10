@@ -1,5 +1,5 @@
 let id = 0,
-    strid = 0;
+    strid = 1;
 const sameInt = 1,
     sameDate = +new Date(2000,1,1,1,1,1),
     generators = {
