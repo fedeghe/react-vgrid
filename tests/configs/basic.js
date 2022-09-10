@@ -1,5 +1,5 @@
-import generateRowData from './../../source/utils';
 import Item from './../components/Item/item1'
+import data from './../data/dataSmall.json'
 export default {
     dimensions: {
         height: 800,
@@ -15,10 +15,6 @@ export default {
         key: 'entityid',
     }],
     Item,
-    data: generateRowData([
-        { key: 'id', type: 'int' },
-        { key: 'entityid', type: 'id' },
-        { key: 'name', type: 'str' }
-    ], 50, true),
+    data,
     gap: 0
 };

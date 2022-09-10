@@ -67,10 +67,7 @@ export default {
         filter: ({userValue, row}) => `${row.entityid}`.includes(userValue),
         preFiltered: null,
     }],
-
     // globalPreFilter: '2',
-
-
     Item,
     Loader: () => (<div className="Loading">loading</div>),
     dimensions: {
@@ -81,13 +78,10 @@ export default {
     },
     gap : 3,
     NoFilterData: ({total}) => <div>no data out of {total}</div>,
-
     debounceTimes: {
-        scrolling: 20,
+        // scrolling: 20,
         // filtering: 200,
     },
-
-
     header: {
         caption: {
             Component: HeaderCaption,
@@ -100,13 +94,11 @@ export default {
             height: 25
         }
     },
-
     events: {
         // onItemEnter: (e, {item}) => {console.log('enter Item ', item);},
         // onItemLeave: (e, {item}) => {console.log('leave Item ', item);},
         // onItemClick: (e, {item}) => {console.log('click Item ', item);},
     },
-
     cls: {
         HeaderCaption: 'HeaderCaption',
         FooterCaption: 'FooterCaption',

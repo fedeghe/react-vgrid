@@ -413,9 +413,9 @@ const actions = {
                 } = {},
 
                 events: {
-                    onItemEnter,
-                    onItemLeave,
-                    onItemClick,
+                    onItemEnter = null,
+                    onItemLeave = null,
+                    onItemClick = null,
                 } = {},
                 headers = {},
                 globalPreFilter = '',
@@ -530,15 +530,15 @@ const actions = {
             elementsPerLine,
             Loader,
             grouping,
-            header: { HeaderCaptionComponent, headerCaptionHeight},
-            footer: { FooterCaptionComponent, footerCaptionHeight},
+            header: { caption: { Component: HeaderCaptionComponent, height: headerCaptionHeight}},
+            footer: { caption: { Component: FooterCaptionComponent, height: footerCaptionHeight}},
             dimensions,
             debounceTimes: { scrolling, filtering, },
             events: { onItemEnter, onItemLeave, onItemClick,},
             cls: { HeaderCaptionCls, FooterCaptionCls},
             NoFilterData,
             originalGroupedData,
-
+            gap: gapPlus,
 
             // dynamic
             filteredData,

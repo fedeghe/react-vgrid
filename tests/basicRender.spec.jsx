@@ -20,14 +20,22 @@ configure({
 describe("VGrid - basic", () => {
     it("should render as expected", () => {
         const { container, getByTestId, queryByTestId } = render(
-            <VGrid config={config} />
-        );
-        let i = 0;    
-        for(null; i < 20; i++)
-            expect(getByTestId(`item-${UNGROUPED_LABEL}-${i}`))
+                <VGrid config={config} />
+            ),
+            {dimensions, gap} = config,
+            {height, width, itemHeight, itemWidth} = dimensions,
+            elementsPerLine = Math.floor(width / itemWidth),
+            inViewPort = Math.round(height / itemHeight), // rem 50% cutoff
+            // rem gap is always 1+
+            topRender = (inViewPort + gap + 1) * elementsPerLine;
+
+        let i = 0;
+        for(null; i < topRender; i++)
+            expect(getByTestId(`item-${UNGROUPED_LABEL}-${i}`));
         expect(container).toMatchSnapshot();
 
-        // 20 should fail
-        expect(queryByTestId(`item-${UNGROUPED_LABEL}-${i}`)).toBeNull()
+        // top + 1 th should fail
+        expect(queryByTestId(`item-${UNGROUPED_LABEL}-${i}`)).toBeNull();
+        
     });
 });

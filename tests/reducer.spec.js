@@ -1,186 +1,110 @@
 /**
  * @jest-environment jsdom
  */
-import reducerFactory, {ACTION_TYPES} from './../source/VTable/reducer'
+import reducerFactory, {ACTION_TYPES} from '../source/VGrid/reducer'
 import zeroConfig from './configs/zero'
 import emptyDefaultState  from './emptyDefaultState.json'
+import {
+    WIDTH, HEIGHT, ITEM_WIDTH, ITEM_HEIGHT,
+    DEBOUNCE_SCROLLING, DEBOUNCE_FILTERING,
+    RVG_ID
+}  from './../source/VGrid/constants'
 
 const deepClone = o => JSON.parse(JSON.stringify(o))
 
 describe('reducer - basic', function () {
-    const { init, reducer } = reducerFactory(),
-        basicFilter = ({userValue, row, columnKey}) => `${row[columnKey]}`.includes(userValue),
-        basicSort = ({rowA, rowB, columnKey, direction}) => {
-            const v = rowA[columnKey] > rowB[columnKey] ? 1 : -1;
-            return {
-                asc : v,
-                desc: -v
-            }[direction];
-        };
+    const { init, reducer } = reducerFactory();
 
-    
     it('initialise as expected - basic', () => {
         const state = init(zeroConfig);
 
         expect(state.dimensions).toMatchObject({
-            width:400, height:200, rowHeight:40
-        })
-        expect(state.columns.length).toBe(3)
-        expect(state.data.length).toBe(1000)
-        expect(state.originalData.length).toBe(1000)
-        expect(state.rows.length).toBe(9)
-        expect(state.gap).toBe(2)
-        expect(state.sorting).toMatchObject({column: null, direction: null, sorter: null})
-        expect(state.isSorting).toBe(false)
-        expect(state.isFiltering).toBe(false)
-        expect(state.filters).toMatchObject({})
-        expect(state.activeFiltersCount).toBe(0)
-        expect(state.header).toMatchObject({height: 0, caption: {height: 25, Component: null}})
-        expect(state.footer).toMatchObject({height: 0, caption: {height: 25, Component: null}})
-        expect(state.filtered).toBe(1000)
-        expect(state.total).toBe(1000)
-        expect(state.activeRow).toBeNull()
-        expect(state.activeColumn).toBeNull()
-        expect(state.activeRowIndex).toBeNull()
-        expect(state.activeColumnIndex).toBeNull()
-        expect(state.commonRemovedContent).toBe('.')
-        expect(state.events).toMatchObject({
-            "onCellClick": null,
-            "onCellEnter": null,
-            "onCellLeave": null,
-            "onHeaderHighlight": false,
-            "onFooterHighlight": false,
-            "onLeftMostHighlight": false,
-            "onRightMostHighlight": false,
-            "shiftPageScroll": false
-        })
-        expect(state.cls.highlight).toMatchObject({
-            "rowHighlightClass": "",
-            "columnHighlightClass": "",
-            "crossHighlightClass": "",
-            "cellHightlightClass": ""
-        })
-        expect(state.cls.elements).toMatchObject({
-            "contentClass": "",
-            "cellClass": "",
-            "rowClass": "",
-            "wrapperClass": ""
-        })
-        expect(state.virtual).toMatchObject({
-            "colspan": 3,
-            "moreSpaceThanContent": false,
-            "dataHeight": 360,
-            "contentHeight": 200,
-            "scrollTop": 0,
-            "fromRow": 0,
-            "toRow": 8,
-            "renderableElements": 9,
-            "carpetHeight": 40000,
-            "visibleElements": 5,
-            "visibleElementsHeight": 200,
-            "loading": false,
-            "headerFillerHeight": 0,
-            "footerFillerHeight": 39640
-        })
+            height: HEIGHT, width: WIDTH, itemWidth: ITEM_WIDTH, itemHeight: ITEM_HEIGHT
+        });
+        expect(state.columns.length).toBe(3);
+        expect(state.data.length).toBe(50);
+        expect(state.originalData.length).toBe(50);
+        expect(state.columns.length).toBe(3);
+        expect(state.gap).toBe(1);
         expect(state.debounceTimes).toMatchObject({
-            "filtering": 50,
-            "scrolling": 50
-        })
-        expect(state.rhtID).toBe('_ID')
+            filtering: DEBOUNCE_FILTERING,
+            scrolling: DEBOUNCE_SCROLLING
+        });
+        expect(state.rvgID).toBe('_ID');
     });
 
     it('initialise as expected - all in', () => {
-        const newConfig = deepClone(zeroConfig)
+        const newConfig = deepClone(zeroConfig),
+            headerComponent = jest.fn(),
+            footerComponent = jest.fn(),
+            spyFilters = {
+                one: ({userValue, row}) => `${row.id}`.startsWith(userValue),
+                two: ({userValue, row}) => `${row.id}`.startsWith(userValue),
+                three: ({userValue, row}) => `${row.id}`.startsWith(userValue),
+            };
         newConfig.dimensions = {
             height: 800,
             width:400,
-            rowHeight: 100
+            itemHeight: 200,
+            itemWidth: 100,
         }
-        newConfig.header = {height: 100, caption: {Component: () => 'caption', height:20}}
-        newConfig.footer = {height: 80, caption: {Component: () => 'caption', height:20}}
+        newConfig.header = {caption: {Component: () => 'caption header', height:20}}
+        newConfig.footer = {caption: {Component: () => 'caption footer', height:20}}
         newConfig.debounceTimes = {
             filtering: 5, scrolling: 4
         }
-        newConfig.columns[0].preFiltered = '4'
-        newConfig.columns[0].preSorted = 'asc'
-        newConfig.columns[0].filter = basicFilter;
-        newConfig.columns[0].sort = basicSort;
-        newConfig.commonRemovedContent = '-';
-        newConfig.rhtID = 'hello_';
+        newConfig.headers[0].filter = jest.spyOn(spyFilters, 'one');
+        newConfig.headers[1].filter = jest.spyOn(spyFilters, 'two');
+        newConfig.headers[2].filter = jest.spyOn(spyFilters, 'three');
         
         const state = init(newConfig);
 
         expect(state.dimensions).toMatchObject(newConfig.dimensions)
         expect(state.columns.length).toBe(3)
-        expect(state.data.length).toBe(1000)
-        expect(state.originalData.length).toBe(1000)
-        expect(state.rows.length).toBe(10)
-        expect(state.gap).toBe(2)
-        expect(state.sorting).toMatchObject({
-            column: newConfig.columns[0].key,
-            direction: newConfig.columns[0].preSorted,
-            sorter: basicSort
-        })
-        expect(state.isSorting).toBe(true)
-        expect(state.isFiltering).toBe(true)
-        expect(state.filters).toMatchObject({})
-        expect(state.activeFiltersCount).toBe(1)
-        expect(state.header).toMatchObject({height: newConfig.header.height, caption: {height: newConfig.header.caption.height}})
-        expect(state.header.caption.Component()).toBe('caption')
-        expect(state.footer).toMatchObject({height: newConfig.footer.height, caption: {height: newConfig.footer.caption.height}})
-        expect(state.footer.caption.Component()).toBe('caption')
-        expect(state.filtered).toBe(271)
-        expect(state.total).toBe(1000)
+        expect(state.headers.length).toBe(3)
+        expect(state.data.length).toBe(50)
+        expect(state.originalData.length).toBe(50)
+        expect(state.filtered).toBe(50)
+        expect(state.gap).toBe(1)
         
-        expect(state.activeRow).toBeNull()
-        expect(state.activeColumn).toBeNull()
-        expect(state.activeRowIndex).toBeNull()
-        expect(state.activeColumnIndex).toBeNull()
+        expect(state.filters).toBeTruthy()
+        
+        expect(state.header).toMatchObject({caption: {height: newConfig.header.caption.height, Component: newConfig.header.caption.Component}})
+        expect(state.footer).toMatchObject({caption: {height: newConfig.footer.caption.height, Component: newConfig.footer.caption.Component}})
+        expect(state.header.caption.Component()).toBe('caption header')
+        expect(state.footer.caption.Component()).toBe('caption footer')
+        
+        
+        
+        expect(state.total).toBe(50)
+        
 
-        expect(state.commonRemovedContent).toBe(newConfig.commonRemovedContent)
+        expect(state.NoFilterData()).toBe('no data')
         expect(state.events).toMatchObject({
-            "onCellClick": null,
-            "onCellEnter": null,
-            "onCellLeave": null,
-            "onHeaderHighlight": false,
-            "onFooterHighlight": false,
-            "onLeftMostHighlight": false,
-            "onRightMostHighlight": false,
-            "shiftPageScroll": false
+            "onItemClick": null,
+            "onItemEnter": null,
+            "onItemLeave": null
         })
-        expect(state.cls.highlight).toMatchObject({
-            "rowHighlightClass": "",
-            "columnHighlightClass": "",
-            "crossHighlightClass": "",
-            "cellHightlightClass": ""
+        expect(state.cls).toMatchObject({
+            "HeaderCaptionCls": null,
+            "FooterCaptionCls": null
         })
-        expect(state.cls.elements).toMatchObject({
-            "contentClass": "",
-            "cellClass": "",
-            "rowClass": "",
-            "wrapperClass": ""
-        })
+        
         expect(state.virtual).toMatchObject({
-            "colspan": 3,
-            "moreSpaceThanContent": false,
-            "dataHeight": 1000,
-            "contentHeight": 580,
-            "scrollTop": 0,
-            "fromRow": 0,
-            "toRow": 9,
-            "renderableElements": 10,
-            "carpetHeight": 27100,
-            "visibleElements": 5,
-            "visibleElementsHeight": 500,
             "loading": false,
-            "headerFillerHeight": 0,
-            "footerFillerHeight": 26100
+            "gap": 1,
+            "contentHeight": 760,
+            "carpetHeight": 2600,
+            "linesToRender": 5,
+            "dataHeight": 1000,
+            "renderedItems": 20,
+            "scrollTop": 0
         })
         expect(state.debounceTimes).toMatchObject(newConfig.debounceTimes)
-        expect(state.rhtID).toBe(newConfig.rhtID)
+        expect(state.rvgID).toBe(RVG_ID)
     });
 
-    it('actions - toggleColumnVisibility', () => {
+    it.skip('actions - toggleColumnVisibility', () => {
         const state = init(zeroConfig),
 
             newState1 = reducer(state, {
@@ -224,13 +148,13 @@ describe('reducer - basic', function () {
         expect(newState6.virtual.colspan).toBe(3);
     });
     
-    it('actions - loading', () => {
+    it.skip('actions - loading', () => {
         const state = init(zeroConfig),
             newState1 = reducer(state, {type: ACTION_TYPES.LOADING})
         expect(newState1.virtual.loading).toBe(true)
     });
 
-    it('actions - filter visibility', () => {
+    it.skip('actions - filter visibility', () => {
         const newConfig = deepClone(zeroConfig)
         newConfig.columns[0].filter = basicFilter
         const state = init(newConfig),
@@ -248,7 +172,7 @@ describe('reducer - basic', function () {
         expect(newState1.filteredData.length).toBe(1000)
     });
 
-    it('actions - filter value', () => {
+    it.skip('actions - filter value', () => {
         const newConfig = deepClone(zeroConfig)
         newConfig.columns[0].filter = basicFilter
         const state = init(newConfig),
@@ -290,7 +214,7 @@ describe('reducer - basic', function () {
         expect(newState2.virtual.toRow).toBe(9)
     });
 
-    it('actions - filter global', () => {
+    it.skip('actions - filter global', () => {
         const newConfig = deepClone(zeroConfig)
         newConfig.columns[0].filter = basicFilter
         const state = init(newConfig),
@@ -321,7 +245,7 @@ describe('reducer - basic', function () {
         expect(newState2.virtual.toRow).toBe(9)
     });
 
-    it('actions - unfilter all', () => {
+    it.skip('actions - unfilter all', () => {
         const newConfig = deepClone(zeroConfig);
         newConfig.columns[0].filter = basicFilter;
         newConfig.columns[1].filter = basicFilter;
@@ -365,7 +289,7 @@ describe('reducer - basic', function () {
         expect(newState3.virtual.toRow).toBe(9);
     });
 
-    it('actions - sort', () => {
+    it.skip('actions - sort', () => {
         const newConfig = deepClone(zeroConfig);
         newConfig.columns[0].sort = basicSort;
         const state = init(newConfig),
@@ -390,7 +314,7 @@ describe('reducer - basic', function () {
         expect(newState2.rows[0].id).toBe(1);
     });
 
-    it('actions - unsort', () => {
+    it.skip('actions - unsort', () => {
         const newConfig = deepClone(zeroConfig);
         newConfig.columns[0].sort = basicSort;
         const state = init(newConfig),
@@ -408,7 +332,7 @@ describe('reducer - basic', function () {
         expect(newState2.rows[0].id).toBe(1);
     });
 
-    it('actions - cellEnter', () => {
+    it.skip('actions - cellEnter', () => {
         const newConfig = deepClone(zeroConfig),
             state = init(newConfig),
             newState = reducer(state, {
@@ -435,7 +359,7 @@ describe('reducer - basic', function () {
         expect(newState.activeRowIndex).toBe('22');
     });
 
-    it('actions - cellLeave', () => {
+    it.skip('actions - cellLeave', () => {
         const newConfig = deepClone(zeroConfig),
             state = init(newConfig),
             newState = reducer(state, {
@@ -468,7 +392,7 @@ describe('reducer - basic', function () {
         expect(newState2.activeRowIndex).toBeNull()
     });
 
-    it('actions - scroll', () => {
+    it.skip('actions - scroll', () => {
         const newConfig = deepClone(zeroConfig),
             state = init(newConfig),
             newState = reducer(state, {
@@ -499,7 +423,7 @@ describe('reducer - edge', function () {
             }[direction];
         };
 
-    it('edge - mixed sort asc, sort desc, unsort', () => {
+    it.skip('edge - mixed sort asc, sort desc, unsort', () => {
         const newConfig = deepClone(zeroConfig);
         newConfig.data = [
             {id: 3, entityid: 33, name:'Fred'},
@@ -536,7 +460,7 @@ describe('reducer - edge', function () {
         expect(newState3.rows[2].id).toBe(2);
     });
     
-    it('edge - overscroll', () => {
+    it.skip('edge - overscroll', () => {
         const newConfig = deepClone(zeroConfig);
         
         newConfig.columns[0].filter = basicFilter;
@@ -548,7 +472,7 @@ describe('reducer - edge', function () {
         expect(newState.rows.length).toBe(9);
     });
     
-    it('edge - filter to no data', () => {
+    it.skip('edge - filter to no data', () => {
         const newConfig = deepClone(zeroConfig);
         newConfig.columns[0].filter = basicFilter;
         const state = init(newConfig),
@@ -571,7 +495,7 @@ describe('reducer - edge', function () {
         expect(newState.virtual.toRow).toBe(0);
     });
 
-    it('edge - toggleColumnVisibility non existent column', () => {
+    it.skip('edge - toggleColumnVisibility non existent column', () => {
         const newConfig = deepClone(zeroConfig);
         newConfig.columns[0].filter = basicFilter;
         const state = init(newConfig),
@@ -586,7 +510,7 @@ describe('reducer - edge', function () {
         expect(newState1).toMatchObject(state);
     });
 
-    it('edge - dispatch non existent action', () => {
+    it.skip('edge - dispatch non existent action', () => {
         const newConfig = deepClone(zeroConfig);
         const state = init(newConfig),
             newState1 = reducer(state, {
@@ -599,33 +523,34 @@ describe('reducer - edge', function () {
         expect(newState1).toMatchObject(state);
     });
 
-    it('edge - edge on columnVisitility', () => {
+    it.skip('edge - edge on columnVisitility', () => {
         const newConfig = deepClone(zeroConfig);
         newConfig.columns[0].isVisible = true;
         const newState = init(newConfig);
         expect(newState.columns[0].isVisible).toBeTruthy();
     });
     
-    it('edge - no config', () => {
+    it.skip('edge - no config', () => {
         const state = init();
         expect(state).toMatchObject(emptyDefaultState);
         expect(state.NoFilterData()).toBe('no data');
         expect(state.virtual.Loader()).toBeNull();
     });
 
-    it('edge - empty config', () => {
+    it.skip('edge - empty config', () => {
         const state = init({});
         expect(state).toMatchObject(emptyDefaultState);
         expect(state.NoFilterData()).toBe('no data');
         expect(state.virtual.Loader()).toBeNull();
     });
 
-    it('edge - empty config - scroll no payload', () => {
+    it.skip('edge - empty config - scroll no payload', () => {
         const state = init({});
         reducer(state, {type: ACTION_TYPES.SCROLL});
         expect(state).toMatchObject(emptyDefaultState);
     });
-    it('edge - scroll 0', () => {
+
+    it.skip('edge - scroll 0', () => {
         const newConfig = deepClone(zeroConfig);
         newConfig.columns[0].preSorted = 'asc';
         expect(
