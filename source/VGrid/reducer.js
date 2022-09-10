@@ -49,7 +49,7 @@ const actions = {
                 ret = {
                     theDoFilterGlobal
                 };
-            let _newData = base,
+            let _filteredData = base,
                 _globalFilterValue = globalFilterValue,
                 _newFilters = { ...filters };
 
@@ -79,10 +79,10 @@ const actions = {
                     //////////////////
                 }
 
-                _newData = _newData.filter(doFilter(_globalFilterValue));
+                _filteredData = _filteredData.filter(doFilter(_globalFilterValue));
             }
             //then use all available filters on their value (that is updated)
-            _newData = _newData.filter(doFilter());
+            _filteredData = _filteredData.filter(doFilter());
 
             // eslint-disable-next-line one-var
             const newTheDoFilter = doFilter(),
@@ -112,14 +112,11 @@ const actions = {
                     elementsPerLine,
                     dimensions,
                     scrollTop
-                }),
-                { fromItem, toItem } = newVirtual;
-
+                });
             return {
                 ...ret,
-                data: _newData.slice(fromItem, toItem),
                 filters: _newFilters,
-                filteredData: _newData,
+                filteredData: _filteredData,
                 filtered,
                 theDoFilter: newTheDoFilter,
                 virtual: {
@@ -185,20 +182,17 @@ const actions = {
                     opts: { trakTimes, lib }
                 }),
                 filtered = __getFilteredCount({ gData }),
-
                 newVirtual = __getVirtual({
                     filteredGroupedData,
                     elementsPerLine,
                     dimensions,
                     scrollTop
-                }),
-                { fromItem, toItem } = newVirtual;
+                });
 
             return {
                 filters: _newFilters,
 
                 filteredData: _filteredData,
-                data: _filteredData.slice(fromItem, toItem),
                 globalFilterValue: _globalFilterValue,
                 virtual: {
                     ...virtual,
@@ -309,12 +303,8 @@ const actions = {
                     dimensions,
                     scrollTop
                 }),
-                { fromItem, toItem } = newVirtual,
-                
-                
                 rendering = filteredGroupedData.allocation.cardinality;
             return {
-                data: filteredData.slice(fromItem, toItem),
                 filteredGroupedData,
                 rendering,
                 
@@ -506,30 +496,19 @@ const actions = {
                 dimensions,
                 scrollTop: 0
             }),
-
             virtual = {
                 loading: false,
                 lineGap: lineGapPlus,
                 contentHeight: height - headerCaptionHeight - footerCaptionHeight,
                 ...innerVirtual
             },
-            // { fromItem, toItem } = innerVirtual,
-
             initialData = (
                 globalPreFilter
                     ? originalData.filter(theDoFilterGlobal)
                     : originalData
             ).filter(theDoFilter);
 
-        // console.log('originalGroupedData', originalGroupedData);
-        // console.log('originalGroupedData0', originalGroupedData0)
 
-        // console.log(originalGroupedData);
-        // console.log(initialGroupedData);
-        // what about order?
-        // for (var g in originalGroupedData) {
-        //     console.log(g, originalGroupedData[g].entries.length);
-        // }
         // every group must have a grouper
         if (groups.length && groups.some(group => typeof group.grouper !== 'function')) {
             throw 'Every defined group must have a grouper function';
@@ -553,8 +532,6 @@ const actions = {
             originalData: originalData,
             filteredData: [...initialData],
 
-            // others data related fields which need a grouped correspondence
-            // data: initialData.slice(fromItem, toItem),
             filtered: initialData.length,
             total: originalData.length,
 

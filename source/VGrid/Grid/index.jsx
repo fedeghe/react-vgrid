@@ -12,7 +12,7 @@ const Grid = () => {
     const ref = useRef(),
         { state, dispatch } = useContext(GridContext),
         {
-            data,
+            filteredData,
             total,
             dimensions: {
                 height, width,
@@ -116,14 +116,14 @@ const Grid = () => {
 
         filterDataFields = useCallback(({fields}) => 
             fields
-            ? data.map(e => fields.reduce(
+            ? filteredData.map(e => fields.reduce(
                 (acc, f) => {
                     f in e && (acc[f] = e[f]);
                     return acc;
                 }, {})
             )
-            : data
-        , [data]),
+            : filteredData
+        , [filteredData]),
 
         downloadJson = useCallback(({fields} = {}) => {
             const a = document.createElement('a'),
