@@ -240,8 +240,7 @@ export const __getFilterFactory = ({ columns, filters, opts = {} }) => {
         dimensions, scrollTop = 0,
         elementsPerLine
     }) => {
-
-        const { height, itemHeight, width, itemWidth } = dimensions,
+        const { itemHeight } = dimensions,
             {
                 groupingDimensions: {carpetHeight },
                 allocation: {
@@ -251,18 +250,15 @@ export const __getFilterFactory = ({ columns, filters, opts = {} }) => {
                     headerHeight
                 }
             } = filteredGroupedData,
-
             linesToRender = Math.ceil(renderedItems / elementsPerLine),
             dataHeight = linesToRender * itemHeight + renderedHeaders * headerHeight;
+
         return {
             carpetHeight,
             linesToRender,
-            
             dataHeight,
-
             cardinality,
             renderedItems,
-
             loading: false,
             scrollTop,
         };
