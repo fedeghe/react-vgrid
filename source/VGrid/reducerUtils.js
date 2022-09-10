@@ -244,7 +244,6 @@ export const __getFilterFactory = ({ columns, filters, opts = {} }) => {
             {
                 groupingDimensions: {carpetHeight },
                 allocation: {
-                    cardinality,
                     renderedItems,
                     renderedHeaders,
                     headerHeight
@@ -257,7 +256,6 @@ export const __getFilterFactory = ({ columns, filters, opts = {} }) => {
             carpetHeight,
             linesToRender,
             dataHeight,
-            cardinality,
             renderedItems,
             loading: false,
             scrollTop,
@@ -418,17 +416,9 @@ export const __getFilterFactory = ({ columns, filters, opts = {} }) => {
                     // do not render groups with only the header
                     if (e.length > 1 || onlyUngrouped) {
                         acc[label] = e;
-                        // renderedItems += e.reduce((acc, c) => (
-                        //      acc + ((c.renders && !c.header) ? c.rows.length : 0)
-                        // ), 0);
                         e.forEach(c => {
-                            // renderedHeaders
                             renderedHeaders += ~~(c.header && c.renders);
-
-                            // renderedItems
                             renderedItems += ((c.renders && !c.header) ? c.rows.length : 0);
-
-                            // dataHeight
                             dataHeight += c.renders ? (c.header ? headerHeight : (itemHeight * c.rows.length)) : 0;
                         });
 

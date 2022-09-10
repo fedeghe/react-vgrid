@@ -302,12 +302,9 @@ const actions = {
                     elementsPerLine,
                     dimensions,
                     scrollTop
-                }),
-                rendering = filteredGroupedData.allocation.cardinality;
+                });
             return {
                 filteredGroupedData,
-                rendering,
-                
                 virtual: {
                     ...virtual,
                     ...newVirtual,

@@ -25,8 +25,7 @@ const Grid = () => {
                 carpetHeight,
                 scrollTop,
                 loading,
-                renderedItems,
-                cardinality
+                
             },
             debounceTimes: {
                 scrolling: scrollingDebounceTime,
@@ -42,7 +41,13 @@ const Grid = () => {
             columns,
             cls: { HeaderCaptionCls, FooterCaptionCls },
             filteredGroupedData: {
-                allocation: { alloc, topFillerHeight, bottomFillerHeight }
+                allocation: {
+                    alloc,
+                    topFillerHeight,
+                    bottomFillerHeight,
+                    renderedHeaders,
+                    renderedItems
+                }
             },
             grouping: {
                 groupHeader : {
@@ -151,9 +156,9 @@ const Grid = () => {
             globalFilterValue,
             filtered,
             loading,
+            renderedHeaders,
             renderedItems,
             total,
-            cardinality,
             filters,
             resetFilters,
             downloadJson,
