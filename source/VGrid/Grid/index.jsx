@@ -16,13 +16,13 @@ const Grid = () => {
             total,
             dimensions: {
                 height, width,
-                itemHeight, itemWidth
+                itemHeight, itemWidth,
+                contentHeight
             },
             Item,
             virtual: {
                 dataHeight,
                 carpetHeight,
-                contentHeight,
                 scrollTop,
                 loading,
                 renderedItems,
