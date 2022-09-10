@@ -124,7 +124,6 @@ const actions = {
                     ...newVirtual,
                     scrollTop: 0
                 },
-
                 filteredGroupedData,
                 theDoFilterGlobal: ret.theDoFilterGlobal
             };
@@ -191,7 +190,6 @@ const actions = {
 
             return {
                 filters: _newFilters,
-
                 filteredData: _filteredData,
                 globalFilterValue: _globalFilterValue,
                 virtual: {
@@ -274,7 +272,7 @@ const actions = {
         },
 
         [ACTION_TYPES.SCROLL]: ({
-            payload, dimensions, filteredData, grouping,
+            payload, dimensions, grouping,
             globalFilterValue, originalGroupedData, theDoFilterGlobal, theDoFilter,
             elementsPerLine, trakTimes, virtual
         }) => {
@@ -318,7 +316,6 @@ const actions = {
             {
                 dimensions,
                 originalData,
-                filteredData,
                 virtual,
                 globalFilterValue,
                 filters,
@@ -354,7 +351,7 @@ const actions = {
                     grouping, virtual
                 },
                 [ACTION_TYPES.SCROLL]: {
-                    payload, dimensions, filteredData, grouping,
+                    payload, dimensions, grouping,
                     globalFilterValue, originalGroupedData, theDoFilterGlobal, theDoFilter,
                     elementsPerLine, trakTimes, virtual
                 }
@@ -499,7 +496,7 @@ const actions = {
                 contentHeight: height - headerCaptionHeight - footerCaptionHeight,
                 ...innerVirtual
             },
-            initialData = (
+            filteredData = (
                 globalPreFilter
                     ? originalData.filter(theDoFilterGlobal)
                     : originalData
@@ -522,56 +519,36 @@ const actions = {
         }
         return {
             ...cnf,
+
+            // somehow static 
             rhgID,
             trakTimes,
-
-            //ungrouped
-            originalData: originalData,
-            filteredData: [...initialData],
-
-            filtered: initialData.length,
-            total: originalData.length,
-
-            //grouped
+            originalData,
+            elementsPerLine,
+            Loader,
+            grouping,
+            header: { HeaderCaptionComponent, headerCaptionHeight},
+            footer: { FooterCaptionComponent, footerCaptionHeight},
+            dimensions,
+            debounceTimes: { scrolling, filtering, },
+            events: { onItemEnter, onItemLeave, onItemClick,},
+            cls: { HeaderCaptionCls, FooterCaptionCls},
+            NoFilterData,
             originalGroupedData,
 
+
+            // dynamic
+            filteredData,
+            filtered: filteredData.length,
+            total: originalData.length,
             filteredGroupedData,
-
-            elementsPerLine,
             theDoFilterGlobal,
-
             theDoFilter,
             filterFactory,
             columns,
-
-            Loader,
-            grouping,
-            header: {
-                HeaderCaptionComponent,
-                headerCaptionHeight
-            },
-            footer: {
-                FooterCaptionComponent,
-                footerCaptionHeight
-            },
-            dimensions,
             virtual,
-            debounceTimes: {
-                scrolling,
-                filtering,
-            },
-            events: {
-                onItemEnter,
-                onItemLeave,
-                onItemClick,
-            },
             filters: funcFilters,
-            globalFilterValue: globalPreFilter,
-            cls: {
-                HeaderCaptionCls,
-                FooterCaptionCls
-            },
-            NoFilterData
+            globalFilterValue: globalPreFilter
         };
     };
 
