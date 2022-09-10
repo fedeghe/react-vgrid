@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 
 import Sample from './sample/sample1';
 // import Sample from './sample/sample2';
+
 import 'web-page-monitor';
 
 if(location.host.match(/^localhost/)) {

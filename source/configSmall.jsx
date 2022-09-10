@@ -57,7 +57,7 @@ export default {
     headers: [{
         key: 'id',
         filter: ({userValue, row}) => `${row.id}`.startsWith(userValue),
-        preFiltered: '',
+        // preFiltered: null,
     },{
         key: 'name',
         filter: ({userValue, row}) => `${row.name}`.includes(userValue),

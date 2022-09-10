@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 // the name of the component
 export const CMPNAME = 'react-vgrid',
     // how many lines extra viewport up and down before virtualization ? 
@@ -35,4 +35,5 @@ export const CMPNAME = 'react-vgrid',
         ALL : 'ALL',
         GLOBAL : 'GLOBAL',
         FIELDS : 'FIELDS',
-    };
+    },
+    UIE = 'data-uie';

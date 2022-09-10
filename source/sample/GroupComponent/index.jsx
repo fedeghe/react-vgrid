@@ -3,11 +3,12 @@ import useStyles from './style';
 
 const GroupComponent = ({
     groupName,
-    groupHeaderHeight
+    groupHeaderHeight,
+    ...rest
 }) => {
     const classes = useStyles({groupHeaderHeight});
     return (
-        <div className={classes.Group}>{groupName}</div>
+        <div className={classes.Group} {...rest}>{groupName}</div>
     );
 };
 export default GroupComponent;

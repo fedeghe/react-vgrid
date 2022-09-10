@@ -54,7 +54,9 @@ const Grid = () => {
                     height: groupHeaderHeight,
                     Component: GroupHeaderComponent
                 }
-            }
+            },
+            elementsPerLine,
+            uie
         } = state,
 
         classes = useStyles({
@@ -105,6 +107,9 @@ const Grid = () => {
             onItemClick && (handlers.onClick = e => onItemClick.call(e, e, {item}));
             return handlers;
         }, [onItemClick, onItemEnter, onItemLeave]),
+
+        getItemUie = useCallback((i, j) => (uie ? {[uie]: `item-${i}-${j}`} : {}), [uie]),
+        getHeaderUie = useCallback(i => (uie ? {[uie]: `header-${i}`} : {}), [uie]),
 
         resetFilters = useCallback((what = FILTERS.ALL) => {
             let actionType = null;
@@ -166,31 +171,37 @@ const Grid = () => {
             dataHeight,
             carpetHeight,
             contentHeight,
-        };
+        },
+        headerCaptionMoreProps = uie ? {uie: 'headerCaption'} : {},
+        footerCaptionMoreProps = uie ? {uie: 'footerCaption'} : {};
 
     useEffect(() => {
-        ref && ref.current
-        && scrollTop === 0 && ref.current.scrollTo(0, 0);
+        if (
+            ref && ref.current
+            && scrollTop === 0
+            && ref.current.scrollTo
+        ) ref.current.scrollTo(0, 0);
     }, [scrollTop, ref]);   
     
 
     return <div>
         {Boolean(headerCaptionHeight) && (
             <div className={[classes.HeaderCaption, HeaderCaptionCls].join(' ')}>
-                <HeaderCaptionComponent {...captionProps}/>
+                <HeaderCaptionComponent {...captionProps} {...headerCaptionMoreProps}/>
             </div>
         )}
         {filtered ? (
         <div className={classes.GridContainer} ref={ref} onScroll={onScroll}>
             <Filler width="100%" height={topFillerHeight} />
             {Object.entries(alloc).map(
-                ([label, renderables]) => renderables.map(renderable => {
+                ([label, renderables]) => renderables.map((renderable, j) => {
                     if (!renderable.renders) return null;
                     return renderable.header
-                        ? <GroupHeaderComponent key={label} groupName={label} groupHeaderHeight={groupHeaderHeight}/>
+                        ? <GroupHeaderComponent key={label} groupName={label} groupHeaderHeight={groupHeaderHeight} {...getHeaderUie(label)}/>
                         : renderable.rows.map((row, i) =>
                             <div key={`${row[rvgID]}_${i}`} className={classes.Item}
                                 {...getHandlers(row)}
+                                {...getItemUie(label, j*elementsPerLine + i)}
                             >
                                 <Item {...row}/>
                             </div>
@@ -201,7 +212,7 @@ const Grid = () => {
         </div>) : <NoData/>}
         {Boolean(footerCaptionHeight) && (
             <div className={[classes.FooterCaption, FooterCaptionCls].join(' ')}>
-                <FooterCaptionComponent {...captionProps}/>
+                <FooterCaptionComponent {...captionProps} {...footerCaptionMoreProps}/>
             </div>
         )}
     </div>;

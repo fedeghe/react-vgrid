@@ -11,7 +11,7 @@ import {
     CMPNAME, GAP, WIDTH, HEIGHT, ITEM_HEIGHT, ITEM_WIDTH,
     RVG_ID, DEBOUNCE_SCROLLING, DEBOUNCE_FILTERING,
     NO_FILTER_DATA_MESSAGE, GROUP_COMPONENT_HEIGHT,
-    UNGROUPED_LABEL, FILTERS, DEFAULT_LOADER
+    UNGROUPED_LABEL, FILTERS, DEFAULT_LOADER, UIE
 } from './constants';
 
 const LOADING = Symbol(),
@@ -376,6 +376,7 @@ const actions = {
                 trakTimes = false,
                 data = [],
                 gap = GAP,
+                uie = UIE,
                 Loader = DEFAULT_LOADER,
                 dimensions: {
                     width = WIDTH,
@@ -400,15 +401,15 @@ const actions = {
 
                 header: {
                     caption: {
-                        Component: HeaderCaptionComponent = null,
+                        Component: HeaderCaptionComponent = () => null,
                         height: headerCaptionHeight = 0
-                    }
+                    } = {}
                 } = {},
                 footer: {
                     caption: {
-                        Component: FooterCaptionComponent = null,
+                        Component: FooterCaptionComponent = () => null,
                         height: footerCaptionHeight = 0
-                    }
+                    } = {}
                 } = {},
 
                 events: {
@@ -517,10 +518,12 @@ const actions = {
             }
             );
         }
+
         return {
             ...cnf,
 
             // somehow static 
+            uie,
             rvgID,
             trakTimes,
             originalData,
