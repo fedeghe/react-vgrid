@@ -2,7 +2,7 @@ import React from 'react'
 // the name of the component
 export const CMPNAME = 'react-vgrid',
     // how many lines extra viewport up and down before virtualization ? 
-    LINE_GAP = 3,
+    GAP = 3,
 
     // grid sizes
     WIDTH = 1200,
@@ -16,7 +16,7 @@ export const CMPNAME = 'react-vgrid',
     GROUP_COMPONENT_HEIGHT = 20,
 
     // id appended string
-    RHG_ID = '_ID',
+    RVG_ID = '_ID',
 
     // debouning values
     DEBOUNCE_SCROLLING = 50,

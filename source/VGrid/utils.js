@@ -15,16 +15,16 @@ const prefix = 'RVG_',
         };
     },
     escapeComma = r => `${r}`.replace(/,/g, '\\,'),
-    removeID = (jsonData, rhgID) => jsonData.map(row => {
+    removeID = (jsonData, rvgID) => jsonData.map(row => {
         var r = {...row};
-        delete r[rhgID];
+        delete r[rvgID];
         return r;
     }),
-    asXsv = (columns, jsonData, rhgID, separator) => {
+    asXsv = (columns, jsonData, rvgID, separator) => {
         const lines = [],
             keys = columns.map(c => c.key);
         lines.push(keys.join(separator));
-        removeID(jsonData, rhgID).forEach(row => {
+        removeID(jsonData, rvgID).forEach(row => {
             lines.push(keys.map(k => escapeComma(row[k])).join(separator));
         });
         return lines.join("\n");

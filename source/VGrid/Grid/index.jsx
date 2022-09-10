@@ -33,7 +33,7 @@ const Grid = () => {
             },
             header: { HeaderCaptionComponent, headerCaptionHeight },
             footer: { FooterCaptionComponent, footerCaptionHeight },
-            rhgID,
+            rvgID,
             events: {onItemEnter, onItemLeave, onItemClick },
             globalFilterValue,
             filtered,
@@ -133,23 +133,23 @@ const Grid = () => {
         downloadJson = useCallback(({fields} = {}) => {
             const a = document.createElement('a'),
                 d = filterDataFields({fields}),
-                blob = new Blob([JSON.stringify(asJson(d, rhgID))]);
+                blob = new Blob([JSON.stringify(asJson(d, rvgID))]);
             a.href = URL.createObjectURL(blob);
             a.target = '_blank';
             a.download = 'extract.json';                     //filename to download
             a.click();
-        }, [filterDataFields, rhgID]),
+        }, [filterDataFields, rvgID]),
 
         downloadXsv = useCallback(({separator = ',', fields} = {}) => {
             const a = document.createElement('a'),
                 d = filterDataFields({fields}),
-                xsv = asXsv((fields || columns).map(f => ({key: f})) , d, rhgID, separator),
+                xsv = asXsv((fields || columns).map(f => ({key: f})) , d, rvgID, separator),
                 blob = new Blob([xsv], { type: 'text/csv' });
             a.href = URL.createObjectURL(blob);
             a.target = '_blank';
             a.download = 'extract.csv';                     //filename to download
             a.click();
-        }, [columns, filterDataFields, rhgID]),
+        }, [columns, filterDataFields, rvgID]),
 
         captionProps = {
             globalFilter, 
@@ -189,7 +189,7 @@ const Grid = () => {
                     return renderable.header
                         ? <GroupHeaderComponent key={label} groupName={label} groupHeaderHeight={groupHeaderHeight}/>
                         : renderable.rows.map((row, i) =>
-                            <div key={`${row[rhgID]}_${i}`} className={classes.Item}
+                            <div key={`${row[rvgID]}_${i}`} className={classes.Item}
                                 {...getHandlers(row)}
                             >
                                 <Item {...row}/>

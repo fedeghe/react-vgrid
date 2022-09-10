@@ -7,12 +7,12 @@ const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / el
      * in both the functions do not destructure alloc
      * so to be able to not return anything but just update the referenced items
      */
-    fixTopLineGap = ({allocation, groupKeys, lineGap}) => {
+    fixTopLineGap = ({allocation, groupKeys, gap}) => {
         
         const {firstRender} = allocation;
 
         let preIndex = firstRender.cursor,
-            preGapCursor = lineGap,
+            preGapCursor = gap,
             preTargetGroupLabel = firstRender.group;
         while(preTargetGroupLabel && preGapCursor--) {
             // maybe we need to seek for the previous group
@@ -33,11 +33,11 @@ const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / el
      * in both the functions do not destructure alloc
      * so to be able to not return anything but just update the referenced items
      */
-    fixBottomLineGap = ({allocation, groupKeys, lineGap}) => {
+    fixBottomLineGap = ({allocation, groupKeys, gap}) => {
         const {firstNotRender} = allocation;
         let postIndex = firstNotRender.cursor,    
             postTargetGroupLabel = firstNotRender.group,
-            postGapCursor = lineGap,
+            postGapCursor = gap,
             postGroupLastIndex = allocation.alloc[postTargetGroupLabel].length - 1;
 
         while(postTargetGroupLabel && postGapCursor--) {
@@ -57,12 +57,12 @@ const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / el
         }
     },
     
-    fixLineGap = ({allocation, groupKeys, lineGap}) => { 
+    fixLineGap = ({allocation, groupKeys, gap}) => { 
         const {firstRender, firstNotRender} = allocation;
         if (!firstRender){ return allocation;}
-        fixTopLineGap({allocation, groupKeys, lineGap});
+        fixTopLineGap({allocation, groupKeys, gap});
         if (!firstNotRender) return allocation;
-        fixBottomLineGap({allocation, groupKeys, lineGap});
+        fixBottomLineGap({allocation, groupKeys, gap});
         return allocation;
     },
 
@@ -264,9 +264,9 @@ export const __getFilterFactory = ({ columns, filters, opts = {} }) => {
 
     /**
      * the next step for this function is to skip all elements not rendering
-     * still considering the lineGap
+     * still considering the line gap
      */
-    __getVirtualGroup = ({ dimensions, lineGap, grouping, grouped, scrollTop, elementsPerLine, opts = {} }) => {
+    __getVirtualGroup = ({ dimensions, gap, grouping, grouped, scrollTop, elementsPerLine, opts = {} }) => {
         let renderedItems = 0,
             renderedHeaders = 0,
             dataHeight = 0;
@@ -321,7 +321,7 @@ export const __getFilterFactory = ({ columns, filters, opts = {} }) => {
                  * ---------------------------------
                  * linegap + 1 set in the reducer: why ? 
                  * 
-                 * linegap by default is the constant LINE_GAP (currently 2)
+                 * linegap by default is the constant GAP (currently 2)
                  * as edge case let's suppose it's set to 0; the inRange function checks
                  * if n is in the viewport (range) and n is passed as the mean vertical point
                  * allowing to make only 2 comparisons but,  if only the lower 40% or the item (line)
@@ -329,7 +329,7 @@ export const __getFilterFactory = ({ columns, filters, opts = {} }) => {
                  * and this would be a problem, to solve it we can
                  * - use a 4 comparison rangeInRange function instead of inRange to check if
                  *   the top of the line is in the range OR the bottom is in the range (4 comparison)
-                 * - use the less expensive inRange and use lineGap+1 so that when we take lineGap
+                 * - use the less expensive inRange and use gap+1 so that when we take gap
                  *   into account we basically render one more element at the top and at the bottom
                  * the second option might do the whole 'inRange' check on average in half the time
                  * thus is the choosen option
@@ -340,7 +340,7 @@ export const __getFilterFactory = ({ columns, filters, opts = {} }) => {
                     groupHeight = groupingDimensions.groupsHeights[label];
                 /**
                  * here flattening can be excluded despite it would make a way easier
-                 * to apply after the lineGap logic
+                 * to apply after the gap logic
                  * 
                  * the reason is that group label hash is needed cause afterward 
                  * the group elements sorting turn straightforward,
@@ -399,14 +399,14 @@ export const __getFilterFactory = ({ columns, filters, opts = {} }) => {
             
             /**
              * now we need still to do a small thing on allocation cause we need to
-             * - use lineGap and firstRender and firstNotRender
+             * - use gap and firstRender and firstNotRender
              *   to turn true the rendering of the right elements
              * - calculate topFillerHeight and bottomFillerHeight
              * 
-             * notice that after doing the right thing with lineGap, we can cleanup allocation
+             * notice that after doing the right thing with gap, we can cleanup allocation
              * removing all elements that do not render 
              **/
-            gappedAllocationUnfiltered = fixLineGap({allocation, groupKeys, lineGap }),
+            gappedAllocationUnfiltered = fixLineGap({allocation, groupKeys, gap }),
             withFillersAllocation  = addFillers({allocation: gappedAllocationUnfiltered, carpetHeight}),
             filteredAlloc = Object.entries(withFillersAllocation.alloc)
                 .reduce((acc, [label, entries]) => {

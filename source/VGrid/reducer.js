@@ -8,8 +8,8 @@ import {
     __getGrouped, __composeFilters, __getFilteredCount, __applyFilter
 } from './reducerUtils';
 import {
-    CMPNAME, LINE_GAP, WIDTH, HEIGHT, ITEM_HEIGHT, ITEM_WIDTH,
-    RHG_ID, DEBOUNCE_SCROLLING, DEBOUNCE_FILTERING,
+    CMPNAME, GAP, WIDTH, HEIGHT, ITEM_HEIGHT, ITEM_WIDTH,
+    RVG_ID, DEBOUNCE_SCROLLING, DEBOUNCE_FILTERING,
     NO_FILTER_DATA_MESSAGE, GROUP_COMPONENT_HEIGHT,
     UNGROUPED_LABEL, FILTERS, DEFAULT_LOADER
 } from './constants';
@@ -41,7 +41,7 @@ const actions = {
             theDoFilterGlobal,
             virtual
         }) => {
-            const {scrollTop, lineGap,} = virtual,
+            const {scrollTop, gap,} = virtual,
                 { value, field } = payload,
                 // must start from everything
                 base = [...originalData],
@@ -100,7 +100,7 @@ const actions = {
                 filtered = __getFilteredCount({ gData }),
                 filteredGroupedData = __getVirtualGroup({
                     dimensions,
-                    lineGap,
+                    gap,
                     grouping,
                     grouped: gData,
                     scrollTop: 0,
@@ -140,7 +140,7 @@ const actions = {
                 theDoFilterGlobal;
 
             const filteringFields = payload.filter(f => columns.includes(f)),
-                {scrollTop, lineGap} = virtual;
+                {scrollTop, gap} = virtual;
 
             filteringFields.forEach(f => { _newFilters[f].value = ''; });
 
@@ -173,7 +173,7 @@ const actions = {
 
                 filteredGroupedData = __getVirtualGroup({
                     dimensions,
-                    lineGap,
+                    gap,
                     grouping,
                     grouped: gData,
                     scrollTop: 0,
@@ -212,7 +212,7 @@ const actions = {
                 theDoFilter = () => true,
                 theDoFilterGlobal = () => true,
                 filterFactory = __getFilterFactory({ columns, filters: _newFilters, opts: { trakTimes, lib } });
-            const {lineGap }  = virtual;
+            const {gap }  = virtual;
             switch (payload) {
                 case FILTERS.ALL:
                     _globalFilterValue = '';
@@ -245,7 +245,7 @@ const actions = {
 
                 filteredGroupedData = __getVirtualGroup({
                     dimensions,
-                    lineGap,
+                    gap,
                     grouping,
                     grouped: gData,
                     scrollTop: 0,
@@ -277,7 +277,7 @@ const actions = {
             elementsPerLine, trakTimes, virtual
         }) => {
             const scrollTop = parseInt(payload, 10),
-                {lineGap} = virtual,
+                {gap} = virtual,
                 gData = __applyFilter({
                     globalValue: globalFilterValue,
                     groupedData: originalGroupedData, // this needs to be the filtered data
@@ -288,7 +288,7 @@ const actions = {
                 }),
                 filteredGroupedData = __getVirtualGroup({
                     dimensions,
-                    lineGap,
+                    gap,
                     grouping,
                     grouped: gData,
                     scrollTop,
@@ -370,12 +370,12 @@ const actions = {
     },
 
     init = (cnf = {}) => {
-        if ('lineGap' in cnf && cnf.lineGap < 0) doThrow({ message: 'The parameter `lineGap` cannot be negative', opts: { lib } });
+        if ('gap' in cnf && cnf.gap < 0) doThrow({ message: 'The parameter `gap` cannot be negative', opts: { lib } });
         const trak = { start: +new Date },
             {
                 trakTimes = false,
                 data = [],
-                lineGap = LINE_GAP,
+                gap = GAP,
                 Loader = DEFAULT_LOADER,
                 dimensions: {
                     width = WIDTH,
@@ -383,7 +383,7 @@ const actions = {
                     itemHeight = ITEM_HEIGHT,
                     itemWidth = ITEM_WIDTH
                 } = {},
-                rhgID = RHG_ID,
+                rvgID = RVG_ID,
                 debounceTimes: {
                     scrolling = DEBOUNCE_SCROLLING,
                     filtering = DEBOUNCE_FILTERING,
@@ -426,7 +426,7 @@ const actions = {
             } = cnf,
             /**
              * to know why read the comment in __getVirtualGroup */
-            lineGapPlus = lineGap + 1,
+            gapPlus = gap + 1,
             grouping = {
                 groups,
                 groupHeader: {
@@ -471,7 +471,7 @@ const actions = {
 
             filteredGroupedData = __getVirtualGroup({
                 dimensions,
-                lineGap: lineGapPlus,
+                gap: gapPlus,
                 grouping,
                 grouped: gData,
                 scrollTop: 0,
@@ -482,7 +482,7 @@ const actions = {
              * 
              ****************************************************************************/
 
-            originalData = data.map(item => ({ [rhgID]: `${uniqueID}`, ...item })),
+            originalData = data.map(item => ({ [rvgID]: `${uniqueID}`, ...item })),
 
             innerVirtual = __getVirtual({
                 filteredGroupedData,
@@ -492,7 +492,7 @@ const actions = {
             }),
             virtual = {
                 loading: false,
-                lineGap: lineGapPlus,
+                gap: gapPlus,
                 contentHeight: height - headerCaptionHeight - footerCaptionHeight,
                 ...innerVirtual
             },
@@ -521,7 +521,7 @@ const actions = {
             ...cnf,
 
             // somehow static 
-            rhgID,
+            rvgID,
             trakTimes,
             originalData,
             elementsPerLine,

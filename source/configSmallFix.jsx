@@ -78,7 +78,7 @@ export default {
         width: 1000,
         height: 800
     },
-    lineGap : 0, // 3
+    gap : 0, // 3
     NoFilterData: ({total}) => <div>no data out of {total}</div>,
 
     debounceTimes: {
