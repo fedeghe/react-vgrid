@@ -163,12 +163,12 @@ const actions = {
                 }),
                 theDoFilter = filterFactory();
 
-            _filteredData = _filteredData.filter(theDoFilter);
-
             if (_globalFilterValue) {
                 // this needs to be recreated every time the global filter changes
                 theDoFilterGlobal = filterFactory(_globalFilterValue);
                 _filteredData = _filteredData.filter(theDoFilterGlobal);
+            } else {
+                _filteredData = _filteredData.filter(theDoFilter);
             }
 
             // eslint-disable-next-line one-var
