@@ -5,7 +5,7 @@ import {
 } from './utils';
 import {
     __getFilterFactory, __cleanFilters, __getVirtual, __getVirtualGroup,
-    __getGrouped, __composeFilters, __getFilteredCount, __applyFilter
+    __getGrouped, __composeFilters, __applyFilter
 } from './reducerUtils';
 import {
     CMPNAME, GAP, WIDTH, HEIGHT, ITEM_HEIGHT, ITEM_WIDTH,
@@ -85,7 +85,7 @@ const actions = {
                 /**
                  * GROUPED
                  */
-                gData = __applyFilter({
+                {gData, filtered} = __applyFilter({
                     globalValue: _globalFilterValue,
                     groupedData: originalGroupedData,
                     gFilter: ret.theDoFilterGlobal,
@@ -93,7 +93,7 @@ const actions = {
                     elementsPerLine,
                     opts: { trakTimes, lib }
                 }),
-                filtered = __getFilteredCount({ gData }),
+
                 filteredGroupedData = __getVirtualGroup({
                     dimensions,
                     gap,
@@ -153,7 +153,7 @@ const actions = {
             }
 
             // eslint-disable-next-line one-var
-            const gData = __applyFilter({
+            const {gData, filtered} = __applyFilter({
                     globalValue: _globalFilterValue,
                     groupedData: originalGroupedData,
                     gFilter: theDoFilterGlobal,
@@ -171,7 +171,6 @@ const actions = {
                     elementsPerLine,
                     opts: { trakTimes, lib }
                 }),
-                filtered = __getFilteredCount({ gData }),
                 newVirtual = __getVirtual({
                     filteredGroupedData,
                     elementsPerLine,
@@ -221,14 +220,14 @@ const actions = {
             }
 
             // eslint-disable-next-line one-var
-            const gData = __applyFilter({
-                globalValue: _globalFilterValue,
-                groupedData: originalGroupedData,
-                gFilter: theDoFilterGlobal,
-                filter: theDoFilter,
-                elementsPerLine,
-                opts: { trakTimes, lib }
-            }),
+            const {gData, filtered} = __applyFilter({
+                    globalValue: _globalFilterValue,
+                    groupedData: originalGroupedData,
+                    gFilter: theDoFilterGlobal,
+                    filter: theDoFilter,
+                    elementsPerLine,
+                    opts: { trakTimes, lib }
+                }),
 
                 filteredGroupedData = __getVirtualGroup({
                     dimensions,
@@ -238,8 +237,7 @@ const actions = {
                     scrollTop: 0,
                     elementsPerLine,
                     opts: { trakTimes, lib }
-                }),
-                filtered = __getFilteredCount({ gData });
+                });
 
             return {
                 filters: _newFilters,
@@ -264,7 +262,7 @@ const actions = {
         }) => {
             const scrollTop = parseInt(payload, 10),
                 {gap} = virtual,
-                gData = __applyFilter({
+                {gData} = __applyFilter({
                     globalValue: globalFilterValue,
                     groupedData: originalGroupedData, // this needs to be the filtered data
                     gFilter: theDoFilterGlobal,
@@ -447,7 +445,7 @@ const actions = {
             // this needs to be recreated every time the global filter changes
             theDoFilterGlobal = filterFactory(globalPreFilter),
 
-            gData = __applyFilter({
+            {gData} = __applyFilter({
                 globalValue: globalPreFilter,
                 groupedData: originalGroupedData,
                 gFilter: theDoFilterGlobal,
