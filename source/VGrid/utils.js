@@ -33,7 +33,7 @@ const prefix = 'RVG_',
     trakTime = ({ what, time, opts }) =>
         console.info(`%c${opts.lib.toUpperCase()} 🐢 ${what} spent ${time}ms`, 'color:DodgerBlue'),
     doWarn = ({ message, opts }) =>
-        console.warn(`${opts.lib.toUpperCase()} 🙉 ${message}`),
+        opts.warning && console.warn(`${opts.lib.toUpperCase()} 🙉 ${message}`),
     doThrow = ({ message, opts }) => {
         throw `${opts.lib.toUpperCase()} 🚨 ${message}`;
     },

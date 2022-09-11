@@ -12,7 +12,7 @@ import {
     RVG_ID, DEBOUNCE_SCROLLING, DEBOUNCE_FILTERING,
     NO_FILTER_DATA_MESSAGE, GROUP_COMPONENT_HEIGHT,
     UNGROUPED_LABEL, FILTERS, DEFAULT_LOADER, UIE,
-    GLOBAL_FILTER
+    GLOBAL_FILTER, WARNING
 } from './constants';
 
 const LOADING = Symbol(),
@@ -38,9 +38,9 @@ const actions = {
         [ACTION_TYPES.FILTER]: ({
             payload, globalFilterValue, filters,
             columns, filterFactory, dimensions, 
-            grouping,  originalGroupedData, elementsPerLine, trakTimes,
+            grouping,  originalGroupedData, elementsPerLine,
             theDoFilterGlobal,
-            virtual, globalFilter
+            virtual, globalFilter, opts
         }) => {
             const {scrollTop, gap,} = virtual,
                 { value, field } = payload,
@@ -90,7 +90,7 @@ const actions = {
                     gFilter: ret.theDoFilterGlobal,
                     filter: newTheDoFilter,
                     elementsPerLine,
-                    opts: { trakTimes, lib }
+                    opts
                 }),
 
                 filteredGroupedData = __getVirtualGroup({
@@ -100,7 +100,7 @@ const actions = {
                     grouped: gData,
                     scrollTop: 0,
                     elementsPerLine,
-                    opts: { trakTimes, lib }
+                    opts
                 }),
                 newVirtual = __getVirtual({
                     filteredGroupedData,
@@ -125,9 +125,9 @@ const actions = {
 
         [ACTION_TYPES.UNFILTER_FIELDS]: ({
             payload, globalFilterValue, filters, columns,
-            trakTimes, dimensions, grouping,
+            dimensions, grouping,
             originalGroupedData, elementsPerLine, virtual,
-            globalFilter
+            globalFilter, opts
         }) => {
             let _globalFilterValue = globalFilterValue,
                 _newFilters = { ...filters },
@@ -144,7 +144,7 @@ const actions = {
                     columns,
                     filters: _newFilters,
                     globalFilter,
-                    opts: { trakTimes, lib }
+                    opts
                 }),
                 theDoFilter = filterFactory();
 
@@ -160,7 +160,7 @@ const actions = {
                     gFilter: theDoFilterGlobal,
                     filter: theDoFilter,
                     elementsPerLine,
-                    opts: { trakTimes, lib }
+                    opts
                 }),
 
                 filteredGroupedData = __getVirtualGroup({
@@ -170,7 +170,7 @@ const actions = {
                     grouped: gData,
                     scrollTop: 0,
                     elementsPerLine,
-                    opts: { trakTimes, lib }
+                    opts
                 }),
                 newVirtual = __getVirtual({
                     filteredGroupedData,
@@ -193,20 +193,20 @@ const actions = {
 
         [ACTION_TYPES.UNFILTER]: ({
             payload, globalFilterValue, filters, columns,
-            trakTimes, elementsPerLine, dimensions, originalGroupedData,
-            grouping, virtual, globalFilter
+            elementsPerLine, dimensions, originalGroupedData,
+            grouping, virtual, globalFilter, opts
         }) => {     
             let _globalFilterValue = globalFilterValue,
                 _newFilters = { ...filters },
                 theDoFilter = () => true,
                 theDoFilterGlobal = () => true,
-                filterFactory = __getFilterFactory({ columns, filters: _newFilters, globalFilter, opts: { trakTimes, lib } });
+                filterFactory = __getFilterFactory({ columns, filters: _newFilters, globalFilter, opts});
             const {gap }  = virtual;
             switch (payload) {
                 case FILTERS.ALL:
                     _globalFilterValue = '';
                     _newFilters = __cleanFilters(filters);
-                    filterFactory = __getFilterFactory({ columns, filters: _newFilters, globalFilter, opts: { trakTimes, lib } });
+                    filterFactory = __getFilterFactory({ columns, filters: _newFilters, globalFilter, opts});
                     theDoFilter = filterFactory();
                     break;
                 case FILTERS.GLOBAL:
@@ -216,7 +216,7 @@ const actions = {
                 case FILTERS.FIELDS:
                     _newFilters = __cleanFilters(filters);
                     theDoFilterGlobal = filterFactory(_globalFilterValue);
-                    filterFactory = __getFilterFactory({ columns, filters: _newFilters, globalFilter, opts: { trakTimes, lib } });
+                    filterFactory = __getFilterFactory({ columns, filters: _newFilters, globalFilter, opts});
                     break;
             }
 
@@ -227,7 +227,7 @@ const actions = {
                     gFilter: theDoFilterGlobal,
                     filter: theDoFilter,
                     elementsPerLine,
-                    opts: { trakTimes, lib }
+                    opts
                 }),
 
                 filteredGroupedData = __getVirtualGroup({
@@ -237,7 +237,7 @@ const actions = {
                     grouped: gData,
                     scrollTop: 0,
                     elementsPerLine,
-                    opts: { trakTimes, lib }
+                    opts
                 });
 
             return {
@@ -259,7 +259,7 @@ const actions = {
         [ACTION_TYPES.SCROLL]: ({
             payload, dimensions, grouping,
             globalFilterValue, originalGroupedData, theDoFilterGlobal, theDoFilter,
-            elementsPerLine, trakTimes, virtual
+            elementsPerLine, virtual, opts
         }) => {
             const scrollTop = parseInt(payload, 10),
                 {gap} = virtual,
@@ -269,7 +269,7 @@ const actions = {
                     gFilter: theDoFilterGlobal,
                     filter: theDoFilter,
                     elementsPerLine,
-                    opts: { trakTimes, lib }
+                    opts
                 }),
                 filteredGroupedData = __getVirtualGroup({
                     dimensions,
@@ -278,7 +278,7 @@ const actions = {
                     grouped: gData,
                     scrollTop,
                     elementsPerLine,
-                    opts: { trakTimes, lib }
+                    opts
                 }),
                 newVirtual = __getVirtual({
                     filteredGroupedData,
@@ -313,9 +313,11 @@ const actions = {
                 trakTimes,
                 elementsPerLine,
                 originalGroupedData,
-                globalFilter
+                globalFilter,
+                warning
                 // globalFilterValue
             } = oldState,
+            opts = {trakTimes, warning, lib},
 
             params = {
                 [ACTION_TYPES.LOADING]: {virtual},
@@ -324,24 +326,24 @@ const actions = {
                     columns, filterFactory, dimensions,
                     grouping,  originalGroupedData, elementsPerLine, trakTimes,
                     virtual, theDoFilterGlobal,
-                    globalFilter
+                    globalFilter, opts
                 },
                 [ACTION_TYPES.UNFILTER_FIELDS]: {
                     payload, globalFilterValue, filters, columns,
                     trakTimes, dimensions, grouping,
                     originalGroupedData, elementsPerLine, virtual,
-                    globalFilter
+                    globalFilter, opts
                 },
                 [ACTION_TYPES.UNFILTER]: {
                     payload, globalFilterValue, filters, columns,
                     trakTimes, elementsPerLine, dimensions, originalGroupedData,
                     grouping, virtual,
-                    globalFilter
+                    globalFilter, opts
                 },
                 [ACTION_TYPES.SCROLL]: {
                     payload, dimensions, grouping,
                     globalFilterValue, originalGroupedData, theDoFilterGlobal, theDoFilter,
-                    elementsPerLine, trakTimes, virtual
+                    elementsPerLine, trakTimes, virtual, opts
                 }
             }[type] || {};
 
@@ -413,7 +415,8 @@ const actions = {
                     FooterCaption: FooterCaptionCls = null,
                 } = {},
                 Item,
-                globalFilter = GLOBAL_FILTER
+                globalFilter = GLOBAL_FILTER,
+                warning = WARNING
             } = cnf,
             /**
              * to know why read the comment in __getVirtualGroup */
@@ -439,13 +442,13 @@ const actions = {
             /***************************************************************************
              * starting from specified groups, separate the data and create the groups
              */
-            originalGroupedData = __getGrouped({ data, groups, elementsPerLine, opts: { ungroupedLabel, lib, trakTimes } }),
+            originalGroupedData = __getGrouped({ data, groups, elementsPerLine, opts: { ungroupedLabel, lib, trakTimes, warning } }),
             // originalGroupedData0 = __getGrouped({data, groups, elementsPerLine, opts: {ungroupedLabel, lib, trak: true}}),            
             funcFilters = __composeFilters({ headers, opts: { trakTimes, lib } }),
 
             // columns, filterFactory and theDoFilter can stay static in the state
             columns = headers.map(h => h.key),
-            filterFactory = __getFilterFactory({ columns, filters: funcFilters, opts: { trakTimes, lib } }),
+            filterFactory = __getFilterFactory({ columns, filters: funcFilters, opts: { trakTimes, lib, warning } }),
             theDoFilter = filterFactory(),
 
             // this needs to be recreated every time the global filter changes
@@ -488,7 +491,6 @@ const actions = {
             };
             
 
-
         // every group must have a grouper
         if (groups.length && groups.some(group => typeof group.grouper !== 'function')) {
             throw 'Every defined group must have a grouper function';
@@ -526,6 +528,7 @@ const actions = {
             gap: gapPlus,
             Item,
             globalFilter,
+            warning,
 
             // dynamic
             headers,
