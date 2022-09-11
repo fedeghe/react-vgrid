@@ -49,8 +49,7 @@ const actions = {
                 ret = {
                     theDoFilterGlobal
                 };
-            let _filteredData = base,
-                _globalFilterValue = globalFilterValue,
+            let _globalFilterValue = globalFilterValue,
                 _newFilters = { ...filters };
 
             // first maybe update filter value
@@ -79,10 +78,7 @@ const actions = {
                     //////////////////
                 }
 
-                _filteredData = _filteredData.filter(doFilter(_globalFilterValue));
             }
-            //then use all available filters on their value (that is updated)
-            _filteredData = _filteredData.filter(doFilter());
 
             // eslint-disable-next-line one-var
             const newTheDoFilter = doFilter(),
@@ -116,7 +112,6 @@ const actions = {
             return {
                 ...ret,
                 filters: _newFilters,
-                filteredData: _filteredData,
                 filtered,
                 theDoFilter: newTheDoFilter,
                 virtual: {
@@ -136,7 +131,6 @@ const actions = {
         }) => {
             let _globalFilterValue = globalFilterValue,
                 _newFilters = { ...filters },
-                _filteredData = [...originalData],
                 theDoFilterGlobal;
 
             const filteringFields = payload.filter(f => columns.includes(f)),
@@ -156,9 +150,6 @@ const actions = {
             if (_globalFilterValue) {
                 // this needs to be recreated every time the global filter changes
                 theDoFilterGlobal = filterFactory(_globalFilterValue);
-                _filteredData = _filteredData.filter(theDoFilterGlobal);
-            } else {
-                _filteredData = _filteredData.filter(theDoFilter);
             }
 
             // eslint-disable-next-line one-var
@@ -190,7 +181,6 @@ const actions = {
 
             return {
                 filters: _newFilters,
-                filteredData: _filteredData,
                 globalFilterValue: _globalFilterValue,
                 virtual: {
                     ...virtual,
@@ -208,7 +198,6 @@ const actions = {
         }) => {     
             let _globalFilterValue = globalFilterValue,
                 _newFilters = { ...filters },
-                _filteredData = [...originalData],
                 theDoFilter = () => true,
                 theDoFilterGlobal = () => true,
                 filterFactory = __getFilterFactory({ columns, filters: _newFilters, opts: { trakTimes, lib } });
@@ -223,13 +212,11 @@ const actions = {
                 case FILTERS.GLOBAL:
                     _globalFilterValue = '';
                     theDoFilter = filterFactory();
-                    // _filteredData = _filteredData.filter(theDoFilter);
                     break;
                 case FILTERS.FIELDS:
                     _newFilters = __cleanFilters(filters);
                     theDoFilterGlobal = filterFactory(_globalFilterValue);
                     filterFactory = __getFilterFactory({ columns, filters: _newFilters, opts: { trakTimes, lib } });
-                    _filteredData = _filteredData.filter(theDoFilterGlobal);
                     break;
             }
 
@@ -253,11 +240,10 @@ const actions = {
                     opts: { trakTimes, lib }
                 }),
                 filtered = __getFilteredCount({ gData });
-            // debugger
+
             return {
                 filters: _newFilters,
                 gData,
-                filteredData: _filteredData,
                 globalFilterValue: _globalFilterValue,
                 filtered,
                 theDoFilterGlobal,
@@ -363,7 +349,7 @@ const actions = {
                 ...oldState,
                 ...actions[type](params)
             };
-            // console.log({newState});
+            console.log({newState});
             return newState;
         }
         return oldState;
@@ -496,12 +482,8 @@ const actions = {
                 gap: gapPlus,
                 contentHeight: height - headerCaptionHeight - footerCaptionHeight,
                 ...innerVirtual
-            },
-            filteredData = (
-                globalPreFilter
-                    ? originalData.filter(theDoFilterGlobal)
-                    : originalData
-            ).filter(theDoFilter);
+            };
+            
 
 
         // every group must have a grouper
@@ -541,8 +523,7 @@ const actions = {
             gap: gapPlus,
 
             // dynamic
-            filteredData,
-            filtered: filteredData.length,
+            filtered: data.length,
             total: originalData.length,
             filteredGroupedData,
             theDoFilterGlobal,
