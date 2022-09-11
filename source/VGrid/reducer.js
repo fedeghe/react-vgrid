@@ -528,6 +528,7 @@ const actions = {
             globalFilter,
 
             // dynamic
+            headers,
             filtered: data.length,
             total: data.length,
             filteredGroupedData,

@@ -23,7 +23,6 @@ describe('reducer - basic', function () {
         });
         expect(state.columns.length).toBe(3);
         expect(state.data.length).toBe(50);
-        expect(state.originalData.length).toBe(50);
         expect(state.columns.length).toBe(3);
         expect(state.gap).toBe(1);
         expect(state.debounceTimes).toMatchObject({
@@ -63,7 +62,6 @@ describe('reducer - basic', function () {
         expect(state.columns.length).toBe(3)
         expect(state.headers.length).toBe(3)
         expect(state.data.length).toBe(50)
-        expect(state.originalData.length).toBe(50)
         expect(state.filtered).toBe(50)
         expect(state.gap).toBe(1)
         
