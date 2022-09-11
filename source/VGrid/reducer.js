@@ -35,7 +35,7 @@ const actions = {
         [ACTION_TYPES.LOADING]: ({virtual}) => ({ virtual: { ...virtual, loading: true } }),
 
         [ACTION_TYPES.FILTER]: ({
-            payload, originalData, globalFilterValue, filters,
+            payload, globalFilterValue, filters,
             columns, filterFactory, dimensions, 
             grouping,  originalGroupedData, elementsPerLine, trakTimes,
             theDoFilterGlobal,
@@ -44,7 +44,6 @@ const actions = {
             const {scrollTop, gap,} = virtual,
                 { value, field } = payload,
                 // must start from everything
-                base = [...originalData],
                 isGlobalSearch = !field,
                 ret = {
                     theDoFilterGlobal
@@ -125,7 +124,7 @@ const actions = {
         },
 
         [ACTION_TYPES.UNFILTER_FIELDS]: ({
-            payload, globalFilterValue, filters, originalData, columns,
+            payload, globalFilterValue, filters, columns,
             trakTimes, dimensions, grouping,
             originalGroupedData, elementsPerLine, virtual
         }) => {
@@ -191,7 +190,7 @@ const actions = {
         },
 
         [ACTION_TYPES.UNFILTER]: ({
-            payload, globalFilterValue, filters, originalData, columns,
+            payload, globalFilterValue, filters, columns,
             trakTimes, elementsPerLine, dimensions, originalGroupedData,
             grouping, virtual
         }) => {     
@@ -299,7 +298,6 @@ const actions = {
         const { payload = {}, type } = action,
             {
                 dimensions,
-                originalData,
                 virtual,
                 globalFilterValue,
                 filters,
@@ -319,18 +317,18 @@ const actions = {
             params = {
                 [ACTION_TYPES.LOADING]: {virtual},
                 [ACTION_TYPES.FILTER]: {
-                    payload, originalData, globalFilterValue, filters,
+                    payload, globalFilterValue, filters,
                     columns, filterFactory, dimensions,
                     grouping,  originalGroupedData, elementsPerLine, trakTimes,
                     virtual, theDoFilterGlobal
                 },
                 [ACTION_TYPES.UNFILTER_FIELDS]: {
-                    payload, globalFilterValue, filters, originalData, columns,
+                    payload, globalFilterValue, filters, columns,
                     trakTimes, dimensions, grouping,
                     originalGroupedData, elementsPerLine, virtual
                 },
                 [ACTION_TYPES.UNFILTER]: {
-                    payload, globalFilterValue, filters, originalData, columns,
+                    payload, globalFilterValue, filters, columns,
                     trakTimes, elementsPerLine, dimensions, originalGroupedData,
                     grouping, virtual
                 },
@@ -407,7 +405,8 @@ const actions = {
                 cls: {
                     HeaderCaption: HeaderCaptionCls = null,
                     FooterCaption: FooterCaptionCls = null,
-                } = {}
+                } = {},
+                Item
             } = cnf,
             /**
              * to know why read the comment in __getVirtualGroup */
@@ -467,7 +466,6 @@ const actions = {
              * 
              ****************************************************************************/
 
-            originalData = data.map(item => ({ [rvgID]: `${uniqueID}`, ...item })),
 
             innerVirtual = __getVirtual({
                 filteredGroupedData,
@@ -500,13 +498,13 @@ const actions = {
         }
 
         return {
-            ...cnf,
+            // ...cnf,
 
-            // somehow static 
+            // somehow static
+            data: data.map(item => ({ [rvgID]: `${uniqueID}`, ...item })),
             uie,
             rvgID,
             trakTimes,
-            originalData,
             elementsPerLine,
             Loader,
             grouping,
@@ -519,10 +517,11 @@ const actions = {
             NoFilterData,
             originalGroupedData,
             gap: gapPlus,
+            Item,
 
             // dynamic
             filtered: data.length,
-            total: originalData.length,
+            total: data.length,
             filteredGroupedData,
             theDoFilterGlobal,
             theDoFilter,
