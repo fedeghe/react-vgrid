@@ -11,7 +11,8 @@ import {
     CMPNAME, GAP, WIDTH, HEIGHT, ITEM_HEIGHT, ITEM_WIDTH,
     RVG_ID, DEBOUNCE_SCROLLING, DEBOUNCE_FILTERING,
     NO_FILTER_DATA_MESSAGE, GROUP_COMPONENT_HEIGHT,
-    UNGROUPED_LABEL, FILTERS, DEFAULT_LOADER, UIE
+    UNGROUPED_LABEL, FILTERS, DEFAULT_LOADER, UIE,
+    GLOBAL_FILTER
 } from './constants';
 
 const LOADING = Symbol(),
@@ -39,7 +40,7 @@ const actions = {
             columns, filterFactory, dimensions, 
             grouping,  originalGroupedData, elementsPerLine, trakTimes,
             theDoFilterGlobal,
-            virtual
+            virtual, globalFilter
         }) => {
             const {scrollTop, gap,} = virtual,
                 { value, field } = payload,
@@ -60,9 +61,7 @@ const actions = {
                         value
                     }
                 };
-            }
-            // eslint-disable-next-line one-var
-            const doFilter = __getFilterFactory({ columns, filters: _newFilters });
+            }            
 
             // global ? 
             if (isGlobalSearch || _globalFilterValue) {
@@ -80,7 +79,8 @@ const actions = {
             }
 
             // eslint-disable-next-line one-var
-            const newTheDoFilter = doFilter(),
+            const doFilter = __getFilterFactory({ columns, filters: _newFilters, globalFilter }),
+                newTheDoFilter = doFilter(),
                 /**
                  * GROUPED
                  */
@@ -126,7 +126,8 @@ const actions = {
         [ACTION_TYPES.UNFILTER_FIELDS]: ({
             payload, globalFilterValue, filters, columns,
             trakTimes, dimensions, grouping,
-            originalGroupedData, elementsPerLine, virtual
+            originalGroupedData, elementsPerLine, virtual,
+            globalFilter
         }) => {
             let _globalFilterValue = globalFilterValue,
                 _newFilters = { ...filters },
@@ -140,9 +141,10 @@ const actions = {
 
             // eslint-disable-next-line one-var
             const filterFactory = __getFilterFactory({
-                columns,
-                filters: _newFilters,
-                opts: { trakTimes, lib }
+                    columns,
+                    filters: _newFilters,
+                    globalFilter,
+                    opts: { trakTimes, lib }
                 }),
                 theDoFilter = filterFactory();
 
@@ -192,19 +194,19 @@ const actions = {
         [ACTION_TYPES.UNFILTER]: ({
             payload, globalFilterValue, filters, columns,
             trakTimes, elementsPerLine, dimensions, originalGroupedData,
-            grouping, virtual
+            grouping, virtual, globalFilter
         }) => {     
             let _globalFilterValue = globalFilterValue,
                 _newFilters = { ...filters },
                 theDoFilter = () => true,
                 theDoFilterGlobal = () => true,
-                filterFactory = __getFilterFactory({ columns, filters: _newFilters, opts: { trakTimes, lib } });
+                filterFactory = __getFilterFactory({ columns, filters: _newFilters, globalFilter, opts: { trakTimes, lib } });
             const {gap }  = virtual;
             switch (payload) {
                 case FILTERS.ALL:
                     _globalFilterValue = '';
                     _newFilters = __cleanFilters(filters);
-                    filterFactory = __getFilterFactory({ columns, filters: _newFilters, opts: { trakTimes, lib } });
+                    filterFactory = __getFilterFactory({ columns, filters: _newFilters, globalFilter, opts: { trakTimes, lib } });
                     theDoFilter = filterFactory();
                     break;
                 case FILTERS.GLOBAL:
@@ -214,7 +216,7 @@ const actions = {
                 case FILTERS.FIELDS:
                     _newFilters = __cleanFilters(filters);
                     theDoFilterGlobal = filterFactory(_globalFilterValue);
-                    filterFactory = __getFilterFactory({ columns, filters: _newFilters, opts: { trakTimes, lib } });
+                    filterFactory = __getFilterFactory({ columns, filters: _newFilters, globalFilter, opts: { trakTimes, lib } });
                     break;
             }
 
@@ -310,7 +312,8 @@ const actions = {
                 grouping,
                 trakTimes,
                 elementsPerLine,
-                originalGroupedData
+                originalGroupedData,
+                globalFilter
                 // globalFilterValue
             } = oldState,
 
@@ -320,17 +323,20 @@ const actions = {
                     payload, globalFilterValue, filters,
                     columns, filterFactory, dimensions,
                     grouping,  originalGroupedData, elementsPerLine, trakTimes,
-                    virtual, theDoFilterGlobal
+                    virtual, theDoFilterGlobal,
+                    globalFilter
                 },
                 [ACTION_TYPES.UNFILTER_FIELDS]: {
                     payload, globalFilterValue, filters, columns,
                     trakTimes, dimensions, grouping,
-                    originalGroupedData, elementsPerLine, virtual
+                    originalGroupedData, elementsPerLine, virtual,
+                    globalFilter
                 },
                 [ACTION_TYPES.UNFILTER]: {
                     payload, globalFilterValue, filters, columns,
                     trakTimes, elementsPerLine, dimensions, originalGroupedData,
-                    grouping, virtual
+                    grouping, virtual,
+                    globalFilter
                 },
                 [ACTION_TYPES.SCROLL]: {
                     payload, dimensions, grouping,
@@ -406,7 +412,8 @@ const actions = {
                     HeaderCaption: HeaderCaptionCls = null,
                     FooterCaption: FooterCaptionCls = null,
                 } = {},
-                Item
+                Item,
+                globalFilter = GLOBAL_FILTER
             } = cnf,
             /**
              * to know why read the comment in __getVirtualGroup */
@@ -518,6 +525,7 @@ const actions = {
             originalGroupedData,
             gap: gapPlus,
             Item,
+            globalFilter,
 
             // dynamic
             filtered: data.length,

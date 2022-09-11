@@ -86,22 +86,25 @@ const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / el
     };
 
 // eslint-disable-next-line one-var
-export const __getFilterFactory = ({ columns, filters, opts = {} }) => {
+export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }) => {
 
         const trak = opts.trakTimes ? { start: +new Date() } : null,
             { funcFilteredFields, valueFilteredFields } = columns.reduce((acc, f) => {
                 acc[(f in filters) ? 'funcFilteredFields' : 'valueFilteredFields'].push(f);
                 return acc;
             }, { funcFilteredFields: [], valueFilteredFields: [] }),
-            ret = global => row =>
-                funcFilteredFields[global ? 'some' : 'every'](fk =>
+            ret = globalFilterUserValue => row =>
+                funcFilteredFields[globalFilterUserValue ? 'some' : 'every'](fk =>
                     filters[fk].filter({
-                        userValue: global || filters[fk].value,
+                        userValue: globalFilterUserValue || filters[fk].value,
                         row
                     })
                 )
                 ||
-                valueFilteredFields.some(f => `${row[f]}`.includes(global));
+                valueFilteredFields.some(f => globalFilter({
+                    rowFields: row[f],
+                    globalFilterUserValue
+                }));
 
         if (opts.trakTimes) {
             trak.end = +new Date();
