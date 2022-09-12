@@ -353,7 +353,7 @@ const actions = {
                 ...oldState,
                 ...actions[type](params)
             };
-            console.log({newState});
+            // console.log({newState});
             return newState;
         }
         return oldState;
