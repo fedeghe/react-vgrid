@@ -19,7 +19,8 @@ const LOADING = Symbol(),
     FILTER = Symbol(),
     UNFILTER_FIELDS = Symbol(),
     UNFILTER = Symbol(),
-    SCROLL = Symbol();
+    SCROLL = Symbol(),
+    TOGGLE_GROUP = Symbol();
 
 
 // eslint-disable-next-line one-var
@@ -28,14 +29,23 @@ export const ACTION_TYPES = {
     FILTER,
     UNFILTER_FIELDS,
     UNFILTER,
+    TOGGLE_GROUP,
     SCROLL,
 };
 
 // eslint-disable-next-line one-var
 const actions = {
-        [ACTION_TYPES.LOADING]: ({virtual}) => ({ virtual: { ...virtual, loading: true } }),
+        [LOADING]: ({virtual}) => ({ virtual: { ...virtual, loading: true } }),
+        [TOGGLE_GROUP]: ({payload, grouping}) => ({
+            grouping : {
+                ...grouping,
+                groups: grouping.groups.map(
+                    g => g.label === payload ? {...g, collapsed: !g.collapsed} : g
+                )
+            }
+        }),
 
-        [ACTION_TYPES.FILTER]: ({
+        [FILTER]: ({
             payload, globalFilterValue, filters,
             columns, filterFactory, dimensions, 
             grouping,  originalGroupedData, elementsPerLine,
@@ -123,7 +133,7 @@ const actions = {
             };
         },
 
-        [ACTION_TYPES.UNFILTER_FIELDS]: ({
+        [UNFILTER_FIELDS]: ({
             payload, globalFilterValue, filters, columns,
             dimensions, grouping,
             originalGroupedData, elementsPerLine, virtual,
@@ -191,7 +201,7 @@ const actions = {
             };
         },
 
-        [ACTION_TYPES.UNFILTER]: ({
+        [UNFILTER]: ({
             payload, globalFilterValue, filters, columns,
             elementsPerLine, dimensions, originalGroupedData,
             grouping, virtual, globalFilter, opts
@@ -256,7 +266,7 @@ const actions = {
 
         },
 
-        [ACTION_TYPES.SCROLL]: ({
+        [SCROLL]: ({
             payload, dimensions, grouping,
             globalFilterValue, originalGroupedData, theDoFilterGlobal, theDoFilter,
             elementsPerLine, virtual, opts
@@ -320,27 +330,28 @@ const actions = {
             opts = {trakTimes, warning, lib},
 
             params = {
-                [ACTION_TYPES.LOADING]: {virtual},
-                [ACTION_TYPES.FILTER]: {
+                [LOADING]: {virtual},
+                [TOGGLE_GROUP]: {payload, grouping},
+                [FILTER]: {
                     payload, globalFilterValue, filters,
                     columns, filterFactory, dimensions,
                     grouping,  originalGroupedData, elementsPerLine, trakTimes,
                     virtual, theDoFilterGlobal,
                     globalFilter, opts
                 },
-                [ACTION_TYPES.UNFILTER_FIELDS]: {
+                [UNFILTER_FIELDS]: {
                     payload, globalFilterValue, filters, columns,
                     trakTimes, dimensions, grouping,
                     originalGroupedData, elementsPerLine, virtual,
                     globalFilter, opts
                 },
-                [ACTION_TYPES.UNFILTER]: {
+                [UNFILTER]: {
                     payload, globalFilterValue, filters, columns,
                     trakTimes, elementsPerLine, dimensions, originalGroupedData,
                     grouping, virtual,
                     globalFilter, opts
                 },
-                [ACTION_TYPES.SCROLL]: {
+                [SCROLL]: {
                     payload, dimensions, grouping,
                     globalFilterValue, originalGroupedData, theDoFilterGlobal, theDoFilter,
                     elementsPerLine, trakTimes, virtual, opts
@@ -348,12 +359,11 @@ const actions = {
             }[type] || {};
 
         if (type in actions) {
-            // console.log({type})
             const newState = {
                 ...oldState,
                 ...actions[type](params)
             };
-            // console.log({newState});
+            // console.log('groups: ', newState.grouping.groups);
             return newState;
         }
         return oldState;
@@ -387,6 +397,7 @@ const actions = {
                         height: groupComponentHeight = GROUP_COMPONENT_HEIGHT
                     } = {},
                     ungroupedLabel = UNGROUPED_LABEL,
+                    collapsible: collapsibleGroups = false
                 } = {},
 
                 header: {
@@ -422,12 +433,13 @@ const actions = {
              * to know why read the comment in __getVirtualGroup */
             gapPlus = gap + 1,
             grouping = {
-                groups,
+                groups : groups.map(g =>({...g, collapsed : false})),
                 groupHeader: {
                     Component: GroupComponent,
                     height: groupComponentHeight
                 },
                 ungroupedLabel,
+                collapsible : collapsibleGroups
             },
 
             dimensions = {
@@ -442,7 +454,10 @@ const actions = {
             /***************************************************************************
              * starting from specified groups, separate the data and create the groups
              */
-            originalGroupedData = __getGrouped({ data, groups, elementsPerLine, opts: { ungroupedLabel, lib, trakTimes, warning } }),
+            originalGroupedData = __getGrouped({
+                data, elementsPerLine,
+                groups: grouping.groups, opts: { ungroupedLabel, lib, trakTimes, warning }
+            }),
             // originalGroupedData0 = __getGrouped({data, groups, elementsPerLine, opts: {ungroupedLabel, lib, trak: true}}),            
             funcFilters = __composeFilters({ headers, opts: { trakTimes, lib } }),
 

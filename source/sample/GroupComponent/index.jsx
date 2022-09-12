@@ -4,11 +4,13 @@ import useStyles from './style';
 const GroupComponent = ({
     groupName,
     groupHeaderHeight,
+    toggleGroup,
+    collapsible,
     ...rest
 }) => {
     const classes = useStyles({groupHeaderHeight});
     return (
-        <div className={classes.Group} {...rest}>{groupName}</div>
+        <div onClick={toggleGroup} className={classes.Group} {...rest}>{groupName}</div>
     );
 };
 export default GroupComponent;

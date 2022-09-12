@@ -19,7 +19,7 @@ export default {
         // { key: 'entityid3', type: 'int' },
         // { key: 'name3', type: 'str' },
         // { key: 'date3', type: 'date' },
-    ], 1e2+1),
+    ], 5e1+1),
 
     // each gouper must exclusively select an element,
     // if two grouper let the same row pass then a specific
@@ -33,7 +33,7 @@ export default {
             grouper: (row) => row.id >100 && row.id <= 200
         },{
             label: 'high',
-            grouper: (row) => row.id >200 && row.id <= 400
+            grouper: (row) => row.id >200 && row.id <= 800
 
         //the impossible
         // },{

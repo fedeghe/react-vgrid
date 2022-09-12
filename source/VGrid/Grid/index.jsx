@@ -12,7 +12,7 @@ const Grid = () => {
     const ref = useRef(),
         { state, dispatch } = useContext(GridContext),
         {
-            data,
+            // data,
             total,
             dimensions: {
                 height, width,
@@ -53,7 +53,8 @@ const Grid = () => {
                 groupHeader : {
                     height: groupHeaderHeight,
                     Component: GroupHeaderComponent
-                }
+                },
+                collapsible,
             },
             elementsPerLine,
             uie
@@ -108,8 +109,24 @@ const Grid = () => {
             return handlers;
         }, [onItemClick, onItemEnter, onItemLeave]),
 
+        toggleGroup = useCallback(({label}) => {
+            dispatch({type: ACTION_TYPES.TOGGLE_GROUP, payload: label});
+        }, [dispatch]),
         getItemUie = useCallback((i, j) => (uie ? {[uie]: `item-${i}-${j}`} : {}), [uie]),
         getHeaderUie = useCallback(i => (uie ? {[uie]: `header-${i}`} : {}), [uie]),
+        getGroupComponentProps = useCallback(({label}) => {
+            const groupProps = {
+                key: label,
+                groupName: label,
+                groupHeaderHeight,
+                ...getHeaderUie(label)
+            };
+            if (collapsible) {
+                groupProps.collapsible = true;
+                groupProps.toggleGroup=()=>toggleGroup({label});
+            }
+            return groupProps;
+        }, [collapsible, getHeaderUie, groupHeaderHeight, toggleGroup]),
 
         resetFilters = useCallback((what = FILTERS.ALL) => {
             let actionType = null;
@@ -124,37 +141,40 @@ const Grid = () => {
             });
         }, [dispatch, columns]),
 
-        filterDataFields = useCallback(({fields}) => 
-            fields
-            ? data.map(e => fields.reduce(
-                (acc, f) => {
-                    f in e && (acc[f] = e[f]);
-                    return acc;
-                }, {})
-            )
-            : data
-        , [data]),
+        // no more data
+        // filterDataFields = useCallback(({fields}) => 
+        //     fields
+        //     ? data.map(e => fields.reduce(
+        //         (acc, f) => {
+        //             f in e && (acc[f] = e[f]);
+        //             return acc;
+        //         }, {})
+        //     )
+        //     : data
+        // , [data]),
+        // 
+        // but alloc
         // maybe a better way should be seeked
-        // filterDataFields = useCallback(({ fields } = {}) => 
-        //      Object.values(alloc).reduce((acc, groupArr) => 
-        //          acc.concat(
-        //             groupArr.reduce((iAcc, line) => 
-        //                 'rows' in line
-        //                 ? iAcc.concat(
-        //                     line.rows.map(row =>
-        //                         fields
-        //                         ? fields.reduce((iiAcc, f) => {
-        //                             if (f in row) iiAcc[f] = row[f];
-        //                             return iiAcc;
-        //                         }, {})
-        //                         : row
-        //                     )
-        //                 )
-        //                 : iAcc
-        //             , [])
-        //         )
-        //     , [])
-        // , [alloc]),
+        filterDataFields = useCallback(({ fields } = {}) => 
+             Object.values(alloc).reduce((acc, groupArr) => 
+                 acc.concat(
+                    groupArr.reduce((iAcc, line) => 
+                        'rows' in line
+                        ? iAcc.concat(
+                            line.rows.map(row =>
+                                fields
+                                ? fields.reduce((iiAcc, f) => {
+                                    if (f in row) iiAcc[f] = row[f];
+                                    return iiAcc;
+                                }, {})
+                                : row
+                            )
+                        )
+                        : iAcc
+                    , [])
+                )
+            , [])
+        , [alloc]),
 
         downloadJson = useCallback(({fields} = {}) => {
             const a = document.createElement('a'),
@@ -203,7 +223,7 @@ const Grid = () => {
             && ref.current.scrollTo
         ) ref.current.scrollTo(0, 0);
     }, [scrollTop, ref]);   
-    
+
 
     return <div>
         {Boolean(headerCaptionHeight) && (
@@ -217,8 +237,10 @@ const Grid = () => {
             {Object.entries(alloc).map(
                 ([label, renderables]) => renderables.map((renderable, j) => {
                     if (!renderable.renders) return null;
+
+                    
                     return renderable.header
-                        ? <GroupHeaderComponent key={label} groupName={label} groupHeaderHeight={groupHeaderHeight} {...getHeaderUie(label)}/>
+                        ? <GroupHeaderComponent {...getGroupComponentProps({label})}/>
                         : renderable.rows.map((row, i) =>
                             <div key={`${row[rvgID]}_${i}`} className={classes.Item}
                                 {...getHandlers(row)}

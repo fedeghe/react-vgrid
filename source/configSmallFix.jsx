@@ -1,6 +1,6 @@
 import React from 'react';
 
-import Item from './sample/Item';
+import Item from './sample/Item/item1';
 import HeaderCaption from './sample/HeaderCaption';
 import FooterCaption from './sample/FooterCaption';
 import GroupComponent from './sample/GroupComponent';
@@ -17,10 +17,13 @@ export default {
             grouper: (row) => row.id <= 100
         },{
             label: 'mid',
-            grouper: (row) => row.id >100 && row.id <= 200
+            grouper: (row) => row.id >100 && row.id <= 700
         },{
             label: 'high',
-            grouper: (row) => row.id >200 && row.id <= 400
+            grouper: (row) => row.id >700 && row.id <= 900
+        },{
+            label: 'highest',
+            grouper: (row) => row.id >900
         }],
 
         // groups: [{
@@ -50,7 +53,8 @@ export default {
         groupHeader: {
             Component: GroupComponent,
             height:50
-        }
+        },
+        collapsible: true
     },
 
     headers: [{
@@ -110,5 +114,5 @@ export default {
         HeaderCaption: 'HeaderCaption',
         FooterCaption: 'FooterCaption',
     },
-    trakTimes : true
+    // trakTimes : true
 };
