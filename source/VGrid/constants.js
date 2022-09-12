@@ -15,6 +15,9 @@ export const CMPNAME = 'react-vgrid',
     // group component height 
     GROUP_COMPONENT_HEIGHT = 20,
 
+    // global filter
+    GLOBAL_FILTER = ({rowField, globalFilterUserValue}) => `${rowField}`.includes(globalFilterUserValue),
+
     // id appended string
     RVG_ID = '_ID',
 
@@ -36,4 +39,7 @@ export const CMPNAME = 'react-vgrid',
         GLOBAL : 'GLOBAL',
         FIELDS : 'FIELDS',
     },
-    UIE = 'data-uie';
+    UIE = 'data-uie',
+
+    // 0 none, 1 all
+    WARNING = 0;

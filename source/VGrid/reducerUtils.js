@@ -86,22 +86,25 @@ const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / el
     };
 
 // eslint-disable-next-line one-var
-export const __getFilterFactory = ({ columns, filters, opts = {} }) => {
+export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }) => {
 
         const trak = opts.trakTimes ? { start: +new Date() } : null,
             { funcFilteredFields, valueFilteredFields } = columns.reduce((acc, f) => {
                 acc[(f in filters) ? 'funcFilteredFields' : 'valueFilteredFields'].push(f);
                 return acc;
             }, { funcFilteredFields: [], valueFilteredFields: [] }),
-            ret = global => row =>
-                funcFilteredFields[global ? 'some' : 'every'](fk =>
+            ret = globalFilterUserValue => row =>
+                funcFilteredFields[globalFilterUserValue ? 'some' : 'every'](fk =>
                     filters[fk].filter({
-                        userValue: global || filters[fk].value,
+                        userValue: globalFilterUserValue || filters[fk].value,
                         row
                     })
                 )
                 ||
-                valueFilteredFields.some(f => `${row[f]}`.includes(global));
+                valueFilteredFields.some(f => globalFilter({
+                    rowFields: row[f],
+                    globalFilterUserValue
+                }));
 
         if (opts.trakTimes) {
             trak.end = +new Date();
@@ -120,6 +123,7 @@ export const __getFilterFactory = ({ columns, filters, opts = {} }) => {
          *      }
          * }
          */
+        let filtered = 0;
         const trak = opts.trakTimes ? { start: +new Date() } : null,
             groupNames = Object.keys(groupedData),
             initialGroupedDataGobalFiltered = globalValue
@@ -134,6 +138,7 @@ export const __getFilterFactory = ({ columns, filters, opts = {} }) => {
                 : groupedData,
             ret = groupNames.reduce((acc, groupName) => {
                 const entries = initialGroupedDataGobalFiltered[groupName].entries.filter(filter);
+                filtered += entries.length;
                 acc[groupName] = {
                     entries,
                     lines: getLines({ entries, elementsPerLine })
@@ -144,7 +149,10 @@ export const __getFilterFactory = ({ columns, filters, opts = {} }) => {
             trak.end = +new Date();
             trakTime({ what: '__applyFilter', time: trak.end - trak.start, opts });
         }
-        return ret;
+        return {
+            gData: ret,
+            filtered
+        };
     },
 
 
@@ -183,8 +191,6 @@ export const __getFilterFactory = ({ columns, filters, opts = {} }) => {
         }
         return ret;
     },
-
-    __getFilteredCount = ({gData}) => Object.values(gData).reduce((acc, v) => acc + v.entries.length, 0),
 
     /**
      * If we loop over filters and for each filter we loop over all data (even skipping the entries
@@ -417,9 +423,12 @@ export const __getFilterFactory = ({ columns, filters, opts = {} }) => {
                     if (e.length > 1 || onlyUngrouped) {
                         acc[label] = e;
                         e.forEach(c => {
-                            renderedHeaders += ~~(c.header && c.renders);
-                            renderedItems += ((c.renders && !c.header) ? c.rows.length : 0);
-                            dataHeight += c.renders ? (c.header ? headerHeight : (itemHeight * c.rows.length)) : 0;
+                            if (c.renders) {
+                                renderedHeaders += ~~(c.header && c.renders);
+                                renderedItems += ((c.renders && !c.header) ? c.rows.length : 0);
+                                dataHeight += c.renders ? (c.header ? headerHeight : (itemHeight * c.rows.length)) : 0;
+                            }
+                            
                         });
 
 

@@ -103,5 +103,6 @@ export default {
         HeaderCaption: 'HeaderCaption',
         FooterCaption: 'FooterCaption',
     },
-    trakTimes : true
+    // trakTimes : true,  //default false
+    warning: 1 // 0 none, 1 warning, 2 warning + error
 };

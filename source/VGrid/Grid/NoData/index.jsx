@@ -9,15 +9,19 @@ const NoData = () => {
                 dimensions: { width, height },
                 total,
                 header: {
-                    headerCaptionHeight
+                    caption: {
+                        height : headerCaptionHeight
+                    }
                 },
                 footer: {
-                    footerCaptionHeight
+                    caption: {
+                        height: footerCaptionHeight
+                    }
                 }
             }
         } = useContext(TableContext),
         classes = useStyles({width, height: height - headerCaptionHeight - footerCaptionHeight});
-
+    
     return <div className={classes.NoData}><NoFilterData total={total} /></div>;
 };
 
