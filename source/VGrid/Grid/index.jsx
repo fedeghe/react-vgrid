@@ -36,6 +36,7 @@ const Grid = () => {
             rvgID,
             events: {onItemEnter, onItemLeave, onItemClick },
             globalFilterValue,
+            originalGroupedData,
             filtered,
             filters,
             columns,
@@ -55,6 +56,7 @@ const Grid = () => {
                     Component: GroupHeaderComponent
                 },
                 collapsible,
+                groups,
             },
             elementsPerLine,
             uie
@@ -113,20 +115,22 @@ const Grid = () => {
             dispatch({type: ACTION_TYPES.TOGGLE_GROUP, payload: label});
         }, [dispatch]),
         getItemUie = useCallback((i, j) => (uie ? {[uie]: `item-${i}-${j}`} : {}), [uie]),
-        getHeaderUie = useCallback(i => (uie ? {[uie]: `header-${i}`} : {}), [uie]),
+        getHeaderUieValue = useCallback(label => (uie ? `header-${label}`: ''), [uie]),
         getGroupComponentProps = useCallback(({label}) => {
             const groupProps = {
                 key: label,
                 groupName: label,
                 groupHeaderHeight,
-                ...getHeaderUie(label)
+                dataUieName: uie,
+                dataUieValue: getHeaderUieValue(label)
             };
             if (collapsible) {
                 groupProps.collapsible = true;
+                groupProps.collapsed = originalGroupedData[label].collapsed;
                 groupProps.toggleGroup=()=>toggleGroup({label});
             }
             return groupProps;
-        }, [collapsible, getHeaderUie, groupHeaderHeight, toggleGroup]),
+        }, [collapsible, getHeaderUieValue, groupHeaderHeight, originalGroupedData, toggleGroup, uie]),
 
         resetFilters = useCallback((what = FILTERS.ALL) => {
             let actionType = null;

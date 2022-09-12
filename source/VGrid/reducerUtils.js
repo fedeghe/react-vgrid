@@ -197,7 +197,7 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
      * already included somewhere, check __getGrouped0) it is a way slower compared to 
      * looping on each entry and find the first filter get it (if any)
      */
-    __getGrouped = ({ data, groups, elementsPerLine, opts = {} }) => {
+    __getGrouped = ({ data, groups, elementsPerLine, collapsible, opts = {} }) => {
         // console.log({groups});
         const trak = opts.trakTimes ? { start: +new Date() } : null,
             g = data.reduce((acc, d) => {
@@ -232,6 +232,7 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                     lines: getLines({ entries: groupEntries, elementsPerLine }),
                     
                 };
+                if (collapsible) acc[name].collapsed = false;
             } else {
                 name !== opts.ungroupedLabel
                 && doWarn({ message: `group named \`${name}\` is empty thus ignored`, opts });

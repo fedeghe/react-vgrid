@@ -1,15 +1,15 @@
 import React from 'react';
 import generateRowData from './utils';
-import Item from './sample/Item/item1';
-import HeaderCaption from './sample/HeaderCaption';
-import FooterCaption from './sample/FooterCaption';
-import GroupComponent from './sample/GroupComponent';
+import Item from './Item/item1';
+import HeaderCaption from './HeaderCaption';
+import FooterCaption from './FooterCaption';
+import GroupComponent from './GroupComponent';
 export default {
     data: generateRowData([
         { key: 'id', type: 'int' },
         { key: 'entityid', type: 'id' },
         { key: 'name', type: 'str' },
-        // { key: 'date', type: 'date' },
+        // { key: 'Company', type: 'company' },
         // { key: 'actions', type: 'str' },
         // { key: 'id2', type: 'int' },
         // { key: 'entityid2', type: 'int' },

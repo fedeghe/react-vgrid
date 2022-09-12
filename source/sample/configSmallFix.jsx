@@ -1,10 +1,10 @@
 import React from 'react';
 
-import Item from './sample/Item/item1';
-import HeaderCaption from './sample/HeaderCaption';
-import FooterCaption from './sample/FooterCaption';
-import GroupComponent from './sample/GroupComponent';
-import data from './sample/dataFixed.json';
+import Item from './Item/item1';
+import HeaderCaption from './HeaderCaption';
+import FooterCaption from './FooterCaption';
+import GroupComponent from './GroupComponent';
+import data from './dataFixed.json';
 export default {
     data,
 

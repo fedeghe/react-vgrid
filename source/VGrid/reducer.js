@@ -36,12 +36,13 @@ export const ACTION_TYPES = {
 // eslint-disable-next-line one-var
 const actions = {
         [LOADING]: ({virtual}) => ({ virtual: { ...virtual, loading: true } }),
-        [TOGGLE_GROUP]: ({payload, grouping}) => ({
-            grouping : {
-                ...grouping,
-                groups: grouping.groups.map(
-                    g => g.label === payload ? {...g, collapsed: !g.collapsed} : g
-                )
+        [TOGGLE_GROUP]: ({payload, originalGroupedData}) => ({
+            originalGroupedData : {
+                ...originalGroupedData,
+                [payload] : {
+                    ...originalGroupedData[payload],
+                    collapsed: !originalGroupedData[payload].collapsed 
+                }
             }
         }),
 
@@ -331,7 +332,7 @@ const actions = {
 
             params = {
                 [LOADING]: {virtual},
-                [TOGGLE_GROUP]: {payload, grouping},
+                [TOGGLE_GROUP]: {payload, originalGroupedData},
                 [FILTER]: {
                     payload, globalFilterValue, filters,
                     columns, filterFactory, dimensions,
@@ -363,7 +364,6 @@ const actions = {
                 ...oldState,
                 ...actions[type](params)
             };
-            // console.log('groups: ', newState.grouping.groups);
             return newState;
         }
         return oldState;
@@ -433,7 +433,7 @@ const actions = {
              * to know why read the comment in __getVirtualGroup */
             gapPlus = gap + 1,
             grouping = {
-                groups : groups.map(g =>({...g, collapsed : false})),
+                groups,
                 groupHeader: {
                     Component: GroupComponent,
                     height: groupComponentHeight
@@ -456,7 +456,8 @@ const actions = {
              */
             originalGroupedData = __getGrouped({
                 data, elementsPerLine,
-                groups: grouping.groups, opts: { ungroupedLabel, lib, trakTimes, warning }
+                groups: grouping.groups, opts: { ungroupedLabel, lib, trakTimes, warning },
+                collapsible: collapsibleGroups
             }),
             // originalGroupedData0 = __getGrouped({data, groups, elementsPerLine, opts: {ungroupedLabel, lib, trak: true}}),            
             funcFilters = __composeFilters({ headers, opts: { trakTimes, lib } }),
