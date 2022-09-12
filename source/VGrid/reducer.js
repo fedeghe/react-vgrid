@@ -454,7 +454,7 @@ const actions = {
             // this needs to be recreated every time the global filter changes
             theDoFilterGlobal = filterFactory(globalPreFilter),
 
-            {gData} = __applyFilter({
+            {gData, filtered} = __applyFilter({
                 globalValue: globalPreFilter,
                 groupedData: originalGroupedData,
                 gFilter: theDoFilterGlobal,
@@ -532,7 +532,7 @@ const actions = {
 
             // dynamic
             headers,
-            filtered: data.length,
+            filtered,
             total: data.length,
             filteredGroupedData,
             theDoFilterGlobal,
