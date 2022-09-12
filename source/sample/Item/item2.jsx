@@ -7,10 +7,14 @@ import useStyles from './style.js';
 const Item = row => {
     const classes = useStyles(),
         {state, dispatch} = useContext(SampleContext),
-        value = useMemo(() => state.data.find(
-            r => r.entityid === row.entityid
+        {name, index} = useMemo(() => {
+            const i = state.data.findIndex(r => r.entityid === row.entityid);
+            return {
+                name: state.data[i].name,
+                index: i
+            };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        ).name, [row.name]);
+        }, [row.name]);
         
     return <div className={classes.Item}>
         <div className={classes.Inner}>
@@ -23,12 +27,12 @@ const Item = row => {
                 <li>
                     <input
                         type="text"
-                        value={value}
+                        value={name}
                         onChange={e => dispatch({
                             type: ACTION_TYPES.UPDATEFIELD,
                             payload: {
-                                entityid: row.entityid,
-                                value: e.target.value
+                                value: e.target.value,
+                                index,
                             }
                         })}
                     />
