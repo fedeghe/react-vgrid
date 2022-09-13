@@ -58,7 +58,6 @@ const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / el
     },
     
     fixLineGap = ({allocation, groupKeys, gap}) => { 
-        console.log('allocation', allocation);
         const {firstRender, firstNotRender} = allocation;
         if (!firstRender){ return allocation;}
         fixTopLineGap({allocation, groupKeys, gap});
@@ -199,7 +198,6 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
      * looping on each entry and find the first filter get it (if any)
      */
     __getGroupedInit = ({ data, groups, elementsPerLine, collapsible, opts = {} }) => {
-        // console.log({groups});
         const trak = opts.trakTimes ? { start: +new Date() } : null,
             g = data.reduce((acc, d) => {
                 const filter = groups.find(({ grouper }) => grouper(d));
@@ -348,7 +346,6 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                  * the second option might do the whole 'inRange' check on average in half the time
                  * thus is the choosen option
                  */
-                // console.log({groupingDimensions})
                 let { cursor, firstRender, firstNotRender } = acc;
                 const collapsed = originalGroupedData[label].collapsed,
                     headerRenders = inRange({n: cursor + headerHeight2, ...range}),
