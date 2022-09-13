@@ -58,7 +58,6 @@ const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / el
     },
     
     fixLineGap = ({allocation, groupKeys, gap}) => { 
-        console.log({allocation})
         const {firstRender, firstNotRender} = allocation;
         if (!firstRender){ return allocation;}
         fixTopLineGap({allocation, groupKeys, gap});
