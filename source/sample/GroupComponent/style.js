@@ -10,4 +10,8 @@ export default createUseStyles({
         lineHeight: ({groupHeaderHeight}) => `${groupHeaderHeight}px`,
         paddingLeft:'10px'
     },
+    Coll: {
+        cursor: 'pointer',
+        paddingLeft:10
+    }
 });

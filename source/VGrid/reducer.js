@@ -111,6 +111,7 @@ const actions = {
                     grouped: gData,
                     scrollTop: 0,
                     elementsPerLine,
+                    originalGroupedData,
                     opts
                 }),
                 newVirtual = __getVirtual({
@@ -181,6 +182,7 @@ const actions = {
                     grouped: gData,
                     scrollTop: 0,
                     elementsPerLine,
+                    originalGroupedData,
                     opts
                 }),
                 newVirtual = __getVirtual({
@@ -238,6 +240,7 @@ const actions = {
                     gFilter: theDoFilterGlobal,
                     filter: theDoFilter,
                     elementsPerLine,
+                    originalGroupedData,
                     opts
                 }),
 
@@ -248,6 +251,7 @@ const actions = {
                     grouped: gData,
                     scrollTop: 0,
                     elementsPerLine,
+                    originalGroupedData,
                     opts
                 });
 
@@ -289,6 +293,7 @@ const actions = {
                     grouped: gData,
                     scrollTop,
                     elementsPerLine,
+                    originalGroupedData,
                     opts
                 }),
                 newVirtual = __getVirtual({
@@ -364,6 +369,7 @@ const actions = {
                 ...oldState,
                 ...actions[type](params)
             };
+
             return newState;
         }
         return oldState;
@@ -486,6 +492,7 @@ const actions = {
                 grouped: gData,
                 scrollTop: 0,
                 elementsPerLine,
+                originalGroupedData,
                 opts: { trakTimes, lib }
             }),
             /**

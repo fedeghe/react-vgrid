@@ -48,7 +48,8 @@ const Grid = () => {
                     bottomFillerHeight,
                     renderedHeaders,
                     renderedItems
-                }
+                },
+                allocation,
             },
             grouping: {
                 groupHeader : {
@@ -56,7 +57,6 @@ const Grid = () => {
                     Component: GroupHeaderComponent
                 },
                 collapsible,
-                groups,
             },
             elementsPerLine,
             uie
@@ -228,7 +228,7 @@ const Grid = () => {
         ) ref.current.scrollTo(0, 0);
     }, [scrollTop, ref]);   
 
-
+    
     return <div>
         {Boolean(headerCaptionHeight) && (
             <div className={[classes.HeaderCaption, HeaderCaptionCls].join(' ')}>
@@ -242,17 +242,16 @@ const Grid = () => {
                 ([label, renderables]) => renderables.map((renderable, j) => {
                     if (!renderable.renders) return null;
 
-                    
                     return renderable.header
                         ? <GroupHeaderComponent {...getGroupComponentProps({label})}/>
-                        : renderable.rows.map((row, i) =>
+                        : (!originalGroupedData[label].collapsed && renderable.rows.map((row, i) =>
                             <div key={`${row[rvgID]}_${i}`} className={classes.Item}
                                 {...getHandlers(row)}
                                 {...getItemUie(label, j*elementsPerLine + i)}
                             >
                                 <Item {...row}/>
                             </div>
-                        );
+                        ));
                 })
             )}
             <Filler width="100%" height={bottomFillerHeight} />

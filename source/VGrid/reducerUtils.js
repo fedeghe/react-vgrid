@@ -232,7 +232,11 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                     lines: getLines({ entries: groupEntries, elementsPerLine }),
                     
                 };
-                if (collapsible) acc[name].collapsed = false;
+                //set collapsed falsse (expanded) whenever collapsible is choosen
+                if (collapsible) {
+                    acc[name].collapsed = false;
+                    acc[name].lines = 0;
+                }
             } else {
                 name !== opts.ungroupedLabel
                 && doWarn({ message: `group named \`${name}\` is empty thus ignored`, opts });
@@ -273,7 +277,7 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
      * the next step for this function is to skip all elements not rendering
      * still considering the line gap
      */
-    __getVirtualGroup = ({ dimensions, gap, grouping, grouped, scrollTop, elementsPerLine, opts = {} }) => {
+    __getVirtualGroup = ({ dimensions, gap, grouping, grouped, scrollTop, elementsPerLine, originalGroupedData, opts = {} }) => {
         let renderedItems = 0,
             renderedHeaders = 0,
             dataHeight = 0;
@@ -305,7 +309,10 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                  */
                 
                 // the header should have no height for groups with no lines
-                const groupHeight = group.lines ? group.lines * itemHeight + headerHeight : 0;
+                const collapsed = originalGroupedData[groupName].collapsed,
+                    hHeight = collapsed ? headerHeight : 0,
+                    bHeight = collapsed ? 0 : ~~(group.lines) * itemHeight,
+                    groupHeight = hHeight + bHeight;
 
                 acc.carpetHeight += groupHeight;
                 acc.groupsHeights[groupName] = groupHeight;

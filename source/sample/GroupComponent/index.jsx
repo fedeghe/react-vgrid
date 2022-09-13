@@ -13,9 +13,9 @@ const GroupComponent = ({
     const classes = useStyles({groupHeaderHeight});
     
     return (
-        <div onClick={toggleGroup} className={classes.Group} {...{[dataUieName]: dataUieValue}}>
+        <div className={classes.Group} {...{[dataUieName]: dataUieValue}}>
             {groupName}
-            {collapsible ? ' - ' + (collapsed ? 'expand': 'collapse') : ''}
+            {Boolean(collapsible) && <span className={classes.Coll}onClick={toggleGroup}>{collapsed ? '▼': '▲'}</span>}
         </div>
     );
 };
