@@ -19,7 +19,7 @@ export default {
         // { key: 'entityid3', type: 'int' },
         // { key: 'name3', type: 'str' },
         // { key: 'date3', type: 'date' },
-    ], 5e1+1),
+    ], 5e2),
 
     // each gouper must exclusively select an element,
     // if two grouper let the same row pass then a specific
@@ -51,12 +51,12 @@ export default {
             Component: GroupComponent,
             height:50
         },
-        collapsible: true
+        // collapsible: true
     },
 
     headers: [{
         key: 'id',
-        filter: ({userValue, row}) => `${row.id}`.startsWith(userValue),
+        filter: ({userValue, row}) => `${row.id}`.includes(userValue),
         // preFiltered: 2,
     },{
         key: 'name',
@@ -76,7 +76,7 @@ export default {
         width: 1000,
         height: 800
     },
-    gap : 3,
+    gap : 300,
     NoFilterData: ({total}) => <div>no data out of {total}</div>,
     debounceTimes: {
         // scrolling: 20,

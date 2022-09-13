@@ -58,6 +58,7 @@ const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / el
     },
     
     fixLineGap = ({allocation, groupKeys, gap}) => { 
+        console.log('allocation', allocation);
         const {firstRender, firstNotRender} = allocation;
         if (!firstRender){ return allocation;}
         fixTopLineGap({allocation, groupKeys, gap});
@@ -197,7 +198,7 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
      * already included somewhere, check __getGrouped0) it is a way slower compared to 
      * looping on each entry and find the first filter get it (if any)
      */
-    __getGrouped = ({ data, groups, elementsPerLine, collapsible, opts = {} }) => {
+    __getGroupedInit = ({ data, groups, elementsPerLine, collapsible, opts = {} }) => {
         // console.log({groups});
         const trak = opts.trakTimes ? { start: +new Date() } : null,
             g = data.reduce((acc, d) => {
@@ -235,7 +236,6 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                 //set collapsed falsse (expanded) whenever collapsible is choosen
                 if (collapsible) {
                     acc[name].collapsed = false;
-                    acc[name].lines = 0;
                 }
             } else {
                 name !== opts.ungroupedLabel
@@ -310,9 +310,9 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                 
                 // the header should have no height for groups with no lines
                 const collapsed = originalGroupedData[groupName].collapsed,
-                    hHeight = collapsed ? headerHeight : 0,
-                    bHeight = collapsed ? 0 : ~~(group.lines) * itemHeight,
-                    groupHeight = hHeight + bHeight;
+                    groupBodyHeight = collapsed ? 0 : group.lines * itemHeight,
+                    groupHeaderHeight = group.lines ? headerHeight : 0, 
+                    groupHeight = groupBodyHeight + groupHeaderHeight;
 
                 acc.carpetHeight += groupHeight;
                 acc.groupsHeights[groupName] = groupHeight;
@@ -350,7 +350,8 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                  */
                 // console.log({groupingDimensions})
                 let { cursor, firstRender, firstNotRender } = acc;
-                const headerRenders = inRange({n: cursor + headerHeight2, ...range}),
+                const collapsed = originalGroupedData[label].collapsed,
+                    headerRenders = inRange({n: cursor + headerHeight2, ...range}),
                     groupHeight = groupingDimensions.groupsHeights[label];
                 /**
                  * here flattening can be excluded despite it would make a way easier
@@ -401,11 +402,13 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                             rows: grouped[label].entries.slice(i * elementsPerLine, (i+1)* elementsPerLine) // is a line
                         };
                     })
-                );        
+                );
+                acc.collapsed[label] = collapsed;
                 acc.cursor += groupHeight;
                 return acc;
             }, {
                 alloc: {}, 
+                collapsed: {},
                 cursor: 0,
                 firstRender: null,
                 firstNotRender: null,

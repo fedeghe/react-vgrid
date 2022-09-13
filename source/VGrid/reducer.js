@@ -5,7 +5,7 @@ import {
 } from './utils';
 import {
     __getFilterFactory, __cleanFilters, __getVirtual, __getVirtualGroup,
-    __getGrouped, __composeFilters, __applyFilter
+    __getGroupedInit, __composeFilters, __applyFilter
 } from './reducerUtils';
 import {
     CMPNAME, GAP, WIDTH, HEIGHT, ITEM_HEIGHT, ITEM_WIDTH,
@@ -36,15 +36,52 @@ export const ACTION_TYPES = {
 // eslint-disable-next-line one-var
 const actions = {
         [LOADING]: ({virtual}) => ({ virtual: { ...virtual, loading: true } }),
-        [TOGGLE_GROUP]: ({payload, originalGroupedData}) => ({
-            originalGroupedData : {
-                ...originalGroupedData,
-                [payload] : {
-                    ...originalGroupedData[payload],
-                    collapsed: !originalGroupedData[payload].collapsed 
+        [TOGGLE_GROUP]: ({
+            payload, originalGroupedData,
+            globalFilterValue, theDoFilterGlobal, theDoFilter, elementsPerLine, opts,
+            dimensions, grouping, virtual
+        }) => {
+
+            const {scrollTop, gap} = virtual,
+                newOriginalGroupedData = {
+                    ...originalGroupedData,
+                    [payload] : {
+                        ...originalGroupedData[payload],
+                        collapsed: !originalGroupedData[payload].collapsed 
+                    }
+                },
+                {gData} = __applyFilter({
+                    globalValue: globalFilterValue,
+                    groupedData: newOriginalGroupedData, // this needs to be the filtered data
+                    gFilter: theDoFilterGlobal,
+                    filter: theDoFilter,
+                    elementsPerLine,
+                    opts
+                }),
+                filteredGroupedData = __getVirtualGroup({
+                    dimensions,
+                    gap,
+                    grouping,
+                    grouped: gData,
+                    scrollTop,
+                    elementsPerLine,
+                    originalGroupedData: newOriginalGroupedData,
+                    opts
+                }),
+                newVirtual = __getVirtual({
+                    filteredGroupedData,
+                    elementsPerLine,
+                    dimensions,
+                    scrollTop
+                });
+            return {
+                originalGroupedData: newOriginalGroupedData,
+                virtual: {
+                    ...virtual,
+                    ...newVirtual,
                 }
-            }
-        }),
+            };
+        },
 
         [FILTER]: ({
             payload, globalFilterValue, filters,
@@ -330,14 +367,18 @@ const actions = {
                 elementsPerLine,
                 originalGroupedData,
                 globalFilter,
-                warning
+                warning,
                 // globalFilterValue
             } = oldState,
             opts = {trakTimes, warning, lib},
 
             params = {
                 [LOADING]: {virtual},
-                [TOGGLE_GROUP]: {payload, originalGroupedData},
+                [TOGGLE_GROUP]: {
+                    payload, originalGroupedData,
+                    globalFilterValue, theDoFilterGlobal, theDoFilter, elementsPerLine, opts,
+                    dimensions, grouping, virtual
+                },
                 [FILTER]: {
                     payload, globalFilterValue, filters,
                     columns, filterFactory, dimensions,
@@ -460,12 +501,12 @@ const actions = {
             /***************************************************************************
              * starting from specified groups, separate the data and create the groups
              */
-            originalGroupedData = __getGrouped({
+            originalGroupedData = __getGroupedInit({
                 data, elementsPerLine,
                 groups: grouping.groups, opts: { ungroupedLabel, lib, trakTimes, warning },
                 collapsible: collapsibleGroups
             }),
-            // originalGroupedData0 = __getGrouped({data, groups, elementsPerLine, opts: {ungroupedLabel, lib, trak: true}}),            
+            // originalGroupedData0 = __getGroupedInit({data, groups, elementsPerLine, opts: {ungroupedLabel, lib, trak: true}}),            
             funcFilters = __composeFilters({ headers, opts: { trakTimes, lib } }),
 
             // columns, filterFactory and theDoFilter can stay static in the state
