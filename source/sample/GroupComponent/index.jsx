@@ -15,7 +15,7 @@ const GroupComponent = ({
     return (
         <div className={classes.Group} {...{[dataUieName]: dataUieValue}}>
             {groupName}
-            {Boolean(collapsible) && <span className={classes.Coll}onClick={toggleGroup}>{collapsed ? '▼': '▲'}</span>}
+            {Boolean(collapsible) && <span className={classes.Coll} onClick={toggleGroup}>{collapsed ? '▼': '▲'}</span>}
         </div>
     );
 };
