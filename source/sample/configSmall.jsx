@@ -19,7 +19,7 @@ export default {
         // { key: 'entityid3', type: 'int' },
         // { key: 'name3', type: 'str' },
         // { key: 'date3', type: 'date' },
-    ], 5e2),
+    ], 1e5),
 
     // each gouper must exclusively select an element,
     // if two grouper let the same row pass then a specific
@@ -71,12 +71,12 @@ export default {
     Item,
     Loader: () => (<div className="Loading">loading</div>),
     dimensions: {
-        itemWidth: 250,
+        itemWidth: 300,
         itemHeight: 200,
-        width: 1000,
+        width: 1200,
         height: 800
     },
-    gap : 300,
+    gap : 5,
     NoFilterData: ({total}) => <div>no data out of {total}</div>,
     debounceTimes: {
         // scrolling: 20,

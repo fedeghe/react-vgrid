@@ -9,7 +9,7 @@ const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / el
      */
     fixTopLineGap = ({allocation, groupKeys, gap}) => {
         
-        const {firstRender} = allocation;
+        const {firstRender, collapseds} = allocation;
 
         let preIndex = firstRender.cursor,
             preGapCursor = gap,
@@ -18,7 +18,7 @@ const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / el
             // maybe we need to seek for the previous group
             preIndex--;
             if (preIndex < 0) {
-                preTargetGroupLabel = groupCloseby({groupKeys, label: preTargetGroupLabel, versus: -1});
+                preTargetGroupLabel = groupCloseby({groupKeys, label: preTargetGroupLabel, versus: -1, collapseds});
                 if (preTargetGroupLabel) {
                     preIndex = allocation.alloc[preTargetGroupLabel].length - 1;
                 }
@@ -34,7 +34,7 @@ const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / el
      * so to be able to not return anything but just update the referenced items
      */
     fixBottomLineGap = ({allocation, groupKeys, gap}) => {
-        const {firstNotRender} = allocation;
+        const {firstNotRender, collapseds} = allocation;
         let postIndex = firstNotRender.cursor,    
             postTargetGroupLabel = firstNotRender.group,
             postGapCursor = gap,
@@ -43,7 +43,7 @@ const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / el
         while(postTargetGroupLabel && postGapCursor--) {
             // maybe we need to seek for the next group
             if (postIndex > postGroupLastIndex) {
-                postTargetGroupLabel = groupCloseby({groupKeys, label: postTargetGroupLabel, versus: 1});
+                postTargetGroupLabel = groupCloseby({groupKeys, label: postTargetGroupLabel, versus: 1, collapseds});
                 if (postTargetGroupLabel) {
                     postIndex = 0;
                     postGroupLastIndex = allocation.alloc[postTargetGroupLabel].length - 1;
@@ -58,6 +58,7 @@ const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / el
     },
     
     fixLineGap = ({allocation, groupKeys, gap}) => { 
+        console.log({allocation})
         const {firstRender, firstNotRender} = allocation;
         if (!firstRender){ return allocation;}
         fixTopLineGap({allocation, groupKeys, gap});
@@ -72,15 +73,22 @@ const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / el
         return allocation;
     },
 
-    groupCloseby = ({groupKeys, label, versus}) => {
-        const i = groupKeys.indexOf(label),
-            len = groupKeys.length;
+    // looking for the following or preceding group we need to 
+    // skip the collapsed ones
+    groupCloseby = ({groupKeys, label, versus, collapseds}) => {
+        let i = groupKeys.indexOf(label);
+        const len = groupKeys.length;
         // following
         if (versus > 0) {
             if (i === len - 1) return false;
+            // skip collapsed
+            while(i+1 < len && collapseds[groupKeys[i+1]]) i++;
             return i + 1 < len ? groupKeys[i + 1] : false;
+
         } else if (versus < 0) {
             if (i === 0) return false;
+            // skip collapsed
+            while(i - 1 < len && collapseds[groupKeys[i - 1]]) i--;
             return i - 1 >= 0 ? groupKeys[i - 1] : false;
         }
     };
@@ -363,6 +371,7 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                     from: cursor,
                     to: cursor + headerHeight,
                     renders: headerRenders,
+                    collapsed
                 }];  
                 
                 acc.alloc[label].push(
@@ -373,7 +382,7 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                         /**
                          * cursor tracks that is a line (>=0) or a header (-1)
                          */
-                        if (!firstRender && renders) {
+                        if (!firstRender && renders && !collapsed) {
                             firstRender = {
                                 group: label,
                                 cursor: headerRenders ? 0 : j // account the header at index 0
@@ -385,7 +394,7 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                          * if the first render has been tracked
                          * then check for the first non render
                          **/
-                        if (firstRender && !firstNotRender && (!renders)){
+                        if (firstRender && !firstNotRender && (!renders) && !collapsed){
                             firstNotRender = {
                                 group: label,
                                 cursor: !headerRenders && !i ? 0: j // consider the header at index 0
@@ -400,12 +409,12 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                         };
                     })
                 );
-                acc.collapsed[label] = collapsed;
+                acc.collapseds[label] = collapsed;
                 acc.cursor += groupHeight;
                 return acc;
             }, {
                 alloc: {}, 
-                collapsed: {},
+                collapseds: {},
                 cursor: 0,
                 firstRender: null,
                 firstNotRender: null,

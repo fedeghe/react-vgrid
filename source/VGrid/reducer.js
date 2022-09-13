@@ -75,6 +75,7 @@ const actions = {
                     scrollTop
                 });
             return {
+                filteredGroupedData,
                 originalGroupedData: newOriginalGroupedData,
                 virtual: {
                     ...virtual,
