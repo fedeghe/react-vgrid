@@ -51,7 +51,7 @@ export default {
             Component: GroupComponent,
             height:50
         },
-        // collapsible: true
+        collapsible: true
     },
 
     headers: [{
