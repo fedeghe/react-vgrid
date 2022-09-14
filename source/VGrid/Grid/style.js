@@ -26,11 +26,17 @@ export default createUseStyles({
     HeaderCaption: ({headerCaptionHeight}) => ({
         height: `${headerCaptionHeight}px`,
         position:'sticky',
-        top: 0
+        top: 0,
+        '& > div':{
+            height: `${headerCaptionHeight}px`,
+        }
     }),
     FooterCaption: ({footerCaptionHeight}) => ({
         height: `${footerCaptionHeight}px`,
         position:'sticky',
-        bottom: 0
+        bottom: 0,
+        '& > div':{
+            height: `${footerCaptionHeight}px`,
+        }
     })
 });
