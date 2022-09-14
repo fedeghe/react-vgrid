@@ -233,7 +233,7 @@ const Grid = () => {
             && scrollTop === 0
             && ref.current.scrollTo
         ) ref.current.scrollTo(0, 0);
-    }, [scrollTop, ref]);   
+    }, [scrollTop, ref]);
 
     
     return <div>
