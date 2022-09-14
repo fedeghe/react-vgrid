@@ -3,7 +3,7 @@
 
 ## for the moment just start it
 
-`yarn start`
+`yarn && yarn start`
 
 #### TODO
 - [x] basic captions
@@ -32,5 +32,5 @@
 
 React-vgrid creates a virtualized container. It renders only the very minimum amount of Items, and starting from computing the height all Items would occupy creates a top and bottom _filling_ domnode with the right height so to allow the scrollbar to stay as if all elements were rendered. A constraint imposed by this approach is that every Item will have a fixed height (defaulted to `80px`) and also the grid size need to be setted (defaulted to `1200px * 800px`).  
 
-The very minimum, but not that useful, config might look like the following:  
+WIP
 
