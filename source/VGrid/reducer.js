@@ -15,12 +15,13 @@ import {
     GLOBAL_FILTER, WARNING
 } from './constants';
 
-const LOADING = Symbol(),
-    FILTER = Symbol(),
-    UNFILTER_FIELDS = Symbol(),
-    UNFILTER = Symbol(),
-    SCROLL = Symbol(),
-    TOGGLE_GROUP = Symbol();
+const LOADING = Symbol('loading'),
+    FILTER = Symbol('filter'),
+    UNFILTER_FIELDS = Symbol('unfilter fields'),
+    UNFILTER = Symbol('unfilter global or all'),
+    SCROLL = Symbol('scroll'),
+    TOGGLE_GROUP = Symbol('toggle a group'),
+    TOGGLE_ALL_GROUPS = Symbol('toggle all groups');
 
 
 // eslint-disable-next-line one-var
@@ -30,6 +31,7 @@ export const ACTION_TYPES = {
     UNFILTER_FIELDS,
     UNFILTER,
     TOGGLE_GROUP,
+    TOGGLE_ALL_GROUPS,
     SCROLL,
 };
 
@@ -50,6 +52,54 @@ const actions = {
                         collapsed: !originalGroupedData[payload].collapsed 
                     }
                 },
+                {gData} = __applyFilter({
+                    globalValue: globalFilterValue,
+                    groupedData: newOriginalGroupedData, // this needs to be the filtered data
+                    gFilter: theDoFilterGlobal,
+                    filter: theDoFilter,
+                    elementsPerLine,
+                    opts
+                }),
+                filteredGroupedData = __getVirtualGroup({
+                    dimensions,
+                    gap,
+                    grouping,
+                    grouped: gData,
+                    scrollTop,
+                    elementsPerLine,
+                    originalGroupedData: newOriginalGroupedData,
+                    opts
+                }),
+                newVirtual = __getVirtual({
+                    filteredGroupedData,
+                    elementsPerLine,
+                    dimensions,
+                    scrollTop
+                });
+            return {
+                filteredGroupedData,
+                originalGroupedData: newOriginalGroupedData,
+                virtual: {
+                    ...virtual,
+                    ...newVirtual,
+                }
+            };
+        },
+        [TOGGLE_ALL_GROUPS]: ({
+            payload : allCollapsed, originalGroupedData,
+            globalFilterValue, theDoFilterGlobal, theDoFilter, elementsPerLine, opts,
+            dimensions, grouping, virtual
+        }) => {
+
+            const {scrollTop, gap} = virtual,
+                newOriginalGroupedData = Object.entries(originalGroupedData).reduce((acc, [label, group]) => {
+                    acc[label] = {
+                        ...group,
+                        collapsed: !allCollapsed
+                    };
+                    return acc;
+                }, {}),
+
                 {gData} = __applyFilter({
                     globalValue: globalFilterValue,
                     groupedData: newOriginalGroupedData, // this needs to be the filtered data
@@ -376,6 +426,11 @@ const actions = {
             params = {
                 [LOADING]: {virtual},
                 [TOGGLE_GROUP]: {
+                    payload, originalGroupedData,
+                    globalFilterValue, theDoFilterGlobal, theDoFilter, elementsPerLine, opts,
+                    dimensions, grouping, virtual
+                },
+                [TOGGLE_ALL_GROUPS]: {
                     payload, originalGroupedData,
                     globalFilterValue, theDoFilterGlobal, theDoFilter, elementsPerLine, opts,
                     dimensions, grouping, virtual

@@ -215,9 +215,17 @@ const Grid = () => {
             dataHeight,
             carpetHeight,
             contentHeight,
+            collapsible,
         },
         headerCaptionMoreProps = uie ? {uie: 'headerCaption'} : {},
         footerCaptionMoreProps = uie ? {uie: 'footerCaption'} : {};
+    if (collapsible) {
+        captionProps.allCollapsed = Object.values(originalGroupedData).every(v =>Boolean(v.collapsed));
+        captionProps.toggleGroups = () => dispatch({
+            type: ACTION_TYPES.TOGGLE_ALL_GROUPS,
+            payload: captionProps.allCollapsed
+        });
+    }
 
     useEffect(() => {
         if (

@@ -7,7 +7,10 @@ const HeaderCaption = ({
     filters, resetFilters,
     loading,
     downloadJson,
-    downloadXsv
+    downloadXsv,
+    collapsible,
+    allCollapsed,
+    toggleGroups
 }) => {
     const classes = useStyles();
     return (
@@ -17,6 +20,7 @@ const HeaderCaption = ({
                     <input placeholder="global search" value={globalFilterValue} type="text" onChange={
                         e => globalFilter({value: e.target.value})}
                     />
+                    {collapsible && (<button type="button" className="btn btn-secondary btn-sm" onClick={() => toggleGroups()}>{allCollapsed?'uncollapse all' : 'collapse all'}</button>)}
                 </div>
                 <div>
                 {loading && <div className="spinner-grow spinner-grow-sm text-light" role="status">
