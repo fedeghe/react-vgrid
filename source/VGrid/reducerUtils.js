@@ -371,8 +371,8 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                     to: cursor + headerHeight,
                     renders: headerRenders,
                     collapsed
-                }];  
-                
+                }];
+
                 acc.alloc[label].push(
                     ...Array.from({length: group.lines}, (_, i) => {
                         const from = cursor + headerHeight + i * itemHeight,
@@ -381,7 +381,7 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                         /**
                          * cursor tracks that is a line (>=0) or a header (-1)
                          */
-                        if (!firstRender && renders && !collapsed) {
+                        if (!firstRender && (renders || headerRenders) && !collapsed) {
                             firstRender = {
                                 group: label,
                                 cursor: headerRenders ? 0 : j // account the header at index 0
@@ -393,7 +393,7 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                          * if the first render has been tracked
                          * then check for the first non render
                          **/
-                        if (firstRender && !firstNotRender && (!renders) && !collapsed){
+                        if (firstRender && !firstNotRender && (!renders || !headerRenders) && !collapsed){
                             firstNotRender = {
                                 group: label,
                                 cursor: !headerRenders && !i ? 0: j // consider the header at index 0
