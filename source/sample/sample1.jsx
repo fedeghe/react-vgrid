@@ -1,7 +1,8 @@
 import React from 'react';
 import VGrid from '../VGrid';
-import config from '../configSmall';
-// import config from '../../tests/configs/basic';
+import config from './configSmall';
+// import config from './configSmallFix';
+//import config from './../../tests/configs/zero';
 import './user.css';
 
 const Page = () => (

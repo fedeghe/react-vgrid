@@ -8,4 +8,11 @@ export default createUseStyles({
         padding:'10px',
         lineHeight:'1em'
     },
+    HeaderCaption: {
+        backgroundColor: 'rgb(20, 93, 130)',
+        lineHeight: '45px',
+        '& input': {
+            height: '25px'
+        }
+    },
 });

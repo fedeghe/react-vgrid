@@ -12,7 +12,7 @@ const Grid = () => {
     const ref = useRef(),
         { state, dispatch } = useContext(GridContext),
         {
-            data,
+            // data,
             total,
             dimensions: {
                 height, width,
@@ -36,10 +36,10 @@ const Grid = () => {
             rvgID,
             events: {onItemEnter, onItemLeave, onItemClick },
             globalFilterValue,
+            originalGroupedData,
             filtered,
             filters,
             columns,
-            cls: { HeaderCaptionCls, FooterCaptionCls },
             filteredGroupedData: {
                 allocation: {
                     alloc,
@@ -47,13 +47,15 @@ const Grid = () => {
                     bottomFillerHeight,
                     renderedHeaders,
                     renderedItems
-                }
+                },
+                allocation,
             },
             grouping: {
                 groupHeader : {
                     height: groupHeaderHeight,
                     Component: GroupHeaderComponent
-                }
+                },
+                collapsible,
             },
             elementsPerLine,
             uie
@@ -108,8 +110,26 @@ const Grid = () => {
             return handlers;
         }, [onItemClick, onItemEnter, onItemLeave]),
 
+        toggleGroup = useCallback(({label}) => {
+            dispatch({type: ACTION_TYPES.TOGGLE_GROUP, payload: label});
+        }, [dispatch]),
         getItemUie = useCallback((i, j) => (uie ? {[uie]: `item-${i}-${j}`} : {}), [uie]),
-        getHeaderUie = useCallback(i => (uie ? {[uie]: `header-${i}`} : {}), [uie]),
+        getHeaderUieValue = useCallback(label => (uie ? `header-${label}`: ''), [uie]),
+        getGroupComponentProps = useCallback(({label}) => {
+            const groupProps = {
+                key: label,
+                groupName: label,
+                groupHeaderHeight,
+                dataUieName: uie,
+                dataUieValue: getHeaderUieValue(label)
+            };
+            if (collapsible) {
+                groupProps.collapsible = true;
+                groupProps.collapsed = originalGroupedData[label].collapsed;
+                groupProps.toggleGroup=()=>toggleGroup({label});
+            }
+            return groupProps;
+        }, [collapsible, getHeaderUieValue, groupHeaderHeight, originalGroupedData, toggleGroup, uie]),
 
         resetFilters = useCallback((what = FILTERS.ALL) => {
             let actionType = null;
@@ -124,37 +144,40 @@ const Grid = () => {
             });
         }, [dispatch, columns]),
 
-        filterDataFields = useCallback(({fields}) => 
-            fields
-            ? data.map(e => fields.reduce(
-                (acc, f) => {
-                    f in e && (acc[f] = e[f]);
-                    return acc;
-                }, {})
-            )
-            : data
-        , [data]),
+        // no more data
+        // filterDataFields = useCallback(({fields}) => 
+        //     fields
+        //     ? data.map(e => fields.reduce(
+        //         (acc, f) => {
+        //             f in e && (acc[f] = e[f]);
+        //             return acc;
+        //         }, {})
+        //     )
+        //     : data
+        // , [data]),
+        // 
+        // but alloc
         // maybe a better way should be seeked
-        // filterDataFields = useCallback(({ fields } = {}) => 
-        //      Object.values(alloc).reduce((acc, groupArr) => 
-        //          acc.concat(
-        //             groupArr.reduce((iAcc, line) => 
-        //                 'rows' in line
-        //                 ? iAcc.concat(
-        //                     line.rows.map(row =>
-        //                         fields
-        //                         ? fields.reduce((iiAcc, f) => {
-        //                             if (f in row) iiAcc[f] = row[f];
-        //                             return iiAcc;
-        //                         }, {})
-        //                         : row
-        //                     )
-        //                 )
-        //                 : iAcc
-        //             , [])
-        //         )
-        //     , [])
-        // , [alloc]),
+        filterDataFields = useCallback(({ fields } = {}) => 
+             Object.values(alloc).reduce((acc, groupArr) => 
+                 acc.concat(
+                    groupArr.reduce((iAcc, line) => 
+                        'rows' in line
+                        ? iAcc.concat(
+                            line.rows.map(row =>
+                                fields
+                                ? fields.reduce((iiAcc, f) => {
+                                    if (f in row) iiAcc[f] = row[f];
+                                    return iiAcc;
+                                }, {})
+                                : row
+                            )
+                        )
+                        : iAcc
+                    , [])
+                )
+            , [])
+        , [alloc]),
 
         downloadJson = useCallback(({fields} = {}) => {
             const a = document.createElement('a'),
@@ -192,9 +215,17 @@ const Grid = () => {
             dataHeight,
             carpetHeight,
             contentHeight,
+            collapsible,
         },
         headerCaptionMoreProps = uie ? {uie: 'headerCaption'} : {},
         footerCaptionMoreProps = uie ? {uie: 'footerCaption'} : {};
+    if (collapsible) {
+        captionProps.allCollapsed = Object.values(originalGroupedData).every(v =>Boolean(v.collapsed));
+        captionProps.toggleGroups = () => dispatch({
+            type: ACTION_TYPES.TOGGLE_ALL_GROUPS,
+            payload: captionProps.allCollapsed
+        });
+    }
 
     useEffect(() => {
         if (
@@ -202,12 +233,12 @@ const Grid = () => {
             && scrollTop === 0
             && ref.current.scrollTo
         ) ref.current.scrollTo(0, 0);
-    }, [scrollTop, ref]);   
-    
+    }, [scrollTop, ref]);
 
+    
     return <div>
         {Boolean(headerCaptionHeight) && (
-            <div className={[classes.HeaderCaption, HeaderCaptionCls].join(' ')}>
+            <div className={[classes.HeaderCaption].join(' ')}>
                 <HeaderCaptionComponent {...captionProps} {...headerCaptionMoreProps}/>
             </div>
         )}
@@ -217,22 +248,23 @@ const Grid = () => {
             {Object.entries(alloc).map(
                 ([label, renderables]) => renderables.map((renderable, j) => {
                     if (!renderable.renders) return null;
+
                     return renderable.header
-                        ? <GroupHeaderComponent key={label} groupName={label} groupHeaderHeight={groupHeaderHeight} {...getHeaderUie(label)}/>
-                        : renderable.rows.map((row, i) =>
+                        ? <GroupHeaderComponent {...getGroupComponentProps({label})}/>
+                        : (!originalGroupedData[label].collapsed && renderable.rows.map((row, i) =>
                             <div key={`${row[rvgID]}_${i}`} className={classes.Item}
                                 {...getHandlers(row)}
                                 {...getItemUie(label, j*elementsPerLine + i)}
                             >
                                 <Item {...row}/>
                             </div>
-                        );
+                        ));
                 })
             )}
             <Filler width="100%" height={bottomFillerHeight} />
         </div>) : <NoData/>}
         {Boolean(footerCaptionHeight) && (
-            <div className={[classes.FooterCaption, FooterCaptionCls].join(' ')}>
+            <div className={[classes.FooterCaption].join(' ')}>
                 <FooterCaptionComponent {...captionProps} {...footerCaptionMoreProps}/>
             </div>
         )}

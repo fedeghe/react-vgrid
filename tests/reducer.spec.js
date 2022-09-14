@@ -34,8 +34,7 @@ describe('reducer - basic', function () {
 
     it('initialise as expected - all in', () => {
         const newConfig = deepClone(zeroConfig),
-            headerComponent = jest.fn(),
-            footerComponent = jest.fn(),
+
             spyFilters = {
                 one: ({userValue, row}) => `${row.id}`.startsWith(userValue),
                 two: ({userValue, row}) => `${row.id}`.startsWith(userValue),
@@ -71,9 +70,7 @@ describe('reducer - basic', function () {
         expect(state.footer).toMatchObject({caption: {height: newConfig.footer.caption.height, Component: newConfig.footer.caption.Component}})
         expect(state.header.caption.Component()).toBe('caption header')
         expect(state.footer.caption.Component()).toBe('caption footer')
-        
-        
-        
+    
         expect(state.total).toBe(50)
         
 
@@ -83,19 +80,15 @@ describe('reducer - basic', function () {
             "onItemEnter": null,
             "onItemLeave": null
         })
-        expect(state.cls).toMatchObject({
-            "HeaderCaptionCls": null,
-            "FooterCaptionCls": null
-        })
         
         expect(state.virtual).toMatchObject({
             "loading": false,
             "gap": 1,
             "contentHeight": 760,
             "carpetHeight": 2600,
-            "linesToRender": 5,
-            "dataHeight": 1000,
-            "renderedItems": 20,
+            "linesToRender": 4,
+            "dataHeight": 800,
+            "renderedItems": 16,
             "scrollTop": 0
         })
         expect(state.debounceTimes).toMatchObject(newConfig.debounceTimes)

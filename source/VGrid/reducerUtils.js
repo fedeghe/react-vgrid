@@ -9,7 +9,7 @@ const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / el
      */
     fixTopLineGap = ({allocation, groupKeys, gap}) => {
         
-        const {firstRender} = allocation;
+        const {firstRender, collapseds} = allocation;
 
         let preIndex = firstRender.cursor,
             preGapCursor = gap,
@@ -18,7 +18,7 @@ const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / el
             // maybe we need to seek for the previous group
             preIndex--;
             if (preIndex < 0) {
-                preTargetGroupLabel = groupCloseby({groupKeys, label: preTargetGroupLabel, versus: -1});
+                preTargetGroupLabel = groupCloseby({groupKeys, label: preTargetGroupLabel, versus: -1, collapseds});
                 if (preTargetGroupLabel) {
                     preIndex = allocation.alloc[preTargetGroupLabel].length - 1;
                 }
@@ -34,7 +34,7 @@ const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / el
      * so to be able to not return anything but just update the referenced items
      */
     fixBottomLineGap = ({allocation, groupKeys, gap}) => {
-        const {firstNotRender} = allocation;
+        const {firstNotRender, collapseds} = allocation;
         let postIndex = firstNotRender.cursor,    
             postTargetGroupLabel = firstNotRender.group,
             postGapCursor = gap,
@@ -43,7 +43,7 @@ const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / el
         while(postTargetGroupLabel && postGapCursor--) {
             // maybe we need to seek for the next group
             if (postIndex > postGroupLastIndex) {
-                postTargetGroupLabel = groupCloseby({groupKeys, label: postTargetGroupLabel, versus: 1});
+                postTargetGroupLabel = groupCloseby({groupKeys, label: postTargetGroupLabel, versus: 1, collapseds});
                 if (postTargetGroupLabel) {
                     postIndex = 0;
                     postGroupLastIndex = allocation.alloc[postTargetGroupLabel].length - 1;
@@ -72,15 +72,22 @@ const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / el
         return allocation;
     },
 
-    groupCloseby = ({groupKeys, label, versus}) => {
-        const i = groupKeys.indexOf(label),
-            len = groupKeys.length;
+    // looking for the following or preceding group we need to 
+    // skip the collapsed ones
+    groupCloseby = ({groupKeys, label, versus, collapseds}) => {
+        let i = groupKeys.indexOf(label);
+        const len = groupKeys.length;
         // following
         if (versus > 0) {
             if (i === len - 1) return false;
+            // skip collapsed
+            while(i+1 < len && collapseds[groupKeys[i+1]]) i++;
             return i + 1 < len ? groupKeys[i + 1] : false;
+
         } else if (versus < 0) {
             if (i === 0) return false;
+            // skip collapsed
+            while(i - 1 < len && collapseds[groupKeys[i - 1]]) i--;
             return i - 1 >= 0 ? groupKeys[i - 1] : false;
         }
     };
@@ -197,8 +204,7 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
      * already included somewhere, check __getGrouped0) it is a way slower compared to 
      * looping on each entry and find the first filter get it (if any)
      */
-    __getGrouped = ({ data, groups, elementsPerLine, opts = {} }) => {
-        // console.log({groups});
+    __getGroupedInit = ({ data, groups, elementsPerLine, collapsible, opts = {} }) => {
         const trak = opts.trakTimes ? { start: +new Date() } : null,
             g = data.reduce((acc, d) => {
                 const filter = groups.find(({ grouper }) => grouper(d));
@@ -232,6 +238,10 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                     lines: getLines({ entries: groupEntries, elementsPerLine }),
                     
                 };
+                //set collapsed falsse (expanded) whenever collapsible is choosen
+                if (collapsible) {
+                    acc[name].collapsed = false;
+                }
             } else {
                 name !== opts.ungroupedLabel
                 && doWarn({ message: `group named \`${name}\` is empty thus ignored`, opts });
@@ -272,7 +282,7 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
      * the next step for this function is to skip all elements not rendering
      * still considering the line gap
      */
-    __getVirtualGroup = ({ dimensions, gap, grouping, grouped, scrollTop, elementsPerLine, opts = {} }) => {
+    __getVirtualGroup = ({ dimensions, gap, grouping, grouped, scrollTop, elementsPerLine, originalGroupedData, opts = {} }) => {
         let renderedItems = 0,
             renderedHeaders = 0,
             dataHeight = 0;
@@ -304,7 +314,10 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                  */
                 
                 // the header should have no height for groups with no lines
-                const groupHeight = group.lines ? group.lines * itemHeight + headerHeight : 0;
+                const collapsed = originalGroupedData[groupName].collapsed,
+                    groupBodyHeight = collapsed ? 0 : group.lines * itemHeight,
+                    groupHeaderHeight = group.lines ? headerHeight : 0, 
+                    groupHeight = groupBodyHeight + groupHeaderHeight;
 
                 acc.carpetHeight += groupHeight;
                 acc.groupsHeights[groupName] = groupHeight;
@@ -340,9 +353,9 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                  * the second option might do the whole 'inRange' check on average in half the time
                  * thus is the choosen option
                  */
-                // console.log({groupingDimensions})
                 let { cursor, firstRender, firstNotRender } = acc;
-                const headerRenders = inRange({n: cursor + headerHeight2, ...range}),
+                const collapsed = originalGroupedData[label].collapsed,
+                    headerRenders = inRange({n: cursor + headerHeight2, ...range}),
                     groupHeight = groupingDimensions.groupsHeights[label];
                 /**
                  * here flattening can be excluded despite it would make a way easier
@@ -357,8 +370,9 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                     from: cursor,
                     to: cursor + headerHeight,
                     renders: headerRenders,
-                }];  
-                
+                    collapsed
+                }];
+
                 acc.alloc[label].push(
                     ...Array.from({length: group.lines}, (_, i) => {
                         const from = cursor + headerHeight + i * itemHeight,
@@ -367,7 +381,7 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                         /**
                          * cursor tracks that is a line (>=0) or a header (-1)
                          */
-                        if (!firstRender && renders) {
+                        if (!firstRender && (renders || headerRenders) && !collapsed) {
                             firstRender = {
                                 group: label,
                                 cursor: headerRenders ? 0 : j // account the header at index 0
@@ -379,7 +393,7 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                          * if the first render has been tracked
                          * then check for the first non render
                          **/
-                        if (firstRender && !firstNotRender && (!renders)){
+                        if (firstRender && !firstNotRender && (!renders || !headerRenders) && !collapsed){
                             firstNotRender = {
                                 group: label,
                                 cursor: !headerRenders && !i ? 0: j // consider the header at index 0
@@ -393,11 +407,13 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                             rows: grouped[label].entries.slice(i * elementsPerLine, (i+1)* elementsPerLine) // is a line
                         };
                     })
-                );        
+                );
+                acc.collapseds[label] = collapsed;
                 acc.cursor += groupHeight;
                 return acc;
             }, {
                 alloc: {}, 
+                collapseds: {},
                 cursor: 0,
                 firstRender: null,
                 firstNotRender: null,
