@@ -19,7 +19,7 @@ export default {
         // { key: 'entityid3', type: 'int' },
         // { key: 'name3', type: 'str' },
         // { key: 'date3', type: 'date' },
-    ], 1e5),
+    ], 1e2),
 
     // each gouper must exclusively select an element,
     // if two grouper let the same row pass then a specific
@@ -79,7 +79,7 @@ export default {
     gap : 5,
     NoFilterData: ({total}) => <div>no data out of {total}</div>,
     debounceTimes: {
-        // scrolling: 20,
+        scrolling: 10,
         // filtering: 200,
     },
     header: {
@@ -98,10 +98,6 @@ export default {
         // onItemEnter: (e, {item}) => {console.log('enter Item ', item);},
         // onItemLeave: (e, {item}) => {console.log('leave Item ', item);},
         // onItemClick: (e, {item}) => {console.log('click Item ', item);},
-    },
-    cls: {
-        HeaderCaption: 'HeaderCaption',
-        FooterCaption: 'FooterCaption',
     },
     // trakTimes : true,  //default false
     warning: 1 // 0 none, 1 warning, 2 warning + error

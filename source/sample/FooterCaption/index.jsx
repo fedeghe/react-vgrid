@@ -11,7 +11,7 @@ const FooterCaption = ({
 }) => {
     const classes = useStyles();
     return (
-        <div className={["FooterCaption", classes.Container].join(' ')}>
+        <div className={[ classes.Container, classes.FooterCaption].join(' ')}>
             <div>
                 <strong>footer caption</strong> (filtered: {filtered} | rendered Items: {renderedItems}:{renderedHeaders}| total: {total}) {loading && ' loading'}
             </div>

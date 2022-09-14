@@ -40,7 +40,6 @@ const Grid = () => {
             filtered,
             filters,
             columns,
-            cls: { HeaderCaptionCls, FooterCaptionCls },
             filteredGroupedData: {
                 allocation: {
                     alloc,
@@ -231,7 +230,7 @@ const Grid = () => {
     
     return <div>
         {Boolean(headerCaptionHeight) && (
-            <div className={[classes.HeaderCaption, HeaderCaptionCls].join(' ')}>
+            <div className={[classes.HeaderCaption].join(' ')}>
                 <HeaderCaptionComponent {...captionProps} {...headerCaptionMoreProps}/>
             </div>
         )}
@@ -257,7 +256,7 @@ const Grid = () => {
             <Filler width="100%" height={bottomFillerHeight} />
         </div>) : <NoData/>}
         {Boolean(footerCaptionHeight) && (
-            <div className={[classes.FooterCaption, FooterCaptionCls].join(' ')}>
+            <div className={[classes.FooterCaption].join(' ')}>
                 <FooterCaptionComponent {...captionProps} {...footerCaptionMoreProps}/>
             </div>
         )}

@@ -11,7 +11,7 @@ const HeaderCaption = ({
 }) => {
     const classes = useStyles();
     return (
-        <div>
+        <div className={classes.HeaderCaption}>
             <div className={classes.Line}>
                 <div>
                     <input placeholder="global search" value={globalFilterValue} type="text" onChange={

@@ -469,10 +469,6 @@ const actions = {
                 headers = {},
                 globalPreFilter = '',
                 NoFilterData = () => NO_FILTER_DATA_MESSAGE,
-                cls: {
-                    HeaderCaption: HeaderCaptionCls = null,
-                    FooterCaption: FooterCaptionCls = null,
-                } = {},
                 Item,
                 globalFilter = GLOBAL_FILTER,
                 warning = WARNING
@@ -587,7 +583,6 @@ const actions = {
             dimensions,
             debounceTimes: { scrolling, filtering, },
             events: { onItemEnter, onItemLeave, onItemClick,},
-            cls: { HeaderCaptionCls, FooterCaptionCls},
             NoFilterData,
             originalGroupedData,
             gap: gapPlus,
