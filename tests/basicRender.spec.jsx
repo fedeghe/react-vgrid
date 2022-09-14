@@ -27,7 +27,7 @@ describe("VGrid - basic", () => {
             elementsPerLine = Math.floor(width / itemWidth),
             inViewPort = Math.round(height / itemHeight), // rem 50% cutoff
             // rem gap is always 1+
-            topRender = (inViewPort + gap + 1) * elementsPerLine;
+            topRender = (inViewPort + gap) * elementsPerLine;
 
         let i = 0;
         for(null; i < topRender; i++)

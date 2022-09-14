@@ -19,40 +19,40 @@ export default {
         // { key: 'entityid3', type: 'int' },
         // { key: 'name3', type: 'str' },
         // { key: 'date3', type: 'date' },
-    ], 1e5),
+    ], 1e2+3),
 
     // each gouper must exclusively select an element,
     // if two grouper let the same row pass then a specific
     // exception will be thrown
-    grouping: {
-        groups: [{
-            label: 'lower',
-            grouper: (row) => row.id <= 100
-        },{
-            label: 'mid',
-            grouper: (row) => row.id >100 && row.id <= 200
-        },{
-            label: 'high',
-            grouper: (row) => row.id >200 && row.id <= 800
+    // grouping: {
+        // groups: [{
+        //     label: 'lower',
+        //     grouper: (row) => row.id <= 100
+        // },{
+        //     label: 'mid',
+        //     grouper: (row) => row.id >100 && row.id <= 200
+        // },{
+        //     label: 'high',
+        //     grouper: (row) => row.id >200 && row.id <= 800
 
         //the impossible
         // },{
         //     label: 'impossible',
-        //     grouper: (row) => row.id >= Infinity && row.id <= 300
+        //     grouper: (row) => row.id >= Infinity
 
         // the alone, or the remainder collector
         // },{
         //     label: 'alone',
         //     grouper: (row) => row.id >= -Infinity
 
-        }],
+        // }],
+        // groupHeader: {
+        //     Component: GroupComponent,
+        //     height:50
+        // },
+        // collapsible: true,
         // ungroupedLabel: 'Un-grouped',
-        groupHeader: {
-            Component: GroupComponent,
-            height:50
-        },
-        // collapsible: true
-    },
+    // },
 
     headers: [{
         key: 'id',
