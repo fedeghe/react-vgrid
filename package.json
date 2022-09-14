@@ -1,6 +1,6 @@
 {
     "name": "@fedeghe/react-vgrid",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "description": "react table on steroids",
     "main": "dist/index.js",
     "scripts": {
