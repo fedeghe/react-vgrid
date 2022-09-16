@@ -1,4 +1,4 @@
-
+import DefaultItem from './Grid/DefaultItem'
 import {
     doThrow, uniqueID, trakTime,
     doWarn, throwIf, isFunction
@@ -524,7 +524,7 @@ const actions = {
                 headers = {},
                 globalPreFilter = '',
                 NoFilterData = () => NO_FILTER_DATA_MESSAGE,
-                Item,
+                Item = DefaultItem,
                 globalFilter = GLOBAL_FILTER,
                 warning = WARNING
             } = cnf,
