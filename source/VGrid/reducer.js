@@ -400,6 +400,7 @@ const actions = {
         }
     },
     lib = CMPNAME,
+    emptyObjFuncf = () => ({}),
     reducer = (oldState, action) => {
         const { payload = {}, type } = action,
             {
@@ -424,49 +425,48 @@ const actions = {
             opts = {trakTimes, warning, lib},
 
             params = {
-                [LOADING]: {virtual},
-                [TOGGLE_GROUP]: {
+                [LOADING]: () => ({virtual}),
+                [TOGGLE_GROUP]: () => ({
                     payload, originalGroupedData,
                     globalFilterValue, theDoFilterGlobal, theDoFilter, elementsPerLine, opts,
                     dimensions, grouping, virtual
-                },
-                [TOGGLE_ALL_GROUPS]: {
+                }),
+                [TOGGLE_ALL_GROUPS]: () => ({
                     payload, originalGroupedData,
                     globalFilterValue, theDoFilterGlobal, theDoFilter, elementsPerLine, opts,
                     dimensions, grouping, virtual
-                },
-                [FILTER]: {
+                }),
+                [FILTER]: () => ({
                     payload, globalFilterValue, filters,
                     columns, filterFactory, dimensions,
                     grouping,  originalGroupedData, elementsPerLine, trakTimes,
                     virtual, theDoFilterGlobal,
                     globalFilter, opts
-                },
-                [UNFILTER_FIELDS]: {
+                }),
+                [UNFILTER_FIELDS]: () => ({
                     payload, globalFilterValue, filters, columns,
                     trakTimes, dimensions, grouping,
                     originalGroupedData, elementsPerLine, virtual,
                     globalFilter, opts
-                },
-                [UNFILTER]: {
+                }),
+                [UNFILTER]: () => ({
                     payload, globalFilterValue, filters, columns,
                     trakTimes, elementsPerLine, dimensions, originalGroupedData,
                     grouping, virtual,
                     globalFilter, opts
-                },
-                [SCROLL]: {
+                }),
+                [SCROLL]: () => ({
                     payload, dimensions, grouping,
                     globalFilterValue, originalGroupedData, theDoFilterGlobal, theDoFilter,
                     elementsPerLine, trakTimes, virtual, opts
-                }
-            }[type] || {};
+                })
+            }[type] || emptyObjFuncf;
 
         if (type in actions) {
             const newState = {
                 ...oldState,
-                ...actions[type](params)
+                ...actions[type](params())
             };
-
             return newState;
         }
         return oldState;
