@@ -226,12 +226,10 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
         if (groups.length && g[opts.ungroupedLabel].length) {
             doWarn({ message: `${g[opts.ungroupedLabel].length} elements are ungrouped`, opts });
         }
-        if (opts.trakTimes) {
-            trak.end = +new Date();
-            trakTime({ what: '__getGrouped2', time: trak.end - trak.start, opts });
-        }
+        
         // return group entries & lines filtering out empty groups
-        return Object.entries(g).reduce((acc, [name, groupEntries]) => {
+        // eslint-disable-next-line one-var
+        const ret = Object.entries(g).reduce((acc, [name, groupEntries]) => {
             if (groupEntries.length) {
                 acc[name] = {
                     entries: groupEntries,
@@ -248,6 +246,11 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
             }
             return acc;
         }, {});
+        if (opts.trakTimes) {
+            trak.end = +new Date();
+            trakTime({ what: '__getGroupedInit', time: trak.end - trak.start, opts });
+        }
+        return ret;
     },
 
     // most of those params will be removed
