@@ -1,4 +1,4 @@
-import { isFunction, trakTime, doWarn } from './utils';
+import { isFunction, trakTime, mayWarnIf } from './utils';
 
 const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / elementsPerLine),
     inRange = ({ n, from, to }) => n > from && n < to,
@@ -223,9 +223,12 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                 }, {}),
                 [opts.ungroupedLabel]: []
             });
-        if (groups.length && g[opts.ungroupedLabel].length) {
-            doWarn({ message: `${g[opts.ungroupedLabel].length} elements are ungrouped`, opts });
-        }
+
+        mayWarnIf({
+            condition: groups.length && g[opts.ungroupedLabel].length,
+            message: `${g[opts.ungroupedLabel].length} elements are ungrouped`,
+            opts
+        });
         
         // return group entries & lines filtering out empty groups
         // eslint-disable-next-line one-var
@@ -241,8 +244,11 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                     acc[name].collapsed = false;
                 }
             } else {
-                name !== opts.ungroupedLabel
-                && doWarn({ message: `group named \`${name}\` is empty thus ignored`, opts });
+                mayWarnIf({
+                    condition: name !== opts.ungroupedLabel,
+                    message: `group named \`${name}\` is empty thus ignored`,
+                    opts
+                });
             }
             return acc;
         }, {});

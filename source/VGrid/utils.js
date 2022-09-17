@@ -42,6 +42,7 @@ const prefix = 'RVG_',
             throw `${opts.lib.toUpperCase()} 🚨 ${message}`;
         }
     },
+    mayWarnIf = ({ condition, message, opts }) => condition && doWarn({message, opts}),
     uniqueID = {
         toString: () => {
             count += 1;
@@ -55,5 +56,6 @@ export {
     debounce,
     asXsv,
     asJson,
-    trakTime, doWarn, doThrow, throwIf, uniqueID
+    trakTime, doWarn, doThrow,
+    throwIf, mayWarnIf, uniqueID
 };
