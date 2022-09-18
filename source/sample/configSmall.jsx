@@ -68,7 +68,7 @@ export default {
         preFiltered: null,
     }],
     // globalPreFilter: '2',
-    Item,
+    // Item,
     Loader: () => (<div className="Loading">loading</div>),
     dimensions: {
         itemWidth: 300,

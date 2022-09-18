@@ -4,7 +4,7 @@ import { ACTION_TYPES } from '../reducer';
 
 import useStyles from './style.js';
 
-const Item = row => {
+const Item = ({row}) => {
     const classes = useStyles(),
         {state, dispatch} = useContext(SampleContext),
         {name, index} = useMemo(() => {

@@ -256,7 +256,7 @@ const Grid = () => {
                                 {...getHandlers(row)}
                                 {...getItemUie(label, j*elementsPerLine + i)}
                             >
-                                <Item {...row}/>
+                                <Item row={row}/>
                             </div>
                         ));
                 })
