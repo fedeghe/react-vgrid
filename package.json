@@ -1,7 +1,7 @@
 {
     "name": "@fedeghe/react-vgrid",
     "version": "0.0.4",
-    "description": "react table on steroids",
+    "description": "react grid virtualized",
     "main": "dist/index.js",
     "scripts": {
         "start": "webpack serve --open --config source/webpack.dev.js",
