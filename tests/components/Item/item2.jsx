@@ -4,20 +4,20 @@ import { ACTION_TYPES } from '../reducer';
 
 import useStyles from './style.js';
 
-const Item = data => {
+const Item = ({row}) => {
     const classes = useStyles(),
         {state, dispatch} = useContext(SampleContext),
         value = useMemo(() => state.data.find(
-            r => r.entityid === data.entityid
+            r => r.entityid === row.entityid
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        ).name, [data.name]);
+        ).name, [row.name]);
         
     return <div className={classes.Item}>
         <div className={classes.Inner}>
             <ul>
-                {Object.keys(data).filter(k => k !=='_ID').map((fk, i) => (
+                {Object.keys(row).filter(k => k !=='_ID').map((fk, i) => (
                     <li key={`k_${i}`}>
-                        <b>{fk}</b> : {data[fk]}
+                        <b>{fk}</b> : {row[fk]}
                     </li>
                 ))}
                 <li>
@@ -27,7 +27,7 @@ const Item = data => {
                         onChange={e => dispatch({
                             type: ACTION_TYPES.UPDATEFIELD,
                             payload: {
-                                entityid: data.entityid,
+                                entityid: row.entityid,
                                 value: e.target.value
                             }
                         })}
