@@ -19,7 +19,7 @@ export default {
         // { key: 'entityid3', type: 'int' },
         // { key: 'name3', type: 'str' },
         // { key: 'date3', type: 'date' },
-    ], 1e2+3),
+    ], 1e4+3),
 
     // each gouper must exclusively select an element,
     // if two grouper let the same row pass then a specific
@@ -50,7 +50,7 @@ export default {
             Component: GroupComponent,
             height:50
         },
-        // collapsible: true,
+        collapsible: true,
         // ungroupedLabel: 'Un-grouped',
     },
 

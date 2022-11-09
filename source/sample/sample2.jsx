@@ -1,6 +1,6 @@
 import React, {useReducer} from 'react';
 import VGrid from '../VGrid';
-import config from '../configSmall';
+import config from './configSmall';
 import reducerFactory from './reducer';
 import SampleContext from './Context';
 import './user.css';
