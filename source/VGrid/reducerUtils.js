@@ -321,7 +321,7 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
                  * 
                  * if (!groupData.entries.length) return acc;
                  */
-                
+                    
                 // the header should have no height for groups with no lines
                 const collapsed = originalGroupedData[groupName].collapsed,
                     groupBodyHeight = collapsed ? 0 : group.lines * itemHeight,
