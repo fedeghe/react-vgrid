@@ -218,7 +218,27 @@ const Grid = () => {
             collapsible,
         },
         headerCaptionMoreProps = uie ? {uie: 'headerCaption'} : {},
-        footerCaptionMoreProps = uie ? {uie: 'footerCaption'} : {};
+        footerCaptionMoreProps = uie ? {uie: 'footerCaption'} : {},
+        renderRenderables = useCallback(({alloc}) => 
+            Object.entries(alloc).map(
+                ([label, renderables]) =>
+                    renderables.map((renderable, j) => 
+                        renderable.renders
+                            ? renderable.header
+                                ? <GroupHeaderComponent {...getGroupComponentProps({label})}/>
+                                : (!originalGroupedData[label].collapsed && renderable.rows.map((row, i) =>
+                                    <div key={`${row[rvgID]}_${i}`} className={classes.Item}
+                                        {...getHandlers(row)}
+                                        {...getItemUie(label, j*elementsPerLine + i)}
+                                    >
+                                        <Item row={row}/>
+                                    </div>
+                                ))
+                            : null
+                )
+            )
+        , [classes.Item, elementsPerLine, getGroupComponentProps, getHandlers, getItemUie, originalGroupedData, rvgID]);
+
     if (collapsible) {
         captionProps.allCollapsed = Object.values(originalGroupedData).every(v =>Boolean(v.collapsed));
         captionProps.toggleGroups = () => dispatch({
@@ -235,7 +255,7 @@ const Grid = () => {
         ) ref.current.scrollTo(0, 0);
     }, [scrollTop, ref]);
 
-    
+
     return <div>
         {Boolean(headerCaptionHeight) && (
             <div className={[classes.HeaderCaption].join(' ')}>
@@ -245,22 +265,7 @@ const Grid = () => {
         {filtered ? (
         <div className={classes.GridContainer} ref={ref} onScroll={onScroll}>
             <Filler width="100%" height={topFillerHeight} />
-            {Object.entries(alloc).map(
-                ([label, renderables]) => renderables.map((renderable, j) => {
-                    if (!renderable.renders) return null;
-
-                    return renderable.header
-                        ? <GroupHeaderComponent {...getGroupComponentProps({label})}/>
-                        : (!originalGroupedData[label].collapsed && renderable.rows.map((row, i) =>
-                            <div key={`${row[rvgID]}_${i}`} className={classes.Item}
-                                {...getHandlers(row)}
-                                {...getItemUie(label, j*elementsPerLine + i)}
-                            >
-                                <Item row={row}/>
-                            </div>
-                        ));
-                })
-            )}
+            {renderRenderables({alloc})}
             <Filler width="100%" height={bottomFillerHeight} />
         </div>) : <NoData/>}
         {Boolean(footerCaptionHeight) && (
