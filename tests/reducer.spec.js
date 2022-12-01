@@ -514,6 +514,16 @@ describe('reducer - edge', function () {
         expect(newState1).toMatchObject(state);
     });
 
+    it('edge - dispatch action with no type', () => {
+        const newConfig = deepClone(zeroConfig);
+        const state = init(newConfig);
+        try {
+            reducer(state, {z: 'whatever'});
+        } catch(e) {
+            expect(e.message).toBe('Action type not given');
+        }
+    });
+
     it.skip('edge - edge on columnVisitility', () => {
         const newConfig = deepClone(zeroConfig);
         newConfig.columns[0].isVisible = true;
