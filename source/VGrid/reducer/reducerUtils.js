@@ -1,4 +1,4 @@
-import { isFunction, trakTime, mayWarnIf } from './utils';
+import { isFunction, trakTime, mayWarnIf } from './../utils';
 
 const getLines = ({ entries, elementsPerLine }) => Math.ceil(entries.length / elementsPerLine),
     inRange = ({ n, from, to }) => n > from && n < to,

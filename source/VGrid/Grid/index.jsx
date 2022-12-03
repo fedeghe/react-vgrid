@@ -6,7 +6,7 @@ import {FILTERS} from './../constants';
 import GridContext from './../Context';
 import { debounce, asXsv, asJson } from './../utils';
 import useStyles from './style.js';
-import { ACTION_TYPES } from '../reducer';
+import ACTION_TYPES from '../reducer/actions';
 
 const Grid = () => {
     const ref = useRef(),

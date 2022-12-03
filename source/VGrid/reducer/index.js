@@ -1,8 +1,8 @@
-import DefaultItem from './Grid/DefaultItem'
+import DefaultItem from './../Grid/DefaultItem';
 import {
     doThrow, uniqueID, trakTime,
     doWarn, throwIf, isFunction
-} from './utils';
+} from './../utils';
 import {
     __getFilterFactory, __cleanFilters, __getVirtual, __getVirtualGroup,
     __getGroupedInit, __composeFilters, __applyFilter
@@ -13,32 +13,14 @@ import {
     NO_FILTER_DATA_MESSAGE, GROUP_COMPONENT_HEIGHT,
     UNGROUPED_LABEL, FILTERS, DEFAULT_LOADER, UIE,
     GLOBAL_FILTER, WARNING
-} from './constants';
+} from './../constants';
 
-const LOADING = Symbol('loading'),
-    FILTER = Symbol('filter'),
-    UNFILTER_FIELDS = Symbol('unfilter fields'),
-    UNFILTER = Symbol('unfilter global or all'),
-    SCROLL = Symbol('scroll'),
-    TOGGLE_GROUP = Symbol('toggle a group'),
-    TOGGLE_ALL_GROUPS = Symbol('toggle all groups');
-
-
-// eslint-disable-next-line one-var
-export const ACTION_TYPES = {
-    LOADING,
-    FILTER,
-    UNFILTER_FIELDS,
-    UNFILTER,
-    TOGGLE_GROUP,
-    TOGGLE_ALL_GROUPS,
-    SCROLL,
-};
+import ACTION_TYPES from './actions';
 
 // eslint-disable-next-line one-var
 const actions = {
-        [LOADING]: ({virtual}) => ({ virtual: { ...virtual, loading: true } }),
-        [TOGGLE_GROUP]: ({
+        [ACTION_TYPES.LOADING]: ({virtual}) => ({ virtual: { ...virtual, loading: true } }),
+        [ACTION_TYPES.TOGGLE_GROUP]: ({
             payload, originalGroupedData,
             globalFilterValue, theDoFilterGlobal, theDoFilter, elementsPerLine, opts,
             dimensions, grouping, virtual
@@ -85,7 +67,7 @@ const actions = {
                 }
             };
         },
-        [TOGGLE_ALL_GROUPS]: ({
+        [ACTION_TYPES.TOGGLE_ALL_GROUPS]: ({
             payload : allCollapsed, originalGroupedData,
             globalFilterValue, theDoFilterGlobal, theDoFilter, elementsPerLine, opts,
             dimensions, grouping, virtual
@@ -134,7 +116,7 @@ const actions = {
             };
         },
 
-        [FILTER]: ({
+        [ACTION_TYPES.FILTER]: ({
             payload, globalFilterValue, filters,
             columns, filterFactory, dimensions, 
             grouping,  originalGroupedData, elementsPerLine,
@@ -223,7 +205,7 @@ const actions = {
             };
         },
 
-        [UNFILTER_FIELDS]: ({
+        [ACTION_TYPES.UNFILTER_FIELDS]: ({
             payload, globalFilterValue, filters, columns,
             dimensions, grouping,
             originalGroupedData, elementsPerLine, virtual,
@@ -292,7 +274,7 @@ const actions = {
             };
         },
 
-        [UNFILTER]: ({
+        [ACTION_TYPES.UNFILTER]: ({
             payload, globalFilterValue, filters, columns,
             elementsPerLine, dimensions, originalGroupedData,
             grouping, virtual, globalFilter, opts
@@ -359,7 +341,7 @@ const actions = {
 
         },
 
-        [SCROLL]: ({
+        [ACTION_TYPES.SCROLL]: ({
             payload, dimensions, grouping,
             globalFilterValue, originalGroupedData, theDoFilterGlobal, theDoFilter,
             elementsPerLine, virtual, opts
@@ -425,37 +407,37 @@ const actions = {
             opts = {trakTimes, warning, lib},
 
             params = {
-                [LOADING]: () => ({virtual}),
-                [TOGGLE_GROUP]: () => ({
+                [ACTION_TYPES.LOADING]: () => ({virtual}),
+                [ACTION_TYPES.TOGGLE_GROUP]: () => ({
                     payload, originalGroupedData,
                     globalFilterValue, theDoFilterGlobal, theDoFilter, elementsPerLine, opts,
                     dimensions, grouping, virtual
                 }),
-                [TOGGLE_ALL_GROUPS]: () => ({
+                [ACTION_TYPES.TOGGLE_ALL_GROUPS]: () => ({
                     payload, originalGroupedData,
                     globalFilterValue, theDoFilterGlobal, theDoFilter, elementsPerLine, opts,
                     dimensions, grouping, virtual
                 }),
-                [FILTER]: () => ({
+                [ACTION_TYPES.FILTER]: () => ({
                     payload, globalFilterValue, filters,
                     columns, filterFactory, dimensions,
                     grouping,  originalGroupedData, elementsPerLine, trakTimes,
                     virtual, theDoFilterGlobal,
                     globalFilter, opts
                 }),
-                [UNFILTER_FIELDS]: () => ({
+                [ACTION_TYPES.UNFILTER_FIELDS]: () => ({
                     payload, globalFilterValue, filters, columns,
                     trakTimes, dimensions, grouping,
                     originalGroupedData, elementsPerLine, virtual,
                     globalFilter, opts
                 }),
-                [UNFILTER]: () => ({
+                [ACTION_TYPES.UNFILTER]: () => ({
                     payload, globalFilterValue, filters, columns,
                     trakTimes, elementsPerLine, dimensions, originalGroupedData,
                     grouping, virtual,
                     globalFilter, opts
                 }),
-                [SCROLL]: () => ({
+                [ACTION_TYPES.SCROLL]: () => ({
                     payload, dimensions, grouping,
                     globalFilterValue, originalGroupedData, theDoFilterGlobal, theDoFilter,
                     elementsPerLine, trakTimes, virtual, opts
