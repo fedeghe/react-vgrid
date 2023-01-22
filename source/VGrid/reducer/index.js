@@ -1,7 +1,7 @@
 import DefaultItem from './../Grid/DefaultItem';
 import {
     doThrow, uniqueID, trakTime,
-    // doWarn, throwIf, isFunction
+    doWarn, throwIf, isFunction
 } from './../utils';
 import {
     __getFilterFactory, __cleanFilters, __getVirtual, __getVirtualGroup,
@@ -454,7 +454,11 @@ const actions = {
     },
 
     init = (cnf = {}) => {
-        if ('gap' in cnf && cnf.gap < 0) doThrow({ message: 'The parameter `gap` cannot be negative', opts: { lib } });
+        throwIf({
+            condition: 'gap' in cnf && cnf.gap < 0,
+            message: 'The parameter `gap` cannot be negative',
+            opts: {lib}
+        });
         const trak = { start: +new Date },
             {
                 trakTimes = false,
