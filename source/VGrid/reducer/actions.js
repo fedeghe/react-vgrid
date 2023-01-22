@@ -4,7 +4,8 @@ const LOADING = Symbol('loading'),
     UNFILTER = Symbol('unfilter global or all'),
     SCROLL = Symbol('scroll'),
     TOGGLE_GROUP = Symbol('toggle a group'),
-    TOGGLE_ALL_GROUPS = Symbol('toggle all groups');
+    TOGGLE_ALL_GROUPS = Symbol('toggle all groups'),
+    INIT = Symbol('initialize state');
 
 
 // eslint-disable-next-line one-var
@@ -16,4 +17,5 @@ export default {
     TOGGLE_GROUP,
     TOGGLE_ALL_GROUPS,
     SCROLL,
+    INIT
 };

@@ -430,9 +430,205 @@ const actions = {
                     ...newVirtual,
                 }
             };
+        },
+
+        [ACTION_TYPES.INIT]: ({
+            payload: cnf
+        }) => {
+            throwIf({
+                condition: 'gap' in cnf && cnf.gap < 0,
+                message: 'The parameter `gap` cannot be negative',
+                opts: {lib}
+            });
+            const trak = { start: +new Date },
+                {
+                    trakTimes = false,
+                    data = [],
+                    gap = GAP,
+                    uie = UIE,
+                    Loader = DEFAULT_LOADER,
+                    dimensions: {
+                        width = WIDTH,
+                        height = HEIGHT,
+                        itemHeight = ITEM_HEIGHT,
+                        itemWidth = ITEM_WIDTH
+                    } = {},
+                    rvgID = RVG_ID,
+                    debounceTimes: {
+                        scrolling = DEBOUNCE_SCROLLING,
+                        filtering = DEBOUNCE_FILTERING,
+                    } = {},
+    
+                    grouping: {
+                        groups = [],
+                        groupHeader: {
+                            Component: GroupComponent = n => n,
+                            height: groupComponentHeight = GROUP_COMPONENT_HEIGHT
+                        } = {},
+                        ungroupedLabel = UNGROUPED_LABEL,
+                        collapsible: collapsibleGroups = false
+                    } = {},
+    
+                    header: {
+                        caption: {
+                            Component: HeaderCaptionComponent = () => null,
+                            height: headerCaptionHeight = 0
+                        } = {}
+                    } = {},
+                    footer: {
+                        caption: {
+                            Component: FooterCaptionComponent = () => null,
+                            height: footerCaptionHeight = 0
+                        } = {}
+                    } = {},
+    
+                    events: {
+                        onItemEnter = null,
+                        onItemLeave = null,
+                        onItemClick = null,
+                    } = {},
+                    headers = {},
+                    globalPreFilter = '',
+                    NoFilterData = () => NO_FILTER_DATA_MESSAGE,
+                    Item = DefaultItem,
+                    globalFilter = GLOBAL_FILTER,
+                    warning = WARNING
+                } = cnf,
+                /**
+                 * to know why read the comment in __getVirtualGroup */
+                gapPlus = gap + 1,
+                grouping = {
+                    groups,
+                    groupHeader: {
+                        Component: GroupComponent,
+                        height: groupComponentHeight
+                    },
+                    ungroupedLabel,
+                    collapsible : collapsibleGroups
+                },
+    
+                dimensions = {
+                    width,
+                    height,
+                    itemHeight, itemWidth,
+                    contentHeight: height - headerCaptionHeight - footerCaptionHeight
+                },
+    
+                elementsPerLine = Math.floor(width / itemWidth),
+    
+                /***************************************************************************
+                 * starting from specified groups, separate the data and create the groups
+                 */
+                originalGroupedData = __getGroupedInit({
+                    data, elementsPerLine,
+                    groups: grouping.groups, opts: { ungroupedLabel, lib, trakTimes, warning },
+                    collapsible: collapsibleGroups
+                }),
+                // originalGroupedData0 = __getGroupedInit({data, groups, elementsPerLine, opts: {ungroupedLabel, lib, trak: true}}),            
+                funcFilters = __composeFilters({ headers, opts: { trakTimes, lib } }),
+    
+                // columns, filterFactory and theDoFilter can stay static in the state
+                columns = headers.map(h => h.key),
+                filterFactory = __getFilterFactory({ columns, filters: funcFilters, opts: { trakTimes, lib, warning } }),
+                theDoFilter = filterFactory(),
+    
+                // this needs to be recreated every time the global filter changes
+                theDoFilterGlobal = filterFactory(globalPreFilter),
+    
+                {gData, filtered} = __applyFilter({
+                    globalValue: globalPreFilter,
+                    groupedData: originalGroupedData,
+                    gFilter: theDoFilterGlobal,
+                    filter: theDoFilter,
+                    elementsPerLine,
+                    opts: { trakTimes, lib }
+                }),
+    
+                filteredGroupedData = __getVirtualGroup({
+                    dimensions,
+                    gap: gapPlus,
+                    grouping,
+                    grouped: gData,
+                    scrollTop: 0,
+                    elementsPerLine,
+                    originalGroupedData,
+                    opts: { trakTimes, lib }
+                }),
+                /**
+                 * 
+                 ****************************************************************************/
+    
+    
+                innerVirtual = __getVirtual({
+                    filteredGroupedData,
+                    elementsPerLine,
+                    dimensions,
+                    scrollTop: 0
+                }),
+                virtual = {
+                    loading: false,
+                    gap: gapPlus,
+                    contentHeight: height - headerCaptionHeight - footerCaptionHeight,
+                    ...innerVirtual
+                };
+                
+    
+            // every group must have a grouper
+            if (groups.length && groups.some(group => typeof group.grouper !== 'function')) {
+                throw 'Every defined group must have a grouper function';
+            }
+            /////////////////////////////////////////////////////////////////////
+            if (trakTimes) {
+                trak.end = +new Date;
+                trakTime({
+                    what: 'reducer initialization',
+                    time: trak.end - trak.start,
+                    opts: { trakTimes, lib }
+                }
+                );
+            }
+    
+            return {
+                // ...cnf,
+    
+                // somehow static
+                data: data.map(item => ({ [rvgID]: `${uniqueID}`, ...item })),
+                uie,
+                rvgID,
+                trakTimes,
+                elementsPerLine,
+                Loader,
+                grouping,
+                header: { caption: { Component: HeaderCaptionComponent, height: headerCaptionHeight}},
+                footer: { caption: { Component: FooterCaptionComponent, height: footerCaptionHeight}},
+                dimensions,
+                debounceTimes: { scrolling, filtering, },
+                events: { onItemEnter, onItemLeave, onItemClick,},
+                NoFilterData,
+                originalGroupedData,
+                gap: gapPlus,
+                Item,
+                globalFilter,
+                warning,
+    
+                // dynamic
+                headers,
+                filtered,
+                total: data.length,
+                filteredGroupedData,
+                theDoFilterGlobal,
+                theDoFilter,
+                filterFactory,
+                columns,
+                virtual,
+                filters: funcFilters,
+                globalFilterValue: globalPreFilter
+            };
         }
     },
+    
     lib = CMPNAME,
+
     reducer = (oldState, action) => {
         const { payload = {}, type } = action,
             {
@@ -451,201 +647,9 @@ const actions = {
             return newState;
         }
         return oldState;
-    },
-
-    init = (cnf = {}) => {
-        throwIf({
-            condition: 'gap' in cnf && cnf.gap < 0,
-            message: 'The parameter `gap` cannot be negative',
-            opts: {lib}
-        });
-        const trak = { start: +new Date },
-            {
-                trakTimes = false,
-                data = [],
-                gap = GAP,
-                uie = UIE,
-                Loader = DEFAULT_LOADER,
-                dimensions: {
-                    width = WIDTH,
-                    height = HEIGHT,
-                    itemHeight = ITEM_HEIGHT,
-                    itemWidth = ITEM_WIDTH
-                } = {},
-                rvgID = RVG_ID,
-                debounceTimes: {
-                    scrolling = DEBOUNCE_SCROLLING,
-                    filtering = DEBOUNCE_FILTERING,
-                } = {},
-
-                grouping: {
-                    groups = [],
-                    groupHeader: {
-                        Component: GroupComponent = n => n,
-                        height: groupComponentHeight = GROUP_COMPONENT_HEIGHT
-                    } = {},
-                    ungroupedLabel = UNGROUPED_LABEL,
-                    collapsible: collapsibleGroups = false
-                } = {},
-
-                header: {
-                    caption: {
-                        Component: HeaderCaptionComponent = () => null,
-                        height: headerCaptionHeight = 0
-                    } = {}
-                } = {},
-                footer: {
-                    caption: {
-                        Component: FooterCaptionComponent = () => null,
-                        height: footerCaptionHeight = 0
-                    } = {}
-                } = {},
-
-                events: {
-                    onItemEnter = null,
-                    onItemLeave = null,
-                    onItemClick = null,
-                } = {},
-                headers = {},
-                globalPreFilter = '',
-                NoFilterData = () => NO_FILTER_DATA_MESSAGE,
-                Item = DefaultItem,
-                globalFilter = GLOBAL_FILTER,
-                warning = WARNING
-            } = cnf,
-            /**
-             * to know why read the comment in __getVirtualGroup */
-            gapPlus = gap + 1,
-            grouping = {
-                groups,
-                groupHeader: {
-                    Component: GroupComponent,
-                    height: groupComponentHeight
-                },
-                ungroupedLabel,
-                collapsible : collapsibleGroups
-            },
-
-            dimensions = {
-                width,
-                height,
-                itemHeight, itemWidth,
-                contentHeight: height - headerCaptionHeight - footerCaptionHeight
-            },
-
-            elementsPerLine = Math.floor(width / itemWidth),
-
-            /***************************************************************************
-             * starting from specified groups, separate the data and create the groups
-             */
-            originalGroupedData = __getGroupedInit({
-                data, elementsPerLine,
-                groups: grouping.groups, opts: { ungroupedLabel, lib, trakTimes, warning },
-                collapsible: collapsibleGroups
-            }),
-            // originalGroupedData0 = __getGroupedInit({data, groups, elementsPerLine, opts: {ungroupedLabel, lib, trak: true}}),            
-            funcFilters = __composeFilters({ headers, opts: { trakTimes, lib } }),
-
-            // columns, filterFactory and theDoFilter can stay static in the state
-            columns = headers.map(h => h.key),
-            filterFactory = __getFilterFactory({ columns, filters: funcFilters, opts: { trakTimes, lib, warning } }),
-            theDoFilter = filterFactory(),
-
-            // this needs to be recreated every time the global filter changes
-            theDoFilterGlobal = filterFactory(globalPreFilter),
-
-            {gData, filtered} = __applyFilter({
-                globalValue: globalPreFilter,
-                groupedData: originalGroupedData,
-                gFilter: theDoFilterGlobal,
-                filter: theDoFilter,
-                elementsPerLine,
-                opts: { trakTimes, lib }
-            }),
-
-            filteredGroupedData = __getVirtualGroup({
-                dimensions,
-                gap: gapPlus,
-                grouping,
-                grouped: gData,
-                scrollTop: 0,
-                elementsPerLine,
-                originalGroupedData,
-                opts: { trakTimes, lib }
-            }),
-            /**
-             * 
-             ****************************************************************************/
-
-
-            innerVirtual = __getVirtual({
-                filteredGroupedData,
-                elementsPerLine,
-                dimensions,
-                scrollTop: 0
-            }),
-            virtual = {
-                loading: false,
-                gap: gapPlus,
-                contentHeight: height - headerCaptionHeight - footerCaptionHeight,
-                ...innerVirtual
-            };
-            
-
-        // every group must have a grouper
-        if (groups.length && groups.some(group => typeof group.grouper !== 'function')) {
-            throw 'Every defined group must have a grouper function';
-        }
-        /////////////////////////////////////////////////////////////////////
-        if (trakTimes) {
-            trak.end = +new Date;
-            trakTime({
-                what: 'reducer initialization',
-                time: trak.end - trak.start,
-                opts: { trakTimes, lib }
-            }
-            );
-        }
-
-        return {
-            // ...cnf,
-
-            // somehow static
-            data: data.map(item => ({ [rvgID]: `${uniqueID}`, ...item })),
-            uie,
-            rvgID,
-            trakTimes,
-            elementsPerLine,
-            Loader,
-            grouping,
-            header: { caption: { Component: HeaderCaptionComponent, height: headerCaptionHeight}},
-            footer: { caption: { Component: FooterCaptionComponent, height: footerCaptionHeight}},
-            dimensions,
-            debounceTimes: { scrolling, filtering, },
-            events: { onItemEnter, onItemLeave, onItemClick,},
-            NoFilterData,
-            originalGroupedData,
-            gap: gapPlus,
-            Item,
-            globalFilter,
-            warning,
-
-            // dynamic
-            headers,
-            filtered,
-            total: data.length,
-            filteredGroupedData,
-            theDoFilterGlobal,
-            theDoFilter,
-            filterFactory,
-            columns,
-            virtual,
-            filters: funcFilters,
-            globalFilterValue: globalPreFilter
-        };
     };
 
 export default () => ({
     reducer,
-    init
+    init: (cnf = {}) => reducer({}, {type: ACTION_TYPES.INIT, payload: cnf})
 });
