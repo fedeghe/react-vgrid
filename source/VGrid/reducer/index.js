@@ -1,7 +1,7 @@
 import DefaultItem from './../Grid/DefaultItem';
 import {
     doThrow, uniqueID, trakTime,
-    doWarn, throwIf, isFunction
+    // doWarn, throwIf, isFunction
 } from './../utils';
 import {
     __getFilterFactory, __cleanFilters, __getVirtual, __getVirtualGroup,
