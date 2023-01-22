@@ -296,8 +296,8 @@ export const __getFilterFactory = ({ columns, filters, globalFilter, opts = {} }
             renderedHeaders = 0,
             dataHeight = 0;
         const trak = opts.trakTimes ? { start: +new Date() } : null,
-            { contentHeight, itemHeight, height } = dimensions,
-            { groupHeader, groups, ungroupedLabel } = grouping,
+            { contentHeight, itemHeight } = dimensions,
+            { groupHeader, ungroupedLabel } = grouping,
             
             groupKeys = Object.keys(grouped),
 

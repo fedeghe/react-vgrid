@@ -19,15 +19,24 @@ import ACTION_TYPES from './actions';
 
 // eslint-disable-next-line one-var
 const actions = {
-        [ACTION_TYPES.LOADING]: ({virtual}) => ({ virtual: { ...virtual, loading: true } }),
-        [ACTION_TYPES.TOGGLE_GROUP]: ({
-            payload, originalGroupedData,
-            globalFilterValue, theDoFilterGlobal, theDoFilter, elementsPerLine, opts,
-            dimensions, grouping, virtual
-        }) => {
+        [ACTION_TYPES.LOADING]: ({oldState : {virtual}}) => ({ virtual: { ...virtual, loading: true } }),
 
-            const {scrollTop, gap} = virtual,
-                newOriginalGroupedData = {
+        [ACTION_TYPES.TOGGLE_GROUP]: ({
+            payload,
+            oldState: {
+                originalGroupedData,
+                globalFilterValue,
+                theDoFilterGlobal,
+                theDoFilter,
+                elementsPerLine,
+                dimensions,
+                grouping,
+                virtual,
+                virtual: {scrollTop, gap},
+            },
+            opts
+        }) => {
+            const newOriginalGroupedData = {
                     ...originalGroupedData,
                     [payload] : {
                         ...originalGroupedData[payload],
@@ -68,13 +77,22 @@ const actions = {
             };
         },
         [ACTION_TYPES.TOGGLE_ALL_GROUPS]: ({
-            payload : allCollapsed, originalGroupedData,
-            globalFilterValue, theDoFilterGlobal, theDoFilter, elementsPerLine, opts,
-            dimensions, grouping, virtual
+            payload : allCollapsed,
+            oldState: {
+                originalGroupedData,
+                globalFilterValue,
+                theDoFilterGlobal,
+                theDoFilter,
+                elementsPerLine,
+                dimensions,
+                grouping,
+                virtual,
+                virtual: {scrollTop, gap},
+            },
+            opts,
         }) => {
 
-            const {scrollTop, gap} = virtual,
-                newOriginalGroupedData = Object.entries(originalGroupedData).reduce((acc, [label, group]) => {
+            const newOriginalGroupedData = Object.entries(originalGroupedData).reduce((acc, [label, group]) => {
                     acc[label] = {
                         ...group,
                         collapsed: !allCollapsed
@@ -117,16 +135,25 @@ const actions = {
         },
 
         [ACTION_TYPES.FILTER]: ({
-            payload, globalFilterValue, filters,
-            columns, filterFactory, dimensions, 
-            grouping,  originalGroupedData, elementsPerLine,
-            theDoFilterGlobal,
-            virtual, globalFilter, opts
+            payload: { value, field },
+            oldState: {
+                globalFilterValue,
+                filters,
+                columns,
+                filterFactory,
+                dimensions,
+                grouping,
+                originalGroupedData,
+                elementsPerLine,
+                virtual,
+                virtual: {scrollTop, gap,},
+                theDoFilterGlobal,
+                globalFilter
+            },
+            opts
         }) => {
-            const {scrollTop, gap,} = virtual,
-                { value, field } = payload,
-                // must start from everything
-                isGlobalSearch = !field,
+            // must start from everything
+            const isGlobalSearch = !field,
                 ret = {
                     theDoFilterGlobal
                 };
@@ -206,11 +233,21 @@ const actions = {
         },
 
         [ACTION_TYPES.UNFILTER_FIELDS]: ({
-            payload, globalFilterValue, filters, columns,
-            dimensions, grouping,
-            originalGroupedData, elementsPerLine, virtual,
-            globalFilter, opts
+            payload,
+            oldState: {
+                globalFilterValue,
+                filters,
+                columns,
+                dimensions,
+                grouping,
+                originalGroupedData,
+                elementsPerLine,
+                virtual,
+                globalFilter
+            },
+            opts,        
         }) => {
+
             let _globalFilterValue = globalFilterValue,
                 _newFilters = { ...filters },
                 theDoFilterGlobal;
@@ -275,16 +312,24 @@ const actions = {
         },
 
         [ACTION_TYPES.UNFILTER]: ({
-            payload, globalFilterValue, filters, columns,
-            elementsPerLine, dimensions, originalGroupedData,
-            grouping, virtual, globalFilter, opts
+            payload,
+            oldState: {
+                globalFilterValue,
+                filters, columns,
+                elementsPerLine, dimensions, originalGroupedData,
+                grouping,
+                virtual,
+                virtual : {gap},
+                globalFilter
+            },
+            opts
         }) => {     
             let _globalFilterValue = globalFilterValue,
                 _newFilters = { ...filters },
                 theDoFilter = () => true,
                 theDoFilterGlobal = () => true,
                 filterFactory = __getFilterFactory({ columns, filters: _newFilters, globalFilter, opts});
-            const {gap }  = virtual;
+
             switch (payload) {
                 case FILTERS.ALL:
                     _globalFilterValue = '';
@@ -342,12 +387,18 @@ const actions = {
         },
 
         [ACTION_TYPES.SCROLL]: ({
-            payload, dimensions, grouping,
-            globalFilterValue, originalGroupedData, theDoFilterGlobal, theDoFilter,
-            elementsPerLine, virtual, opts
+            payload,
+            oldState: {
+                dimensions, grouping,
+                globalFilterValue, originalGroupedData,
+                theDoFilterGlobal, theDoFilter,
+                elementsPerLine,
+                virtual,
+                virtual: {gap}
+            },
+            opts,
         }) => {
             const scrollTop = parseInt(payload, 10),
-                {gap} = virtual,
                 {gData} = __applyFilter({
                     globalValue: globalFilterValue,
                     groupedData: originalGroupedData, // this needs to be the filtered data
@@ -382,73 +433,20 @@ const actions = {
         }
     },
     lib = CMPNAME,
-    emptyObjFuncf = () => ({}),
     reducer = (oldState, action) => {
         const { payload = {}, type } = action,
             {
-                dimensions,
-                virtual,
-                globalFilterValue,
-                filters,
-
-                columns,
-                theDoFilter,
-                theDoFilterGlobal,
-                filterFactory,
-
-                grouping,
                 trakTimes,
-                elementsPerLine,
-                originalGroupedData,
-                globalFilter,
                 warning,
-                // globalFilterValue
             } = oldState,
-            opts = {trakTimes, warning, lib},
-
-            params = {
-                [ACTION_TYPES.LOADING]: () => ({virtual}),
-                [ACTION_TYPES.TOGGLE_GROUP]: () => ({
-                    payload, originalGroupedData,
-                    globalFilterValue, theDoFilterGlobal, theDoFilter, elementsPerLine, opts,
-                    dimensions, grouping, virtual
-                }),
-                [ACTION_TYPES.TOGGLE_ALL_GROUPS]: () => ({
-                    payload, originalGroupedData,
-                    globalFilterValue, theDoFilterGlobal, theDoFilter, elementsPerLine, opts,
-                    dimensions, grouping, virtual
-                }),
-                [ACTION_TYPES.FILTER]: () => ({
-                    payload, globalFilterValue, filters,
-                    columns, filterFactory, dimensions,
-                    grouping,  originalGroupedData, elementsPerLine, trakTimes,
-                    virtual, theDoFilterGlobal,
-                    globalFilter, opts
-                }),
-                [ACTION_TYPES.UNFILTER_FIELDS]: () => ({
-                    payload, globalFilterValue, filters, columns,
-                    trakTimes, dimensions, grouping,
-                    originalGroupedData, elementsPerLine, virtual,
-                    globalFilter, opts
-                }),
-                [ACTION_TYPES.UNFILTER]: () => ({
-                    payload, globalFilterValue, filters, columns,
-                    trakTimes, elementsPerLine, dimensions, originalGroupedData,
-                    grouping, virtual,
-                    globalFilter, opts
-                }),
-                [ACTION_TYPES.SCROLL]: () => ({
-                    payload, dimensions, grouping,
-                    globalFilterValue, originalGroupedData, theDoFilterGlobal, theDoFilter,
-                    elementsPerLine, trakTimes, virtual, opts
-                })
-            }[type] || emptyObjFuncf;
+            opts = {trakTimes, warning, lib};
+        
         if (typeof type === 'undefined') throw new Error('Action type not given');
 
         if (type in actions) {
             const newState = {
                 ...oldState,
-                ...actions[type](params())
+                ...actions[type]({oldState, payload, opts})
             };
             return newState;
         }
