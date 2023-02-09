@@ -12,7 +12,7 @@
 - [x] caption filters global
 - [x] caption filters multiple fields
 - [x] filters smart set/reset   
-- [ ] sorters (in captions) WIP
+- [ ] sorters (in captions) [WIP](https://github.com/fedeghe/react-vgrid/tree/sorting)
 - [x] groups (config and captions)
 - [x] collapsible groups
 - [x] but even before try to think a flexible way to allow those to be headless
