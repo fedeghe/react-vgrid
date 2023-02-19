@@ -4,6 +4,7 @@ import Item from './Item/item1';
 import HeaderCaption from './HeaderCaption';
 import FooterCaption from './FooterCaption';
 import GroupComponent from './GroupComponent';
+import data from './dataFixed.json';
 export default {
     data: generateRowData([
         { key: 'id', type: 'int' },
@@ -68,7 +69,7 @@ export default {
         preFiltered: null,
     }],
     // globalPreFilter: '2',
-    // Item,
+    Item,
     Loader: () => (<div className="Loading">loading</div>),
     dimensions: {
         itemWidth: 300,
